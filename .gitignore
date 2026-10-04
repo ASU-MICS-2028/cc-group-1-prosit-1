@@ -1,18 +1,30 @@
+# Secrets (never committed; .env.example is the template)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
 # Logs
 logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
+# Node / frontend
 node_modules
 dist
 dist-ssr
 *.local
+coverage
 
-# Editor directories and files
+# .NET / backend
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Editors and OS (the shared VS Code settings are tracked)
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
@@ -22,11 +34,3 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sw?
-
-# Environment variables (secrets never committed; .env.example is the template)
-.env
-.env.*
-!.env.example
-
-# Test coverage
-coverage

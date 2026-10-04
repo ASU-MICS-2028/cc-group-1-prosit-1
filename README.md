@@ -1,75 +1,42 @@
-# React + TypeScript + Vite
+# AgroConnect
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Offline-first platform connecting smallholder farmers in Ghana with extension
+services (Ashesi ICS 534 Cloud Computing, Prosit 1, Team Godabeg).
 
-Currently, two official plugins are available:
+- `frontend/`: React + TypeScript PWA (Vite, Tailwind, shadcn/ui, Dexie, i18next)
+- `backend/`: ASP.NET Core 10 API (C#), to be added
+- `deploy/`: EC2 bootstrap, compose file and the deployment runbook
+- `docs/`: architecture decision records and project status; start with
+  [docs/status.md](docs/status.md)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Run the frontend locally
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+cd frontend
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Requires Node 24 LTS. Other scripts: `npm run lint`, `npm run test:ci`,
+`npm run build`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Contributing
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+**Unit tests are required.** Every pull request must include unit tests for the
+code it adds or changes, and overall test coverage must stay at or above **70%**.
+CI blocks any PR that fails tests or drops below that threshold.
+
+### Branch flow
 
 ```
+feature/* ──PR──▶ development ──PR──▶ staging ──PR──▶ main
+                  (integration)       (QA)            (production)
+```
+
+- `development`: open PRs here. Merge yourself once CI is green.
+- `staging`: deployed to the staging server for QA. Merged by the DevOps lead.
+- `main`: production. Merged by the DevOps lead, deploy requires approval.
+
+Deployment details: [deploy/README.md](deploy/README.md).

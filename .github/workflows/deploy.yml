@@ -1,0 +1,227 @@
+# Deploy — build images, push to GHCR, roll out to EC2.
+#
+#   push to staging  -> deploy to the "staging" environment (automatic)
+#   push to main     -> deploy to the "production" environment
+#                       (pauses for manual approval by the DevOps lead)
+#   manual run       -> redeploy / roll back any environment to a given image tag
+#
+# Each GitHub Environment holds its own secrets:
+#   EC2_HOST      public IP or DNS of the instance
+#   EC2_USER      SSH user (e.g. "deploy")
+#   EC2_SSH_KEY   private key for that user
+# Until those exist, the deploy job is skipped with a warning instead of failing.
+
+name: Deploy
+
+on:
+  push:
+    branches: [staging, main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy
+        type: choice
+        options: [staging, production]
+        required: true
+      image_tag:
+        description: Image tag to deploy (e.g. sha-1a2b3c4). Leave empty to build the selected branch.
+        type: string
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  APP_DIR: /opt/agroconnect
+  HEALTHCHECK_URL: http://localhost:8000/health
+
+jobs:
+  setup:
+    name: Resolve target
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.target.outputs.environment }}
+      image_tag: ${{ steps.target.outputs.image_tag }}
+      build: ${{ steps.target.outputs.build }}
+      services: ${{ steps.services.outputs.list }}
+      image_prefix: ${{ steps.target.outputs.image_prefix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: target
+        env:
+          INPUT_ENV: ${{ inputs.environment }}
+          INPUT_TAG: ${{ inputs.image_tag }}
+        run: |
+          if [ -n "$INPUT_ENV" ]; then
+            env="$INPUT_ENV"
+          elif [ "$GITHUB_REF_NAME" = "main" ]; then
+            env=production
+          else
+            env=staging
+          fi
+          if [ -n "$INPUT_TAG" ]; then
+            tag="$INPUT_TAG"; build=false
+          else
+            tag="sha-${GITHUB_SHA::7}"; build=true
+          fi
+          echo "environment=$env" >> "$GITHUB_OUTPUT"
+          echo "image_tag=$tag"   >> "$GITHUB_OUTPUT"
+          echo "build=$build"     >> "$GITHUB_OUTPUT"
+          echo "image_prefix=${REGISTRY}/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          echo "Target: $env  Tag: $tag  Build: $build"
+      - id: services
+        # Only services that have a Dockerfile get built and deployed.
+        run: |
+          list=$(for s in backend frontend; do [ -f "$s/Dockerfile" ] && echo "\"$s\""; done | paste -sd, -)
+          echo "list=[${list}]" >> "$GITHUB_OUTPUT"
+          echo "Services: [${list}]"
+
+  build:
+    name: Build & push (${{ matrix.service }})
+    needs: setup
+    if: needs.setup.outputs.build == 'true' && needs.setup.outputs.services != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.setup.outputs.services) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.service }}
+          push: true
+          tags: |
+            ${{ needs.setup.outputs.image_prefix }}/${{ matrix.service }}:${{ needs.setup.outputs.image_tag }}
+            ${{ needs.setup.outputs.image_prefix }}/${{ matrix.service }}:${{ needs.setup.outputs.environment }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  deploy:
+    name: Deploy to ${{ needs.setup.outputs.environment }}
+    needs: [setup, build]
+    if: |
+      always() &&
+      needs.setup.result == 'success' &&
+      needs.setup.outputs.services != '[]' &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ needs.setup.outputs.environment }}
+    concurrency:
+      group: deploy-${{ needs.setup.outputs.environment }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check environment secrets
+        id: secrets
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          if [ -z "$EC2_HOST" ] || [ -z "$EC2_USER" ] || [ -z "$EC2_SSH_KEY" ]; then
+            echo "::warning::EC2 secrets not set for this environment — skipping deploy. See deploy/README.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure SSH
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Upload compose file
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: scp -i ~/.ssh/id_deploy deploy/docker-compose.yml "$EC2_USER@$EC2_HOST:$APP_DIR/docker-compose.yml"
+
+      - name: Roll out
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          IMAGE_TAG: ${{ needs.setup.outputs.image_tag }}
+          IMAGE_PREFIX: ${{ needs.setup.outputs.image_prefix }}
+          SERVICES: ${{ join(fromJSON(needs.setup.outputs.services), ' ') }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        # Variables are sent over stdin (not the command line) so the
+        # registry token never shows up in the server's process list.
+        run: |
+          {
+            printf 'export APP_DIR=%q IMAGE_TAG=%q IMAGE_PREFIX=%q SERVICES=%q HEALTHCHECK_URL=%q GHCR_USER=%q GHCR_TOKEN=%q\n' \
+              "$APP_DIR" "$IMAGE_TAG" "$IMAGE_PREFIX" "$SERVICES" "$HEALTHCHECK_URL" "$GHCR_USER" "$GHCR_TOKEN"
+            cat <<'REMOTE'
+          set -euo pipefail
+          cd "$APP_DIR"
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
+
+          previous=$(cat .current_tag 2>/dev/null || true)
+          echo "Deploying $IMAGE_TAG (previous: ${previous:-none}) services: $SERVICES"
+
+          export IMAGE_TAG IMAGE_PREFIX
+          docker compose pull $SERVICES
+          docker compose up -d --remove-orphans $SERVICES
+
+          healthy=false
+          if echo "$SERVICES" | grep -qw backend; then
+            for i in $(seq 1 20); do
+              if curl -fsS "$HEALTHCHECK_URL" >/dev/null; then healthy=true; break; fi
+              sleep 3
+            done
+          else
+            healthy=true
+          fi
+
+          if [ "$healthy" != true ]; then
+            echo "::error::Health check failed at $HEALTHCHECK_URL"
+            docker compose logs --tail=100 $SERVICES || true
+            if [ -n "$previous" ]; then
+              echo "Rolling back to $previous"
+              IMAGE_TAG="$previous" docker compose up -d $SERVICES
+            fi
+            docker logout ghcr.io >/dev/null || true
+            exit 1
+          fi
+
+          echo "$IMAGE_TAG" > .current_tag
+          docker image prune -f >/dev/null
+          docker logout ghcr.io >/dev/null || true
+          echo "Deployed $IMAGE_TAG"
+          REMOTE
+          } | ssh -i ~/.ssh/id_deploy "$EC2_USER@$EC2_HOST" 'bash -s'
+
+      - name: Summary
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          {
+            echo "### Deployed to \`${{ needs.setup.outputs.environment }}\`"
+            echo "- Image tag: \`${{ needs.setup.outputs.image_tag }}\`"
+            echo "- Services: ${{ needs.setup.outputs.services }}"
+            echo "- Commit: ${{ github.sha }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy

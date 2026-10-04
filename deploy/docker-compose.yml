@@ -1,0 +1,29 @@
+# Production/staging stack, run on each EC2 instance from /opt/agroconnect.
+# The deploy workflow copies this file over and sets IMAGE_TAG / IMAGE_PREFIX.
+# App secrets (DB URL, API keys, ...) live in /opt/agroconnect/.env on the
+# server and are never committed.
+#
+# NOTE: container ports are placeholders until the backend/frontend
+# Dockerfiles land — update them together with the Dockerfiles.
+
+services:
+  backend:
+    image: ${IMAGE_PREFIX}/backend:${IMAGE_TAG}
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8000:8000"   # reachable by the frontend/proxy and health check only
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    image: ${IMAGE_PREFIX}/frontend:${IMAGE_TAG}
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "80:${FRONTEND_PORT:-80}"
+    depends_on:
+      - backend
