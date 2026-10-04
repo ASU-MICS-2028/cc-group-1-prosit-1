@@ -2,7 +2,7 @@
 
 Living file: where the project stands right now. Update it at the end of every working session (what was done, what's next). Decisions themselves go in `adr/` and `decision-log.md`; this file only tracks progress.
 
-_Last updated: 2026-10-04 (synced with the DevOps pipeline, ADR 0019)_
+_Last updated: 2026-10-04 (backend restructured to services, ADR 0020)_
 
 ## The assignment (Prosit 1, AgroConnect Ghana)
 Ashesi ICS 534 Cloud Computing. A four-week build; we are building all four weeks into one product.
@@ -36,6 +36,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 - Tests: Vitest + Testing Library; 13 tests, ~98% line coverage (CI gate is 70%); `npm run test:ci`, `lint`, `format:check`, `build` and `npm audit --omit=dev` all pass.
 - Frontend `Dockerfile` (node build, nginx-unprivileged on 8080), `.nginx/nginx.conf` (SPA fallback, cache headers, `/api` proxy to the backend container), `.dockerignore`. Not yet built locally (Docker Desktop was off); CI's docker job will build it.
 - DevOps pipeline merged from `origin/development` and adapted: CI (`ci.yml`) now uses Node 24, a .NET backend job, `npm audit` and `format:check`; compose uses ASP.NET port 8080 and a bash health check; Dependabot covers npm, nuget, docker, actions; CODEOWNERS covers `frontend/.nginx/`. See ADR 0019.
+- Backend scaffold (branch `feature/backend-scaffold`): service-based layout from the company repos (ADR 0020): thin API host in `backend/APIs/agroconnect-api`, `PlatformService` (GET /health, GET /languages) as the pattern for later services, `Libs/SharedLibrary` (enums, PhoneNumber, feature base, ApiException, language-keyed messages via X-Language, session provider, data masking, clock), `Libs/Data` (EF Core + PostgreSQL), tests per project plus `Api.Tests` with Testcontainers; central package versions; Serilog, problem details, OpenAPI to `backend/openapi/agroconnect.json`; Dockerfile (non-root) and `docker-compose.dev.yml`; 69 tests, 97% to 100% coverage; `dotnet format` hook and CI wiring. Verified: build, format, tests, coverage gate, container `/health` 200 with the database healthy.
 - Backend language settled: C# / ASP.NET Core 10 for the whole project (Java and Python compared in ADR 0013).
 
 ## Bernard's to-do right now
@@ -48,7 +49,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 2. **PWA:** configure `vite-plugin-pwa` (manifest, icons, Workbox caching, update prompt).
 3. **Offline data:** Dexie schema (farmers, photos, outbox), client UUIDs, sync loop.
 4. **Registration wizard:** react-hook-form + zod steps for the five profile sections; photo (lazy-loaded compression) + GPS.
-5. **Backend in `backend/`:** ASP.NET Core 10 Minimal API, Domain/Application/Infrastructure/Api, EF Core + Npgsql, OpenAPI to `backend/openapi/agroconnect.json`; `frontend/` runs `openapi-typescript` to generate `frontend/src/api/schema.d.ts`. It needs `backend/Dockerfile` and a `/health` endpoint (ADR 0019), tests via coverlet.msbuild.
+5. **Backend (scaffold done; next: farmer model, migration, sync endpoint):** ASP.NET Core 10 Minimal API as service class libraries behind a thin host (ADR 0020), EF Core + Npgsql, OpenAPI to `backend/openapi/agroconnect.json`; `frontend/` runs `openapi-typescript` to generate `frontend/src/api/schema.d.ts`. It needs `backend/Dockerfile` and a `/health` endpoint (ADR 0019), tests via coverlet.msbuild.
 6. **USSD endpoint** (Africa's Talking sandbox) in the API.
 7. **Infra (mostly DevOps lead):** TLS for both environments, GitHub Environment secrets and the two EC2 instances (`deploy/README.md`), later S3 + CloudFront for the PWA.
 8. **Write-up:** architecture justifications for the lecturer, drawn from the ADRs.

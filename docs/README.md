@@ -26,12 +26,13 @@ Still to write: `architecture.md` (diagram), `data-dictionary.md`, `ussd-menu.md
 | [0010](adr/0010-frontend-libraries.md) | Frontend libraries | Accepted |
 | [0011](adr/0011-ui-components-and-system-font.md) | UI: shadcn/ui on Base UI, Tailwind v4, system font | Accepted |
 | [0012](adr/0012-react-compiler.md) | React Compiler | Accepted |
-| [0013](adr/0013-backend-dotnet-openapi.md) | Backend: ASP.NET Core 10, clean architecture, OpenAPI contract | Accepted |
+| [0013](adr/0013-backend-dotnet-openapi.md) | Backend: ASP.NET Core 10, OpenAPI contract | Accepted |
 | [0014](adr/0014-languages-and-audio.md) | Languages and audio prompts | Accepted |
 | [0015](adr/0015-security-and-privacy.md) | Security and privacy of farmer data | Proposed |
 | [0016](adr/0016-runtime-versions.md) | Runtime versions | Accepted |
 | [0017](adr/0017-single-repository.md) | One repository with `frontend/` and `backend/` | Accepted |
 | [0018](adr/0018-git-hooks-and-commit-conventions.md) | Git hooks, formatting and commit conventions (pre-commit) | Accepted |
 | [0019](adr/0019-devops-pipeline.md) | DevOps pipeline: GHCR, SSH deploy, staging and production | Accepted |
+| [0020](adr/0020-backend-service-structure.md) | Backend structure: services as class libraries behind a thin API host | Accepted |
 
 **Proposed** means recommended but waiting for the owning team member to confirm.

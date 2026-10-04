@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- PlatformService: things about the platform itself (health, supported languages). The pattern every service follows. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\SharedLibrary\SharedLibrary.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>

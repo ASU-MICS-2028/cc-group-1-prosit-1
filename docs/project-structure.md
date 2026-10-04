@@ -8,8 +8,8 @@ cc-group-1-prosit-1/
 │   ├── public/  src/  index.html  package.json  vite.config.ts  tsconfig*.json  eslint.config.js ...
 │   ├── Dockerfile  .dockerignore  .nginx/nginx.conf
 │   └── .env.example    (to add)
-├── backend/            the ASP.NET Core 10 solution, C# (section 4; not created yet)
-│   ├── src/  tests/  openapi/  AgroConnect.sln
+├── backend/            the ASP.NET Core 10 solution, C# (section 4)
+│   ├── APIs/  Services/  tests/  openapi/  AgroConnect.sln
 │   └── Dockerfile
 ├── deploy/             EC2 bootstrap script, docker-compose.yml, deployment runbook (DevOps lead)
 ├── .github/            workflows/ci.yml, workflows/deploy.yml, CODEOWNERS, dependabot.yml, PR + issue templates
@@ -140,41 +140,37 @@ frontend/
 
 ---
 
-## 4. `backend/` (ASP.NET Core 10 LTS, C#, clean architecture like your MTN backend)
+## 4. `backend/` (ASP.NET Core 10 LTS, C#, services as class libraries behind a thin API host)
 
-Generated with `dotnet new` (solution + webapi + classlib + xunit) inside `backend/`, then you add the folders.
+The same layout the company's backends use (ADR 0020), on plain ASP.NET Core with our own small feature base. Built and verified; the farmer model and sync come next.
 
 ```
 backend/
 ├── AgroConnect.sln
-├── src/
-│   ├── AgroConnect.Domain/            no dependencies
-│   │   ├── Entities/      Farmer.cs, Farm.cs, FarmPhoto.cs, ExtensionVisit.cs, FinancialProfile.cs
-│   │   └── Enums/         PhoneType.cs, Channel.cs, Language.cs, Region.cs
-│   ├── AgroConnect.Application/       depends on Domain
-│   │   ├── Farmers/       RegisterFarmer (command + FluentValidation validator), GetFarmers
-│   │   ├── Sync/          SyncFarmersBatch: upsert by client ID, newest UpdatedAt wins
-│   │   └── Abstractions/  IFarmerRepository, IPhotoStorage, ISmsGateway
-│   ├── AgroConnect.Infrastructure/    depends on Application
-│   │   ├── Persistence/   AppDbContext.cs, Configurations/ (one per entity), Migrations/
-│   │   ├── Storage/       S3PhotoStorage.cs (makes presigned upload URLs)
-│   │   ├── Ussd/          AfricasTalkingUssdHandler.cs (menu state machine)
-│   │   └── DependencyInjection.cs
-│   └── AgroConnect.Api/               depends on all; Minimal API
-│       ├── Program.cs     DI, CORS, ProblemDetails, response compression, health checks
-│       ├── Endpoints/
-│       │   ├── FarmerEndpoints.cs   GET /api/farmers?updatedSince=
-│       │   ├── SyncEndpoints.cs     POST /api/sync/farmers (batch, idempotent)
-│       │   ├── PhotoEndpoints.cs    POST /api/photos/presign → phone uploads straight to S3
-│       │   ├── UssdEndpoints.cs     POST /api/ussd (Africa's Talking callback, returns "CON …"/"END …")
-│       │   └── HealthEndpoints.cs   GET /health
-│       └── appsettings.json / appsettings.Development.json   no secrets in here
-├── openapi/
-│   └── agroconnect.json  GENERATED on dotnet build (Microsoft.Extensions.ApiDescription.Server); committed, the contract the frontend reads
-├── Dockerfile            multi-stage: sdk build → Debian-based aspnet runtime (the compose health check needs bash), non-root user; listens on 8080
-└── tests/
-    ├── AgroConnect.UnitTests/         validators, sync conflict rule (reference coverlet.msbuild: CI enforces 70% line coverage)
-    └── AgroConnect.IntegrationTests/  endpoints against a real Postgres (Testcontainers)
+├── APIs/agroconnect-api/              thin host: Program.cs, Serilog, problem details, OpenAPI, MapFeatures(). No business logic.
+├── Services/
+│   ├── PlatformService/               GET /health, GET /languages: the pattern every service follows
+│   │   ├── Features/                  one class per use case (implements IFeature, maps its own route)
+│   │   ├── Models/                    request and response types
+│   │   └── PlatformServiceExtension.cs   AddPlatformService()
+│   │   (a full service also has Providers/Interfaces + Implementations, and Langs/en.json)
+│   ├── (next)  FarmerService          register, list; Farmer, Farm, FarmPhoto, ExtensionVisit, FinancialProfile
+│   ├── (next)  SyncService            POST /api/sync/farmers: batch, idempotent, newest UpdatedAt wins
+│   ├── (next)  AuthService            phone number + OTP (a fixed test OTP for the demo)
+│   ├── (next)  MediaService           POST /api/photos/presign: the phone uploads straight to S3
+│   ├── (next)  UssdService            POST /api/ussd: Africa's Talking callback, menu state machine, SMS
+│   └── Libs/
+│       ├── SharedLibrary/             Language and Channel enums, PhoneNumber, IFeature, ApiException + handler,
+│       │                              messages (Langs/*.json, X-Language), ISessionProvider, IClock, data masking
+│       └── Data/                      AppDbContext, EF Core migrations (Migrations/ added with the farmer model)
+├── tests/
+│   ├── Shared/                        [UnitTest] / [IntegrationTest] traits, ApiAssert
+│   ├── SharedLibrary.Tests/  PlatformService.Tests/     unit tests per project (70% line coverage gate each)
+│   └── Api.Tests/                     the whole API in memory plus a real PostgreSQL (Testcontainers)
+├── openapi/agroconnect.json           GENERATED on dotnet build; committed, the contract the frontend reads
+├── Dockerfile                         multi-stage: sdk build, Debian-based aspnet runtime (compose health check needs bash), non-root, port 8080
+├── docker-compose.dev.yml             PostgreSQL (and optionally the API) for local work
+└── Directory.Build.props / Directory.Packages.props / global.json / .editorconfig
 ```
 
 **Why photos go straight to S3:** the t3.micro has 1 GiB of RAM. Streaming photos through it would be the first thing to fall over; a presigned URL keeps the API tiny.

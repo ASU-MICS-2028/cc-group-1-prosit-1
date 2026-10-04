@@ -22,4 +22,5 @@
 | 2026-10-04 | Geist web font replaced with system font stack | [0011](adr/0011-ui-components-and-system-font.md) |
 | 2026-10-04 | `.env` files git-ignored; `.env.example` is the template | [0015](adr/0015-security-and-privacy.md) |
 | 2026-10-04 | C# confirmed as backend for all four weeks; any self-trained AI models go in a separate Python service | [0013](adr/0013-backend-dotnet-openapi.md) |
+| 2026-10-04 | Backend restructured from Clean Architecture layers to service class libraries behind a thin API host (company layout, own feature base) | [0020](adr/0020-backend-service-structure.md) |
 | pending | Postgres vs NoSQL, phone-number auth, security plan: awaiting team confirmation | [0006](adr/0006-postgres-over-nosql.md), [0007](adr/0007-phone-number-auth.md), [0015](adr/0015-security-and-privacy.md) |
