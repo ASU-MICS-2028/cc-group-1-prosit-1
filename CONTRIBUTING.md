@@ -3,6 +3,26 @@
 Read this before your first PR. The rules below are enforced by GitHub, so the
 merge button stays disabled until they're met.
 
+## 0. One-time setup: pre-commit hooks
+
+Install the git hooks once after cloning:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+On every commit they will:
+
+- **block secrets** (API keys, AWS credentials, private keys); the repo is public
+- lint and auto-format backend code with `ruff`
+- fix trailing whitespace and missing final newlines, and validate YAML/JSON
+- stop you committing straight to `main`, `staging` or `development`
+
+If a hook modifies files, the commit stops: review the changes, `git add`
+them, and commit again. CI runs the same checks, so `--no-verify` only moves
+the failure to your PR. Unit tests are not run on commit; CI runs them.
+
 ## 1. Unit tests are mandatory
 
 **Every PR that adds or changes code must include unit tests for that code.**
@@ -55,15 +75,25 @@ through a pull request.
 
 ### Your working branch
 
-Branch off `development` and name it by type:
+Branch off `development` and name it `<type>/<short-name>`:
 
 ```
-feature/<short-name>   new functionality      feature/farmer-signup
-fix/<short-name>       bug fix                fix/login-redirect
-devops/<short-name>    CI, Docker, infra      devops/add-redis
-docs/<short-name>      documentation          docs/api-usage
+feature/<short-name>   new functionality          feature/farmer-signup
+fix/<short-name>       bug fix                    fix/login-redirect
+refactor/<short-name>  restructure, no behaviour change   refactor/order-service
+test/<short-name>      tests only                 test/payment-edge-cases
+docs/<short-name>      documentation              docs/api-usage
+chore/<short-name>     tooling, deps, cleanup     chore/bump-fastapi
+devops/<short-name>    CI, Docker, infra          devops/add-redis
 hotfix/<short-name>    urgent prod fix (from main, DevOps lead only)
 ```
+
+- Lowercase letters and digits, words separated by hyphens. No spaces,
+  underscores, capitals or names (`feature/john-stuff` is not a description).
+- **CI enforces this.** A PR into `development` from a badly named branch fails
+  the *Branch flow* check. Rename with
+  `git branch -m feature/good-name && git push -u origin feature/good-name`,
+  then open a new PR.
 
 ## 3. Workflow
 
@@ -77,7 +107,7 @@ git push -u origin feature/farmer-signup
 
 To merge into `development` you need:
 
-1. **CI passed**: lint, unit tests, coverage ≥ 70%, Docker build.
+1. **CI passed**: branch name, pre-commit hooks, secret scan, lint, unit tests, coverage ≥ 70%, Docker build.
 2. **A pull request.** No direct pushes. You can merge your own PR, but asking a teammate to look at bigger changes is encouraged.
 3. **Up to date with `development`** and no conflicts. If GitHub says the branch
    is out of date, update it (`git pull origin development`) and push again.

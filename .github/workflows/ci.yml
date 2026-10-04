@@ -42,6 +42,17 @@ jobs:
         run: |
           echo "PR: $HEAD -> $BASE"
           case "$BASE" in
+            development)
+              # Branch naming convention (see CONTRIBUTING.md)
+              pattern='^(feature|fix|hotfix|devops|docs|refactor|test|chore)/[a-z0-9]+(-[a-z0-9]+)*$'
+              if [[ "$HEAD" == dependabot/* ]]; then
+                echo "Dependabot branch — naming check skipped."
+              elif ! [[ "$HEAD" =~ $pattern ]]; then
+                echo "::error::Branch name '$HEAD' does not follow the convention <type>/<short-name>."
+                echo "::error::Types: feature, fix, hotfix, devops, docs, refactor, test, chore. Lowercase words separated by hyphens, e.g. feature/farmer-signup."
+                echo "Rename it with: git branch -m <new-name> && git push origin -u <new-name>  (then open a new PR)"
+                exit 1
+              fi ;;
             staging)
               if [ "$HEAD" != "development" ]; then
                 echo "::error::Only 'development' can be merged into 'staging' (got '$HEAD')."
@@ -54,6 +65,58 @@ jobs:
               fi ;;
           esac
           echo "Branch flow OK"
+
+  # ---------------------------------------------------------------------------
+  # Same hooks developers run locally (.pre-commit-config.yaml), so skipping
+  # them with --no-verify doesn't get anything past CI
+  # ---------------------------------------------------------------------------
+  pre-commit:
+    name: Pre-commit hooks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+      - run: pip install pre-commit
+      - name: Run hooks on all files
+        # gitleaks runs in its own job below (the hook only scans staged files);
+        # no-commit-to-branch only makes sense on a developer's machine.
+        env:
+          SKIP: gitleaks,no-commit-to-branch
+        run: pre-commit run --all-files --show-diff-on-failure --color=always
+
+  # ---------------------------------------------------------------------------
+  # Secret scan over every commit in the PR (the repo is public)
+  # ---------------------------------------------------------------------------
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+      - name: Scan PR commits
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -n "$BASE_SHA" ]; then
+            gitleaks git --redact --verbose --log-opts="${BASE_SHA}..${HEAD_SHA}"
+          else
+            gitleaks git --redact --verbose
+          fi
 
   # ---------------------------------------------------------------------------
   # Work out what this PR touches, so we only run the relevant suites
@@ -219,7 +282,7 @@ jobs:
   ci-passed:
     name: CI passed
     if: always()
-    needs: [branch-flow, changes, backend, frontend, docker]
+    needs: [branch-flow, pre-commit, secrets, changes, backend, frontend, docker]
     runs-on: ubuntu-latest
     steps:
       - name: Verify every job passed or was skipped
