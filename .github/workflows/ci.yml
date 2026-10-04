@@ -263,7 +263,7 @@ jobs:
             echo "No ${{ matrix.service }}/Dockerfile yet — skipping."
             echo "present=false" >> "$GITHUB_OUTPUT"
           fi
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
         if: steps.check.outputs.present == 'true'
       - uses: docker/build-push-action@v7
         if: steps.check.outputs.present == 'true'
