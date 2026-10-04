@@ -45,7 +45,7 @@ merge button stays disabled until they're met.
 |---------------|---------------------------------|---------------------------------|
 | `main`        | Production                      | DevOps lead only                |
 | `staging`     | QA / testing (deployed to staging server) | DevOps lead (+ QA)    |
-| `development` | Integration, everyone's work lands here | Anyone, after 1 approval |
+| `development` | Integration, everyone's work lands here | Anyone, once CI passes   |
 
 Promotion is always **development → staging → main**. CI rejects any other
 source branch for `staging` and `main` (except `hotfix/*` → `main`).
@@ -78,7 +78,7 @@ git push -u origin feature/farmer-signup
 To merge into `development` you need:
 
 1. **CI passed**: lint, unit tests, coverage ≥ 70%, Docker build.
-2. **1 approval from a teammate** (not yourself). New commits reset the approval.
+2. **A pull request.** No direct pushes. You can merge your own PR, but asking a teammate to look at bigger changes is encouraged.
 3. **Up to date with `development`** and no conflicts. If GitHub says the branch
    is out of date, update it (`git pull origin development`) and push again.
 4. All review conversations resolved.

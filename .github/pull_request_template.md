@@ -26,4 +26,4 @@
 
 - [ ] My branch is up to date with `development`
 - [ ] No secrets, keys or `.env` files committed
-- [ ] I've asked a teammate to review
+- [ ] (Optional) I asked a teammate to review bigger changes

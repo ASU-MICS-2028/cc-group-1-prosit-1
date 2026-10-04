@@ -15,7 +15,7 @@ feature/* ──PR──▶ development ──PR──▶ staging ──PR──
                   (integration)       (QA)            (production)
 ```
 
-- `development`: open PRs here. Needs 1 teammate approval and green CI.
+- `development`: open PRs here. Merge yourself once CI is green.
 - `staging`: deployed to the staging server for QA. Merged by the DevOps lead.
 - `main`: production. Merged by the DevOps lead, deploy requires approval.
 
