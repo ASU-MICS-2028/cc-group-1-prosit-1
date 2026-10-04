@@ -1,34 +1,33 @@
-# AgroConnect: repo scaffolding (one repo, `web/` + `api/`)
+# AgroConnect: repo layout (one repo, `frontend/` + `backend/`)
 
-Decided 2026-10-04 in [ADR 0017](adr/0017-single-repository.md) (supersedes the two-repo plan in 0003): **one repo**, one folder per deployable service, shared infra and docs at the root. You create the folders and files by hand; generators (Vite, dotnet) only create the boilerplate.
+Decided 2026-10-04 in [ADR 0017](adr/0017-single-repository.md), pipeline in [ADR 0019](adr/0019-devops-pipeline.md): **one repo**, one folder per deployable service, shared CI/CD and docs at the root. Folder names `frontend/` and `backend/` match what the DevOps pipeline expects.
 
 ```
 cc-group-1-prosit-1/
-├── web/                the Vite React PWA (section 3)
+├── frontend/           the Vite React PWA (section 3)
 │   ├── public/  src/  index.html  package.json  vite.config.ts  tsconfig*.json  eslint.config.js ...
-│   ├── Dockerfile  .nginx/
-│   └── .env.example
-├── api/                the ASP.NET Core 10 solution (section 4)
+│   ├── Dockerfile  .dockerignore  .nginx/nginx.conf
+│   └── .env.example    (to add)
+├── backend/            the ASP.NET Core 10 solution, C# (section 4; not created yet)
 │   ├── src/  tests/  openapi/  AgroConnect.sln
 │   └── Dockerfile
-├── .github/            CI/CD: one workflow per service, path-filtered (section 2)
-├── .husky/  package.json  commitlint.config.js  lint-staged.config.js  .prettierrc.json   repo-level git hooks (ADR 0018)
-├── aws/  scripts/      shared infra and ops (section 5)
-├── docker-compose*.yml full local stack and EC2 overrides (section 5)
-├── docs/               architecture, decisions, data dictionary
-├── .gitignore  .gitattributes  .editorconfig
+├── deploy/             EC2 bootstrap script, docker-compose.yml, deployment runbook (DevOps lead)
+├── .github/            workflows/ci.yml, workflows/deploy.yml, CODEOWNERS, dependabot.yml, PR + issue templates
+├── .pre-commit-config.yaml   the one hook system (ADR 0018)
+├── docs/               architecture decisions, status, data dictionary
+├── CONTRIBUTING.md     team rules enforced by CI
+├── .gitignore  .gitattributes
 └── README.md
 ```
 
-**Layout rule:** a folder is either a service (`web/`, `api/`) or shared. Anything a service needs to build itself (its Dockerfile, its nginx config, its `.env.example`) lives inside it. Anything that wires services together (compose, deploy scripts, AWS policies, CI) lives at the root.
+**Layout rule:** a folder is either a service (`frontend/`, `backend/`) or shared. Anything a service needs to build itself (Dockerfile, nginx config, `.env.example`) lives inside it. Anything that wires services together (compose, deploy scripts, CI) lives at the root or in `deploy/`.
 
-**How `web/` and `api/` stay in step:**
-- **The API contract lives in `api/`.** ASP.NET Core publishes an OpenAPI document (`/openapi/v1.json`), committed as `api/openapi/agroconnect.json`. `web/` generates its TypeScript types from it with `openapi-typescript`, so a renamed field breaks the web build in the same PR, not on the farmer's phone.
-- **Each service builds its own Docker image** and pushes it to ECR with its own tag (`web-<sha>`, `api-<sha>`). The compose files on the EC2 only *pull* images by tag, so each service deploys and rolls back independently.
-- **One branch flow:** `feature/*` → `development` → `uat` → `main`. A feature that touches both services is one branch and one PR.
-- **Path-filtered CI:** `web/**` triggers the web workflow, `api/**` the API one, so a docs-only PR builds nothing.
-
-> **About the "devops branch":** DevOps work lives in the shared root files, not on a long-lived `devops` branch. Mubarak works on `feature/infra-*` branches that PR into `development` like everyone else.
+**How `frontend/` and `backend/` stay in step:**
+- **The API contract lives in `backend/`.** ASP.NET Core publishes an OpenAPI document (`/openapi/v1.json`), committed as `backend/openapi/agroconnect.json`. `frontend/` generates its TypeScript types from it with `openapi-typescript`, so a renamed field breaks the frontend build in the same PR, not on the farmer's phone.
+- **Each service builds its own Docker image**, pushed to GHCR as `.../frontend` and `.../backend`, tagged `sha-<commit>`. The compose file on each EC2 only *pulls* images by tag, so each service deploys and rolls back independently.
+- **One branch flow:** `feature/*` → `development` → `staging` → `main`. A feature that touches both services is one branch and one PR.
+- **Path-filtered CI:** `frontend/**` triggers the frontend job, `backend/**` the backend job; a docs-only PR builds nothing.
+- **At runtime** the frontend's nginx serves the PWA and proxies `/api/*` to the backend container, so the browser sees a single origin.
 
 ---
 
@@ -36,37 +35,41 @@ cc-group-1-prosit-1/
 
 | File | What goes in it | Why |
 |---|---|---|
-| `README.md` | What AgroConnect is, how to run locally (one command: `docker compose up`), team roles, branch flow (`feature/*` → `development` → `uat` → `main`) | First thing the lecturer opens |
-| `.gitignore` | `node_modules/`, `dist/`, `bin/`, `obj/`, `.env`, `*.user`, `.vs/`, `coverage/` (patterns without a leading `/` match inside `web/` and `api/` too) | Keeps build output and secrets out |
+| `README.md` | What AgroConnect is, how to run locally, contribution and branch rules, link to `deploy/README.md` | First thing the lecturer opens |
+| `.gitignore` | `node_modules/`, `dist/`, `coverage/`, `bin/`, `obj/`, `.env`, `*.pem`, `*.key`, `*.user`, `.vs/` (patterns without a leading `/` match inside both services) | Keeps build output and secrets out of a public repo |
 | `.gitattributes` | `* text=auto` and `*.sh text eol=lf` | You're on Windows; without this, shell scripts get CRLF and fail on the Ubuntu EC2 |
-| `.editorconfig` | 2-space indent for TS/JSON/YAML, 4 for C#, LF line endings | Same formatting across 4 laptops |
 
 ---
 
-## 2. `.github/`
+## 2. `.github/` and `deploy/` (owned by the DevOps lead)
 
 ```
 .github/
 ├── workflows/
-│   ├── web-ci.yml        on PRs touching web/**: lint, typecheck, test, build, npm audit --omit=dev
-│   ├── api-ci.yml        on PRs touching api/**: dotnet build, test, format check
-│   ├── deploy-dev.yml    on push to development: build changed image(s) → ECR (web-<sha>, api-<sha>), then EC2 pulls and restarts
-│   └── (docs-only changes trigger nothing)
-├── pull_request_template.md   What changed / How tested / Screenshots / API contract changed? (yes/no)
-├── dependabot.yml        npm in /web, nuget in /api, github-actions in /
-└── CODEOWNERS            web/ → Bernard; api/ → Liza; Dockerfile .nginx/ scripts/ aws/ docker-compose* .github/ → Mubarak; docs/ → Germain
-```
+│   ├── ci.yml        every PR: branch-flow + branch-name check, pre-commit hooks, gitleaks, then path-filtered
+│   │                 frontend (lint, format check, npm audit, unit tests >= 70%, build), backend (dotnet format,
+│   │                 build, tests >= 70%) and Docker builds. One required check: "CI passed".
+│   └── deploy.yml    push to staging -> deploy to staging; push to main -> deploy to production after approval;
+│                     manual run = rollback to an older image tag
+├── pull_request_template.md  includes the unit-test checklist
+├── ISSUE_TEMPLATE/   bug_report.md, feature_request.md
+├── dependabot.yml    weekly: github-actions, npm (/frontend), nuget (/backend), docker (/frontend)
+└── CODEOWNERS        .github/, deploy/, Dockerfiles, compose files, frontend/.nginx/ -> DevOps lead
 
-Every workflow uses `paths:` filters and `working-directory: web` (or `api`). Deploy workflows come after the app runs locally; start with the two CI ones.
+deploy/
+├── README.md         runbook: environments, one-time EC2 setup, secrets, rollback, hotfixes
+├── docker-compose.yml   backend (8080, health check on /health) + frontend (nginx on 8080), run from /opt/agroconnect
+└── ec2-bootstrap.sh  installs Docker, creates the deploy user, key-only SSH
+```
 
 ---
 
-## 3. `web/` (React PWA)
+## 3. `frontend/` (React PWA)
 
-Generated by Vite (react-ts template) into `web/`, then you add the rest.
+Generated by Vite (react-ts template) into `frontend/`. The tree below is the target; what exists today is in `docs/status.md`.
 
 ```
-web/
+frontend/
 ├── public/
 │   ├── icons/                icon-192.png, icon-512.png, maskable-512.png
 │   ├── audio/
@@ -104,7 +107,7 @@ web/
 │   │   └── local.ts          Dexie DB: farmers, outbox, photos, drafts tables
 │   ├── api/
 │   │   └── client.ts         fetch wrapper: base URL from env, timeout, Idempotency-Key header
-│   │   └── schema.d.ts       GENERATED by openapi-typescript from ../api/openapi/agroconnect.json; never edit by hand
+│   │   └── schema.d.ts       GENERATED by openapi-typescript from ../backend/openapi/agroconnect.json; never edit by hand
 │   ├── i18n/
 │   │   ├── index.ts          i18next setup, language saved locally
 │   │   └── locales/          en.json, tw.json, ee.json, dag.json (same keys as the audio files)
@@ -124,9 +127,9 @@ web/
 ├── components.json           shadcn config
 ├── tsconfig.json / tsconfig.app.json / tsconfig.node.json   path alias @/* → src/*
 ├── eslint.config.js, .prettierrc
-├── vitest.setup.ts
-├── Dockerfile                stage 1 node build → stage 2 nginx serving dist/
-├── .nginx/nginx.conf         SPA fallback to index.html, long cache for hashed assets, no-cache for sw.js
+├── Dockerfile                stage 1 node build → stage 2 nginx-unprivileged serving dist/ on 8080
+├── .nginx/nginx.conf         SPA fallback, long cache for hashed assets, no-cache for index.html and sw.js, /api proxy
+├── src/test/setup.ts         Vitest + Testing Library setup (tests sit next to the code: *.test.ts(x))
 └── .env.example              VITE_API_BASE_URL=
 ```
 
@@ -137,12 +140,12 @@ web/
 
 ---
 
-## 4. `api/` (ASP.NET Core 10 LTS, clean architecture like your MTN backend)
+## 4. `backend/` (ASP.NET Core 10 LTS, C#, clean architecture like your MTN backend)
 
-Generated with `dotnet new` (solution + webapi + classlib + xunit) inside `api/`, then you add the folders.
+Generated with `dotnet new` (solution + webapi + classlib + xunit) inside `backend/`, then you add the folders.
 
 ```
-api/
+backend/
 ├── AgroConnect.sln
 ├── src/
 │   ├── AgroConnect.Domain/            no dependencies
@@ -168,9 +171,9 @@ api/
 │       └── appsettings.json / appsettings.Development.json   no secrets in here
 ├── openapi/
 │   └── agroconnect.json  GENERATED on dotnet build (Microsoft.Extensions.ApiDescription.Server); committed, the contract the frontend reads
-├── Dockerfile            multi-stage: sdk build → aspnet runtime, non-root user
+├── Dockerfile            multi-stage: sdk build → Debian-based aspnet runtime (the compose health check needs bash), non-root user; listens on 8080
 └── tests/
-    ├── AgroConnect.UnitTests/         validators, sync conflict rule
+    ├── AgroConnect.UnitTests/         validators, sync conflict rule (reference coverlet.msbuild: CI enforces 70% line coverage)
     └── AgroConnect.IntegrationTests/  endpoints against a real Postgres (Testcontainers)
 ```
 
@@ -180,25 +183,9 @@ api/
 
 ---
 
-## 5. Shared DevOps files (repo root)
+## 5. DevOps files
 
-```
-cc-group-1-prosit-1/
-├── web/Dockerfile  web/.nginx/   (from section 3) build and serve the PWA
-├── api/Dockerfile                (from section 4) build and run the API
-├── docker-compose.yml        local full stack: postgres + api (build: ./api) + web (build: ./web); `docker compose up` runs everything
-├── docker-compose.dev.yml    EC2 overrides: images from ECR, env file, restart: unless-stopped
-├── nginx/proxy.conf          / → web, /api → api on the EC2 host (until CloudFront is in front)
-├── scripts/
-│   ├── setup_baseline.sh     from your Lab 2
-│   ├── deploy.sh             pull latest images, compose up -d, prune old images
-│   └── backup-db.sh          pg_dump to S3 nightly
-├── aws/
-│   ├── s3-cors.json          lets the PWA upload photos to the bucket
-│   └── github-oidc-role.json lets Actions push to ECR without stored AWS keys
-├── .env.example              DB password, S3 bucket, Africa's Talking keys (names only)
-└── docs/deploy.md            how to deploy, how to roll back
-```
+See section 2 and [`deploy/README.md`](../deploy/README.md). Still to add with the DevOps lead: TLS (domain + Caddy/Let's Encrypt or CloudFront), `frontend/.env.example`, and a nightly Postgres backup script once the database exists.
 
 ---
 
@@ -208,11 +195,7 @@ cc-group-1-prosit-1/
 docs/
 ├── architecture.md           diagram + one paragraph per component
 ├── adr/                      one short "Architecture Decision Record" per choice the brief demands
-│   ├── 0001-cloud-aws-af-south-1.md
-│   ├── 0002-postgres-over-nosql.md
-│   ├── 0003-phone-number-auth.md
-│   ├── 0004-offline-first-sync.md
-│   └── 0005-data-security-and-privacy.md
+│   └── 0001 ... 0019            see docs/README.md for the index
 ├── data-dictionary.md        every farmer field, type, why we collect it
 ├── ussd-menu.md              the menu tree in all 4 languages
 ├── consent-form.md           Data Protection Act 2012 consent wording
@@ -230,11 +213,12 @@ Versions: **Node.js 24 LTS** (Node 20 reached end of life in April 2026) and **.
 
 | Where | Command | Creates |
 |---|---|---|
-| repo root | stay on `feature/scaffold` (nothing is committed yet) | your working branch |
-| repo root | `npm ci` (hooks), then `cd web` and `npm ci` | tooling and app dependencies |
-| `web/` | `npm i -D openapi-typescript` (already installed) | types generated from `../api/openapi/agroconnect.json` |
-| repo root | `mkdir api`, then `cd api` | backend folder |
-| `api/` | `dotnet new sln -n AgroConnect` and `dotnet new webapi` / `classlib` / `xunit` per project | backend boilerplate |
-| `api/` | `dotnet sln add …` and `dotnet add reference …` | wiring the layers |
+| repo root | `pip install pre-commit && pre-commit install` | git hooks (ADR 0018) |
+| `frontend/` | `npm ci` | app dependencies |
+| `frontend/` | `npm run dev` / `lint` / `format:check` / `test:ci` / `build` | local checks, same as CI |
+| repo root | `mkdir backend`, then `cd backend` | backend folder |
+| `backend/` | `dotnet new sln -n AgroConnect` and `dotnet new webapi` / `classlib` / `xunit` per project | backend boilerplate |
+| `backend/` | `dotnet sln add …` and `dotnet add reference …` | wiring the layers |
+| `frontend/` | `npm run gen:api` (to add once the OpenAPI file exists) | `src/api/schema.d.ts` |
 
 Run these yourself from the folder shown.

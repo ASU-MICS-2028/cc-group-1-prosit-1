@@ -9,7 +9,7 @@ The backend must serve the whole project, not just Week 1: farmer registration a
 ## Decision
 - **ASP.NET Core 10 (LTS)** Minimal API, **EF Core + Npgsql** for Postgres.
 - Layers: **Domain** → **Application** (use cases, validators) → **Infrastructure** (database, S3, USSD) → **Api** (endpoints).
-- Built-in OpenAPI (`AddOpenApi()` / `MapOpenApi()`); the document is generated on build to `api/openapi/agroconnect.json` and committed as the contract. Enums serialised as strings; nullable reference types on.
+- Built-in OpenAPI (`AddOpenApi()` / `MapOpenApi()`); the document is generated on build to `backend/openapi/agroconnect.json` and committed as the contract. Enums serialised as strings; nullable reference types on.
 
 ## Alternatives considered
 - **Java / Spring Boot:** equally mature, but a typical Spring Boot service needs 250 MB+ of RAM versus roughly 50-100 MB for .NET 10, which matters on a 1 GB instance. No capability we need that .NET lacks.

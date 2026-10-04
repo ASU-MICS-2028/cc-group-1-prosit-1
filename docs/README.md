@@ -7,7 +7,7 @@ Everything we decided, and why. Start with the decision records; each one answer
 - [`decision-log.md`](decision-log.md): every decision in date order, one line each.
 - [`adr/`](adr/): Architecture Decision Records (Context / Decision / Alternatives / Consequences). Copy `adr/template.md` for new ones.
 - [`tech-choices.md`](tech-choices.md): why each frontend library is in (or out), with bundle-size reasoning.
-- [`project-structure.md`](project-structure.md): the folder layout of the repository (`web/`, `api/`, shared infra and docs) and what each file is for.
+- [`project-structure.md`](project-structure.md): the folder layout of the repository (`frontend/`, `backend/`, `deploy/`, docs) and what each file is for.
 
 Still to write: `architecture.md` (diagram), `data-dictionary.md`, `ussd-menu.md`, `consent-form.md`, `deploy.md`.
 
@@ -30,7 +30,8 @@ Still to write: `architecture.md` (diagram), `data-dictionary.md`, `ussd-menu.md
 | [0014](adr/0014-languages-and-audio.md) | Languages and audio prompts | Accepted |
 | [0015](adr/0015-security-and-privacy.md) | Security and privacy of farmer data | Proposed |
 | [0016](adr/0016-runtime-versions.md) | Runtime versions | Accepted |
-| [0017](adr/0017-single-repository.md) | One repository with `web/` and `api/` | Accepted |
-| [0018](adr/0018-git-hooks-and-commit-conventions.md) | Git hooks, formatting and commit conventions | Accepted |
+| [0017](adr/0017-single-repository.md) | One repository with `frontend/` and `backend/` | Accepted |
+| [0018](adr/0018-git-hooks-and-commit-conventions.md) | Git hooks, formatting and commit conventions (pre-commit) | Accepted |
+| [0019](adr/0019-devops-pipeline.md) | DevOps pipeline: GHCR, SSH deploy, staging and production | Accepted |
 
 **Proposed** means recommended but waiting for the owning team member to confirm.

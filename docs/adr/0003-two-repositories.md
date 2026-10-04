@@ -12,7 +12,7 @@ We are planning for a long-lived product, not just the course. Bernard's industr
 The repos stay in step through an **OpenAPI contract** (0013): the backend publishes it, the frontend generates TypeScript types from it.
 
 ## Alternatives considered
-- **One repo with `web/` and `api/` folders:** simpler coordination for a small team; rejected in favour of independent ownership and deployment.
+- **One repo with `frontend/` and `backend/` folders:** simpler coordination for a small team; rejected in favour of independent ownership and deployment.
 - **A long-lived `devops` branch:** rejected; infra must change together with the code it deploys, so DevOps files live in the frontend repo and use normal feature branches.
 
 ## Consequences

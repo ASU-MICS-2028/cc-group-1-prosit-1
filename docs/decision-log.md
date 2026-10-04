@@ -6,10 +6,11 @@
 | 2026-09-22 | Design first for Northern Ghana Farmers Network: basic phones, 2G, low literacy, Dagbani | [0002](adr/0002-single-pwa-plus-ussd.md), [0014](adr/0014-languages-and-audio.md) |
 | 2026-09-27 | af-south-1 confirmed by latency test; t3.micro; stateless VM, data in Postgres + S3 | [0001](adr/0001-cloud-aws-af-south-1.md), [0006](adr/0006-postgres-over-nosql.md) |
 | 2026-10-04 | One PWA plus USSD; no native app, no microfrontends | [0002](adr/0002-single-pwa-plus-ussd.md) |
-| 2026-10-04 | Branch flow feature → development → uat → main; GitHub Actions; ECR + OIDC deploy | [0004](adr/0004-branching-and-cicd.md) |
+| 2026-10-04 | Branch flow feature → development → staging → main; GitHub Actions (amended by 0019) | [0004](adr/0004-branching-and-cicd.md) |
 | 2026-10-04 | Two repos: frontend + DevOps (MTN-style root layout) and backend | [0003](adr/0003-two-repositories.md) |
-| 2026-10-04 | Reversed 0003 (final): one repo with `web/` and `api/` folders, path-filtered CI, per-service images | [0017](adr/0017-single-repository.md) |
-| 2026-10-04 | Husky + lint-staged + Prettier + commitlint (Conventional Commits with scopes) | [0018](adr/0018-git-hooks-and-commit-conventions.md) |
+| 2026-10-04 | Reversed 0003 (final): one repo with `frontend/` and `backend/` folders, path-filtered CI, per-service images | [0017](adr/0017-single-repository.md) |
+| 2026-10-04 | One hook system: pre-commit (replaces husky/commitlint); imperative commit messages | [0018](adr/0018-git-hooks-and-commit-conventions.md) |
+| 2026-10-04 | Adopted the DevOps lead's pipeline: GHCR, SSH deploy, separate staging and production EC2; backend confirmed C#; Node 24 and .NET 10 in CI; 70% coverage gate | [0019](adr/0019-devops-pipeline.md) |
 | 2026-10-04 | Offline-first with Dexie outbox, phone-generated IDs, newest-wins conflicts | [0005](adr/0005-offline-first-sync.md) |
 | 2026-10-04 | Photos compressed on phone, uploaded to private S3 via presigned URL | [0008](adr/0008-photos-compressed-direct-to-s3.md) |
 | 2026-10-04 | PWA on S3 + CloudFront (HTTPS, Lagos edge); API via CloudFront to EC2 | [0009](adr/0009-hosting-and-latency.md) |

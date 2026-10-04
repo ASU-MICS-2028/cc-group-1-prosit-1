@@ -21,6 +21,7 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
+        exclude: ^frontend/tsconfig.*\.json$   # tsconfig files allow comments
       - id: check-merge-conflict
       - id: check-added-large-files
         args: [--maxkb=1024]
@@ -28,14 +29,20 @@ repos:
       - id: no-commit-to-branch
         args: [--branch, main, --branch, staging, --branch, development]
 
-  # Backend (FastAPI): same lint + format rules as CI
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.10
+  # Frontend (React): same lint + format rules as CI. These need
+  # `npm ci` in frontend/ first; CI runs them in the frontend job instead.
+  - repo: local
     hooks:
-      - id: ruff-check
-        args: [--fix]
-        files: ^backend/
-      - id: ruff-format
-        files: ^backend/
+      - id: eslint
+        name: eslint (frontend)
+        entry: bash -c 'cd frontend && npx --no-install eslint --max-warnings 0 --no-warn-ignored "${@#frontend/}"' --
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js)$
+      - id: prettier
+        name: prettier (frontend)
+        entry: bash -c 'cd frontend && npx --no-install prettier --write "${@#frontend/}"' --
+        language: system
+        files: ^frontend/.*\.(ts|tsx|js|css|json|html)$
+        exclude: ^frontend/(package-lock\.json|public/)
 
-  # Frontend (React): ESLint/Prettier hooks will be added once frontend/ exists.
+  # Backend (ASP.NET Core): `dotnet format` hook is added with the backend/ folder.

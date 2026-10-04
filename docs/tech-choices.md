@@ -45,7 +45,7 @@ Rule behind all of it: **the farmer pays for every kilobyte** (paid 2G data, che
 - **Rejected:** TanStack Router (excellent type safety, but new for the team today with no Week 1 payoff).
 
 ### openapi-typescript (dev only, nothing shipped)
-- **Why:** the biggest risk between `web/` and `api/` is the frontend and API disagreeing about a field. Types generated from the API's OpenAPI document turn that into a compile error before deploy.
+- **Why:** the biggest risk between `frontend/` and `backend/` is the frontend and API disagreeing about a field. Types generated from the API's OpenAPI document turn that into a compile error before deploy.
 
 ### Deliberately left out (and why that's defensible)
 | Left out | Why |
@@ -59,3 +59,10 @@ Rule behind all of it: **the farmer pays for every kilobyte** (paid 2G data, che
 ### Budget to state in the write-up
 - Initial JavaScript under **~200 KB gzipped**, checked with `vite build` output and a Lighthouse run on simulated slow 3G.
 - Everything not needed on the first screen (camera, compression, farmer list) is lazy-loaded.
+
+### Vitest + Testing Library + jsdom (dev only, nothing shipped)
+- **Why:** unit tests and a 70% line-coverage gate are mandatory in CI (CONTRIBUTING.md, ADR 0019). Vitest reuses the Vite config (same `@/` alias and plugins), so there is no second toolchain; Testing Library tests behaviour (what the user sees) rather than implementation.
+- Coverage (v8) excludes vendored shadcn components, `main.tsx` and type files. `npm run test:ci` writes `coverage/coverage-summary.json`, which CI reads.
+
+### Prettier (dev only)
+- **Why:** one formatting style without review debates; enforced by the pre-commit hook and `npm run format:check` in CI (ADR 0018).

@@ -5,17 +5,21 @@ merge button stays disabled until they're met.
 
 ## 0. One-time setup: pre-commit hooks
 
-Install the git hooks once after cloning:
+Install the git hooks once after cloning, and install the frontend dependencies
+(the ESLint and Prettier hooks use them):
 
 ```bash
 pip install pre-commit
 pre-commit install
+cd frontend && npm ci
 ```
+
+You need Python (for pre-commit), Node 24 LTS and the .NET 10 SDK.
 
 On every commit they will:
 
 - **block secrets** (API keys, AWS credentials, private keys); the repo is public
-- lint and auto-format backend code with `ruff`
+- lint and auto-format frontend code with ESLint and Prettier (backend: `dotnet format`)
 - fix trailing whitespace and missing final newlines, and validate YAML/JSON
 - stop you committing straight to `main`, `staging` or `development`
 
@@ -34,30 +38,32 @@ the failure to your PR. Unit tests are not run on commit; CI runs them.
   coverage happens to stay above 70%.
 - Bug fixes must include a test that would have caught the bug.
 
-### Backend (FastAPI)
+### Backend (ASP.NET Core, C#)
 
-- Application code lives in `backend/app/`, tests in `backend/tests/`.
-- Test files are named `test_*.py`. Use `pytest`, and FastAPI's `TestClient`
-  for endpoints.
+- Application code lives in `backend/src/`, tests in `backend/tests/` (xUnit).
+  Test projects reference the `coverlet.msbuild` package so CI can enforce coverage.
 - Run locally before pushing:
   ```bash
   cd backend
-  ruff check . && ruff format --check .
-  pytest tests --cov=app --cov-fail-under=70
+  dotnet format --verify-no-changes
+  dotnet test /p:CollectCoverage=true /p:Threshold=70 /p:ThresholdType=line /p:ThresholdStat=total
   ```
 - The API must expose `GET /health` returning HTTP 200. Deployments use it to
   decide whether a release is healthy.
+- The API listens on port 8080 in its container and ships as a `backend/Dockerfile`.
 
 ### Frontend (React)
 
 - `frontend/package.json` must define these scripts:
-  - `lint`: ESLint
+  - `lint`: ESLint, and `format:check`: Prettier
   - `test:ci`: runs tests **once** (no watch mode) with coverage and the
     `json-summary` reporter, which writes `coverage/coverage-summary.json`.
     Example for Vitest: `vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=text`.
     Example for Jest: `jest --coverage --coverageReporters=json-summary --coverageReporters=text`.
   - `build`: production build
-- Run locally before pushing: `npm run lint && npm run test:ci && npm run build`
+- Coverage excludes vendored shadcn components (`src/components/ui`), `main.tsx` and type files.
+- Run locally before pushing (in `frontend/`): `npm run lint && npm run format:check && npm run test:ci && npm run build`
+- CI also runs `npm audit --omit=dev`; a vulnerability in shipped code fails the PR.
 
 ## 2. Branches
 
@@ -107,7 +113,7 @@ git push -u origin feature/farmer-signup
 
 To merge into `development` you need:
 
-1. **CI passed**: branch name, pre-commit hooks, secret scan, lint, unit tests, coverage ≥ 70%, Docker build.
+1. **CI passed**: branch name, pre-commit hooks, secret scan, lint, format, dependency audit, unit tests, coverage ≥ 70%, Docker build.
 2. **A pull request.** No direct pushes. You can merge your own PR, but asking a teammate to look at bigger changes is encouraged.
 3. **Up to date with `development`** and no conflicts. If GitHub says the branch
    is out of date, update it (`git pull origin development`) and push again.

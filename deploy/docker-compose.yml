@@ -3,8 +3,9 @@
 # App secrets (DB URL, API keys, ...) live in /opt/agroconnect/.env on the
 # server and are never committed.
 #
-# NOTE: container ports are placeholders until the backend/frontend
-# Dockerfiles land — update them together with the Dockerfiles.
+# Backend: ASP.NET Core listens on 8080 inside the container (the .NET default
+# for containers). Frontend: nginx-unprivileged listens on 8080 and proxies
+# /api to the backend over the compose network.
 
 services:
   backend:
@@ -12,9 +13,10 @@ services:
     restart: unless-stopped
     env_file: .env
     ports:
-      - "127.0.0.1:8000:8000"   # reachable by the frontend/proxy and health check only
+      - "127.0.0.1:8000:8080"   # host port 8000 is used by the deploy health check only
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      # The Debian-based aspnet image has bash but no curl or wget
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /health HTTP/1.0\r\n\r\n' >&3 && head -n1 <&3 | grep -q ' 200 '"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -24,6 +26,4 @@ services:
     restart: unless-stopped
     env_file: .env
     ports:
-      - "80:${FRONTEND_PORT:-80}"
-    depends_on:
-      - backend
+      - "80:${FRONTEND_PORT:-8080}"

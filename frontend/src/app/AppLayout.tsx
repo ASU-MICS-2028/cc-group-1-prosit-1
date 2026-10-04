@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { NavLink, Outlet } from "react-router-dom"
 import { useTranslation } from "react-i18next"
+import { Loading } from "./Loading"
 import { LanguagePicker } from "@/components/LanguagePicker"
 import { cn } from "@/lib/utils"
 
@@ -24,7 +25,7 @@ export function AppLayout() {
       </header>
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
-        <Suspense fallback={<p>{t("common.loading")}</p>}>
+        <Suspense fallback={<Loading />}>
           <Outlet />
         </Suspense>
       </main>

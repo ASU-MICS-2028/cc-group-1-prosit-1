@@ -1,6 +1,6 @@
 # ADR 0009: Hosting: S3 + CloudFront for the PWA, EC2 for the API
 
-- **Status:** Accepted (CloudFront setup planned)
+- **Status:** Accepted, amended by [0019](0019-devops-pipeline.md) (for now the PWA is served by an nginx container on EC2; S3 + CloudFront remains the target for HTTPS and edge caching) (CloudFront setup planned)
 - **Date:** 2026-10-04
 
 ## Context

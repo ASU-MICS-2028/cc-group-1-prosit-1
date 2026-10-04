@@ -1,12 +1,14 @@
-import { createBrowserRouter } from "react-router-dom"
+import { createBrowserRouter, type RouteObject } from "react-router-dom"
 import { AppLayout } from "./AppLayout"
+import { Loading } from "./Loading"
 
 // Every page is its own chunk (`lazy`), so the first screen only downloads
 // the code it needs. Each page module exports a component named `Component`.
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
   {
     path: "/",
     element: <AppLayout />,
+    HydrateFallback: Loading,
     children: [
       { index: true, lazy: () => import("@/features/home/HomePage") },
       {
@@ -28,4 +30,6 @@ export const router = createBrowserRouter([
       { path: "*", lazy: () => import("@/features/NotFoundPage") },
     ],
   },
-])
+]
+
+export const router = createBrowserRouter(routes)
