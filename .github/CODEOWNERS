@@ -1,0 +1,9 @@
+# DevOps-owned files: any PR touching these needs approval from the DevOps lead.
+# Application code has no code owner — any teammate can review it.
+
+/.github/                 @Xenongt1
+/deploy/                  @Xenongt1
+**/Dockerfile             @Xenongt1
+**/.dockerignore          @Xenongt1
+**/docker-compose*.yml    @Xenongt1
+/infra/                   @Xenongt1
