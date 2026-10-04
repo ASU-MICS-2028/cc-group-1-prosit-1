@@ -40,7 +40,7 @@ the failure to your PR. Unit tests are not run on commit; CI runs them.
 
 ### Backend (ASP.NET Core, C#)
 
-- Application code lives in `backend/src/`, tests in `backend/tests/` (xUnit).
+- Services live in `backend/Services/<Name>Service/`, the API host in `backend/APIs/`, tests in `backend/tests/` (xUnit). See `backend/README.md` and ADR 0020.
   Test projects reference the `coverlet.msbuild` package so CI can enforce coverage.
 - Run locally before pushing:
   ```bash

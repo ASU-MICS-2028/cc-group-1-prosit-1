@@ -1,6 +1,6 @@
-# ADR 0013: Backend: ASP.NET Core 10, clean architecture, OpenAPI contract
+# ADR 0013: Backend: ASP.NET Core 10, OpenAPI contract
 
-- **Status:** Accepted (scaffolding pending)
+- **Status:** Accepted (the layering below is superseded by ADR 0020; the rest stands)
 - **Date:** 2026-10-04
 
 ## Context
@@ -8,7 +8,7 @@ The backend must serve the whole project, not just Week 1: farmer registration a
 
 ## Decision
 - **ASP.NET Core 10 (LTS)** Minimal API, **EF Core + Npgsql** for Postgres.
-- Layers: **Domain** → **Application** (use cases, validators) → **Infrastructure** (database, S3, USSD) → **Api** (endpoints).
+- Structure: services as class libraries behind a thin API host (see ADR 0020; this ADR first chose Clean Architecture layers).
 - Built-in OpenAPI (`AddOpenApi()` / `MapOpenApi()`); the document is generated on build to `backend/openapi/agroconnect.json` and committed as the contract. Enums serialised as strings; nullable reference types on.
 
 ## Alternatives considered
@@ -26,3 +26,4 @@ Roughly even. Both have official SDKs for OpenAI, Anthropic and AWS Bedrock; mat
 
 ## Consequences
 - The frontend runs `npm run gen:api` to regenerate `src/api/schema.d.ts`; a renamed field becomes a compile error, not a production bug.
+- **Test framework:** xUnit 2.9.3, not xunit.v3. On the .NET 10 SDK xunit.v3 runs on Microsoft.Testing.Platform, which the `coverlet.msbuild` coverage gate in our CI does not support. Revisit when coverage tooling for the new platform is stable.

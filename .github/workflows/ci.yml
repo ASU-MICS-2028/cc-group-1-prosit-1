@@ -87,9 +87,10 @@ jobs:
       - name: Run hooks on all files
         # gitleaks runs in its own job below (the hook only scans staged files);
         # no-commit-to-branch only makes sense on a developer's machine;
-        # eslint/prettier need node_modules, so the frontend job runs them.
+        # eslint/prettier need node_modules and dotnet-format needs the SDK, so the
+        # frontend and backend jobs run them.
         env:
-          SKIP: gitleaks,no-commit-to-branch,eslint,prettier
+          SKIP: gitleaks,no-commit-to-branch,eslint,prettier,dotnet-format
         run: pre-commit run --all-files --show-diff-on-failure --color=always
 
   # ---------------------------------------------------------------------------

@@ -1,0 +1,7 @@
+[
+  { "Lang": "en", "Key": "NOT_FOUND", "Text": "We could not find what you asked for." },
+  { "Lang": "en", "Key": "VALIDATION_FAILED", "Text": "Some of the details are not valid. Please check them and try again." },
+  { "Lang": "en", "Key": "UNAUTHORIZED", "Text": "Please sign in to continue." },
+  { "Lang": "en", "Key": "FORBIDDEN", "Text": "You are not allowed to do that." },
+  { "Lang": "en", "Key": "CONFLICT", "Text": "That conflicts with what is already saved." }
+]
