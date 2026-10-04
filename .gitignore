@@ -34,3 +34,6 @@ TestResults/
 *.ntvs*
 *.njsproj
 *.sw?
+
+# Local assistant instructions (personal, not shared)
+CLAUDE.md

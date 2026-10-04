@@ -31,7 +31,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 - System font stack replaces Geist in `src/index.css`.
 - Frontend foundation: Vite demo removed; AgroConnect green `--primary` theme (light and dark); router with lazy page chunks (`/`, `/register`, `/farmers`, `/farmers/:id`, `/settings`, 404) in `frontend/src/app/router.tsx`; layout with bottom nav; typed i18next (`frontend/src/i18n`) with English in the main bundle and tw/ee/dag as lazy chunks (currently empty `{}` files that fall back to English: translations must come from native speakers, ADR 0014); language picker remembered in localStorage. Initial JS is about 122 KB gzipped (budget 200 KB).
 - `.gitignore`: `.env*` ignored except `.env.example`; `coverage` ignored.
-- All decisions so far documented: `CLAUDE.md`, `docs/adr/0001`-`0018`, `decision-log.md`, `tech-choices.md`, `project-structure.md`.
+- All decisions so far documented: `docs/adr/0001`-`0018`, `decision-log.md`, `tech-choices.md`, `project-structure.md`.
 - Repo tooling (ADR 0018): pre-commit (gitleaks, hygiene, ESLint, Prettier), `.gitattributes`, Prettier config in `frontend/`.
 - Tests: Vitest + Testing Library; 13 tests, ~98% line coverage (CI gate is 70%); `npm run test:ci`, `lint`, `format:check`, `build` and `npm audit --omit=dev` all pass.
 - Frontend `Dockerfile` (node build, nginx-unprivileged on 8080), `.nginx/nginx.conf` (SPA fallback, cache headers, `/api` proxy to the backend container), `.dockerignore`. Not yet built locally (Docker Desktop was off); CI's docker job will build it.
