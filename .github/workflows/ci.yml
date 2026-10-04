@@ -192,7 +192,7 @@ jobs:
             --cov-fail-under="${COVERAGE_MIN}"
       - name: Upload coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-coverage
           path: ${{ env.BACKEND_DIR }}/coverage.xml
