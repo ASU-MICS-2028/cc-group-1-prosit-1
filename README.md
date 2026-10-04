@@ -1,5 +1,25 @@
 # AgroConnect
 
+Offline-first platform connecting smallholder farmers in Ghana with extension
+services (Ashesi ICS 534 Cloud Computing, Prosit 1, Team Godabeg).
+
+- `frontend/`: React + TypeScript PWA (Vite, Tailwind, shadcn/ui, Dexie, i18next)
+- `backend/`: ASP.NET Core 10 API (C#), to be added
+- `deploy/`: EC2 bootstrap, compose file and the deployment runbook
+- `docs/`: architecture decision records and project status; start with
+  [docs/status.md](docs/status.md)
+
+## Run the frontend locally
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Requires Node 24 LTS. Other scripts: `npm run lint`, `npm run test:ci`,
+`npm run build`.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
