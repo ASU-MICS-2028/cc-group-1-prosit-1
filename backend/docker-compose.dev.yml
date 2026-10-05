@@ -1,0 +1,36 @@
+# Local development stack: PostgreSQL, and optionally the API in a container.
+#   docker compose -f docker-compose.dev.yml up -d db          (just the database; run the API with dotnet run)
+#   docker compose -f docker-compose.dev.yml --profile api up --build   (database + API on http://localhost:8000)
+# These credentials are for your laptop only. Never reuse them anywhere else.
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agroconnect
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agroconnect_dev}
+      POSTGRES_DB: agroconnect
+    ports:
+      - "127.0.0.1:${DB_PORT:-5433}:5432"   # this machine only; 5433 avoids clashing with a local PostgreSQL
+    volumes:
+      - agroconnect-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agroconnect -d agroconnect"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    profiles: ["api"]
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: Host=db;Port=5432;Database=agroconnect;Username=agroconnect;Password=${POSTGRES_PASSWORD:-agroconnect_dev}
+    ports:
+      - "127.0.0.1:8000:8080"
+
+volumes:
+  agroconnect-db:

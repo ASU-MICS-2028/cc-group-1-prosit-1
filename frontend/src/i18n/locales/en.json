@@ -1,0 +1,38 @@
+{
+  "app": {
+    "name": "AgroConnect"
+  },
+  "common": {
+    "loading": "Loading…",
+    "language": "Language"
+  },
+  "nav": {
+    "home": "Home",
+    "register": "Register a farmer",
+    "farmers": "Farmers",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "Welcome to AgroConnect",
+    "subtitle": "Register farmers and connect them with extension services, even without internet.",
+    "register": "Register a farmer",
+    "farmers": "See registered farmers"
+  },
+  "register": {
+    "title": "Register a farmer",
+    "placeholder": "The registration form is coming soon."
+  },
+  "farmers": {
+    "title": "Registered farmers",
+    "empty": "No farmers registered on this phone yet.",
+    "detailTitle": "Farmer details"
+  },
+  "settings": {
+    "title": "Settings",
+    "languageHelp": "Choose the language you want to use."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Go back home"
+  }
+}

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- SharedLibrary: what every service uses. Enums, value objects, the feature base, errors, messages, session, masking. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Language-keyed messages ship inside the assembly (see Messages/). -->
+    <EmbeddedResource Include="Langs\*.json" />
+  </ItemGroup>
+</Project>

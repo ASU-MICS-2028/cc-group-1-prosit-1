@@ -13,7 +13,7 @@
 ## Unit tests (required)
 
 - [ ] I added or updated unit tests for every change in this PR
-- [ ] Tests pass locally (`pytest` for backend, `npm run test:ci` for frontend)
+- [ ] Tests pass locally (`dotnet test` for backend, `npm run test:ci` for frontend)
 - [ ] Coverage is still at or above **70%**
 
 <!-- PRs without tests for new code will be sent back. -->

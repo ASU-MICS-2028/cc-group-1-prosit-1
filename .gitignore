@@ -1,29 +1,39 @@
-# Secrets
+# Secrets (never committed; .env.example is the template)
 .env
 .env.*
 !.env.example
 *.pem
 *.key
 
-# Python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-.pytest_cache/
-.ruff_cache/
-.coverage
-coverage.xml
-htmlcov/
+# Logs
+logs
+*.log
+npm-debug.log*
 
-# Node
-node_modules/
-dist/
-build/
-.next/
-coverage/
+# Node / frontend
+node_modules
+dist
+dist-ssr
+*.local
+coverage
 
-# OS / editors
+# .NET / backend
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Editors and OS (the shared VS Code settings are tracked)
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
 .DS_Store
-.idea/
-.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sw?
+
+# Local assistant instructions (personal, not shared)
+CLAUDE.md

@@ -7,3 +7,4 @@
 **/.dockerignore          @Xenongt1
 **/docker-compose*.yml    @Xenongt1
 /infra/                   @Xenongt1
+/frontend/.nginx/         @Xenongt1
