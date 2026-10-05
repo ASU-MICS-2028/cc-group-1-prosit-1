@@ -170,11 +170,12 @@ jobs:
           [ -x /snap/bin/aws ] || snap install aws-cli --classic >/dev/null
           for _ in 1 2 3 4 5; do
             /snap/bin/aws ssm get-parameter --region "$AWS_REGION" --name "/agroconnect/$ENVIRONMENT/dotenv" \
-              --with-decryption --query Parameter.Value --output text > .env.new || true
+              --with-decryption --query Parameter.Value --output text | cat > .env.new || true
             [ -s .env.new ] && break
             sleep 5
           done
-          # Never replace a working .env with an empty one (a fresh snap install can return nothing).
+          # Piped through cat: the aws-cli snap writes nothing when stdout is redirected
+          # straight to a file. Never replace a working .env with an empty one.
           [ -s .env.new ] || { echo "Could not read /agroconnect/$ENVIRONMENT/dotenv from SSM"; exit 1; }
           mv .env.new .env
           chown deploy:deploy .env docker-compose.yml
