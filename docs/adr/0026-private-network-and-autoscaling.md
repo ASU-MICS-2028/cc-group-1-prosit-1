@@ -28,6 +28,8 @@ Security groups chain the layers: internet → load balancer (80, 443) → app s
 
 **One Application Load Balancer for both environments.** Health check `GET /health` (nginx passes it to the backend). HTTPS as soon as there is a domain and an ACM certificate; until then production answers on port 80 and staging on port 8080. It is also the public address Africa's Talking will call for USSD and SMS.
 
+**Alarms:** CloudWatch alarms on unhealthy servers, no healthy servers and 5xx bursts, emailed through SNS.
+
 **Auto Scaling groups:**
 
 | Environment | Servers | Scaling |
@@ -52,11 +54,12 @@ Unhealthy servers (load balancer health check) are replaced. A changed launch te
 - **ECS on Fargate:** no servers to manage, but a bigger change to the pipeline than this phase needs.
 
 ## Consequences
-- **Cost goes up:** the load balancer and fck-nat run all the time, and production runs at least two servers. The monthly budget alert (`budget_limit_usd`, $20) will need raising; check the AWS Pricing Calculator before applying.
+- **Cost goes up** from about $47 to about **$90 a month** with staging on ($80 with it off), at af-south-1 on-demand prices (breakdown in `deploy/terraform/README.md`). The budget alert moves from $20 to $100.
 - **A domain is needed for HTTPS**, which the PWA requires on real phones (ADR 0009).
 - **fck-nat is a single instance:** if it fails, the servers lose outbound internet for about 1 to 2 minutes while a replacement takes over. Users are not affected.
-- **The app must work behind a load balancer:**
-  - Read the client address from `X-Forwarded-For` (ASP.NET forwarded headers, trusting only the VPC range), or the sign-in rate limit (ADR 0022) sees every request as coming from the load balancer.
-  - With two or more servers, the per-address rate limit is counted per server. Moving the counter to PostgreSQL makes it shared.
+- **The app works behind a load balancer:**
+  - nginx trusts `X-Forwarded-For` only from the VPC (10.x) and passes the API one clean client address, so the sign-in rate limit (ADR 0022) still counts per user and a client cannot fake its address. Tested with a forged header and a simulated load balancer.
+  - With two or more servers, the per-address limit (30 per 5 minutes) is counted per server. The per-phone limits (resend, hourly cap, wrong tries) are stored in PostgreSQL and stay shared, so the risk is small; a shared counter can come later.
+- **Alarms** email the team when a server fails its health check, when an environment has no healthy server, and on bursts of server errors.
 - **Staging's database is disposable:** a replaced staging server starts with an empty, re-seeded database.
 - **The move is a one-time migration with downtime:** snapshot, apply, deploy, check, then delete the old database by hand (`deploy/terraform/README.md`).

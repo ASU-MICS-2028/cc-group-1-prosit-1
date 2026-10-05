@@ -1,6 +1,7 @@
 # Copy to terraform.tfvars (git-ignored) and fill in.
 
-budget_limit_usd = 20
+# Expected about $90 a month with staging on, $80 with it off (ADR 0026).
+budget_limit_usd = 100
 budget_emails    = ["you@example.com", "teammate@example.com"]
 
 # GitHub token with read:packages only (Settings > Developer settings > Personal access

@@ -23,6 +23,7 @@ internet ──► load balancer (public subnets, 2 zones)
 | `storage.tf` | One private S3 bucket per environment for photos; HTTPS only; uploads only from `photo_upload_origins` |
 | `app-config.tf` | Each server's `.env`, the last deployed image tag and the image pull token, in SSM Parameter Store |
 | `iam.tf` | Server roles (Session Manager, photo bucket, own config) and the GitHub Actions deploy role (OIDC, no stored AWS keys) |
+| `monitoring.tf` | Email alarms: a server failing its health check, an environment with no healthy server, more than 20 server errors in 5 minutes |
 | `budget.tf` | Monthly cost budget with email alerts at 50%, 80%, 100% and forecast 100% |
 | `bootstrap/` | The S3 bucket that holds the Terraform state (applied once, already done) |
 
@@ -85,4 +86,19 @@ After the move, remove `rds_restore_snapshot` from `terraform.tfvars` (it is ign
 - **The staging database is disposable.** It runs in a container on the staging server; if Auto Scaling replaces that server, staging starts with an empty database and re-seeded demo accounts.
 - **fck-nat is one instance.** If it fails, a replacement takes over in about 1 to 2 minutes; during that time the servers cannot reach the internet (users are not affected).
 - **HTTPS needs a domain.** Request an ACM certificate in af-south-1, set `certificate_arn`, and point the domain at `load_balancer_dns`.
-- **Cost:** the load balancer and fck-nat run all the time, and production runs at least two servers. Check the AWS Pricing Calculator against `budget_limit_usd` before applying.
+- **Alarm emails:** each address in `budget_emails` gets an AWS "confirm subscription" email after the first apply; alarms only arrive once it is confirmed.
+- **Client addresses:** the load balancer passes the real client address in `X-Forwarded-For`; nginx trusts that header only from inside the VPC (10.x) and hands the API a single clean address, so the sign-in rate limit works per user, not per load balancer.
+
+## Cost (af-south-1 on-demand, 730 hours, light traffic)
+
+| Item | ≈ per month |
+|---|---|
+| Load balancer ($0.030/h + LCUs) | $23 |
+| Load balancer public IPs (2 × $0.005/h) | $7 |
+| fck-nat (t4g.nano, its public IP, disk) | $8 |
+| Production, 2 × t3.micro + disks | $21 |
+| Staging, 1 × t3.micro + disk | $11 (0 when off) |
+| RDS db.t3.micro single-AZ + 20 GB | $20 |
+| **Total** | **≈ $90 (≈ $80 with staging off)** |
+
+Multi-AZ RDS adds about $16. Prices from the AWS Pricing API on 2026-10-05; data transfer and S3 extra. Set `budget_limit_usd` accordingly (the example uses 100).
