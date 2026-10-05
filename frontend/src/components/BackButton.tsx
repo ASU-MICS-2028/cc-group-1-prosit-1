@@ -25,7 +25,7 @@ export function BackButton({
         className
       )}
     >
-      <ChevronLeft aria-hidden className="size-[22px]" />
+      <ChevronLeft aria-hidden className="size-5.5" />
     </button>
   )
 }

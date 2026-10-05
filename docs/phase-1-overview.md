@@ -18,7 +18,7 @@ _Last updated: Monday 5 October 2026, midday._
   - The app sends the number, shows the server's own error messages (in the user's language), counts down to "Resend code", and opens the officer app or the farmer app after "Verify".
   - Tried live in a browser against the real API and database.
 - **App base:** design tokens from Figma, a responsive layout (bottom bar on phones, sidebar on wider screens), Home, Farmers, Sync and Profile pages, and audio buttons (recordings pending).
-- **Phone, tablet and computer layouts for the start screens:** the phone design under 768 px, a centred card on tablets, and from 1024 px the desktop design from Figma (D01 to D03): a brand panel with the illustration on the left, the form on the right.
+- **Phone and desktop layouts for the start screens:** one app; the screen width picks the layout. The phone design under 768 px; from 768 px the desktop design from Figma (D01 to D03): a brand panel with the illustration on the left, the form on the right.
 - **Developer tools:** Swagger UI on laptops (`/swagger`) to try every endpoint, and one-click VS Code tasks that start the database, API and app in visible terminals.
 - **Tests:** backend 109 tests (sign-in 99% covered; every project above 70%; includes a test that the database refuses broken links); frontend 72 tests, 98.3% of lines covered. Lint, format and build pass. First screen about 127 KB gzipped (budget 200 KB); each screen loads separately at 1 to 3 KB.
 

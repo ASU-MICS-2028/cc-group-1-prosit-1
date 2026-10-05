@@ -47,7 +47,7 @@ export function Component() {
                 />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-xl leading-[30px] font-medium text-foreground">
+                <span className="block text-xl leading-7.5 font-medium text-foreground">
                   {t(role.title)}
                 </span>
                 <span className="block text-sm font-medium text-muted-foreground">
@@ -56,7 +56,7 @@ export function Component() {
               </span>
               <ChevronRight
                 aria-hidden
-                className="size-[22px] text-muted-foreground"
+                className="size-5.5 text-muted-foreground"
               />
             </Link>
           </li>
@@ -64,7 +64,7 @@ export function Component() {
       </ul>
 
       <p className="flex items-center gap-3 rounded-2xl bg-cream py-3 pr-3.5 pl-3 text-sm font-medium text-foreground">
-        <img src="/icons/monitor.svg" alt="" className="size-[22px] shrink-0" />
+        <img src="/icons/monitor.svg" alt="" className="size-5.5 shrink-0" />
         {t("who.office")}
       </p>
     </ScreenShell>

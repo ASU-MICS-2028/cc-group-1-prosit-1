@@ -67,10 +67,7 @@ export function Component() {
           {t(role === "farmer" ? "login.farmerTag" : "login.officerTag")}
         </span>
       </div>
-      <IllustrationCard
-        name="phone-login"
-        className="h-[210px] py-2 lg:hidden"
-      />
+      <IllustrationCard name="phone-login" className="h-52.5 py-2 md:hidden" />
 
       <form
         id="login-form"
@@ -79,14 +76,14 @@ export function Component() {
         className="space-y-4"
       >
         {/* Phone (Figma 02a): the question with its speaker. */}
-        <div className="space-y-2 lg:hidden">
+        <div className="space-y-2 md:hidden">
           <QuestionTitle title={t("login.title")} audioKey="login" />
           <p className="text-sm font-medium text-muted-foreground">
             {t("login.sms")}
           </p>
         </div>
         {/* Computer (Figma D02) */}
-        <div className="hidden space-y-[18px] lg:block">
+        <div className="hidden space-y-4.5 md:block">
           <h1 className="text-2xl leading-9 font-semibold text-foreground">
             {t("login.desktopTitle")}
           </h1>

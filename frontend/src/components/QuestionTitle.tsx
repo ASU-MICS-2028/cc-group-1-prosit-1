@@ -23,7 +23,7 @@ export function QuestionTitle({
           "font-semibold text-foreground",
           size === "page"
             ? "text-2xl leading-9"
-            : "text-[22px] leading-8 lg:text-2xl lg:leading-9"
+            : "text-[22px] leading-8 md:text-2xl md:leading-9"
         )}
       >
         {title}

@@ -228,18 +228,19 @@ This regenerates `src/api/schema.d.ts`, the TypeScript description of every requ
 
 ### 5.6 Check the phone, tablet and computer layouts
 
-The app picks its layout from the **width of the screen** (CSS breakpoints), not from the kind of device:
+The app picks its layout from the **width of the screen** (Tailwind's `md` breakpoint), never from the kind of device. The team's rule ("Phone vs Desktop"): one app, the width picks the layout, the signed-in role picks the menus.
 
 | Width | Layout | Figma |
 |---|---|---|
 | under 768 px (phones) | Phone design, edge to edge, main button at the bottom | P1 phone screens (00, 01, 01b, 02a to 02d) |
-| 768 to 1023 px (tablets) | The phone design as a centred card | (no tablet frames) |
-| 1024 px and up (laptops, PCs) | Desktop design: cream brand panel on the left, the form on the right | D01 Choose Language, D02 Login, D03 Enter Code; Welcome and Who are you follow the same pattern |
+| 768 px and up (tablets, laptops, PCs) | Desktop design: cream brand panel on the left, the form on the right; wider details (bigger code boxes) from 1024 px | D01 Choose Language, D02 Login, D03 Enter Code; Welcome and Who are you follow the same pattern |
+
+The three sizes to check: **390 × 844** (phone), **768 × 1024** (first desktop size), **1440 × 900** (desktop).
 
 How to check all three on one computer:
 1. Open the app (`http://localhost:5173`) in Chrome or Edge at full width: you see the **desktop** design.
-2. Make the window narrower by dragging its edge: the layout switches at 1024 px (to the card) and at 768 px (to the phone layout).
-3. For exact phone sizes, open **DevTools** (`F12`) and click the **device toolbar** icon (phone and tablet, or `Ctrl+Shift+M`). Pick **iPhone 12 Pro** (390 px, the Figma phone width), **iPad Air** (820 px) or **Responsive** and type a width.
+2. Make the window narrower by dragging its edge: below 768 px the layout switches to the phone design. DevTools docked at the side also narrows the page, so the layout may switch when it opens; dock it at the bottom to keep the full width.
+3. For exact sizes, open **DevTools** (`F12`) and click the **device toolbar** icon (`Ctrl+Shift+M`). Pick **Responsive** and type 390 × 844, 768 × 1024 or 1440 × 900.
 4. On a real phone on the same Wi-Fi: run the app with `npm run dev -- --host` (in `frontend/`) and open the "Network" address it prints, e.g. `http://192.168.1.20:5173`. Windows may ask to allow Node.js through the firewall; allow it for private networks only. GPS and the camera will not work this way (they need HTTPS); everything else does.
 
 ### 5.7 Run the tests
@@ -423,4 +424,5 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | Added Swagger UI (`/swagger`, Development only) and the Bearer token scheme to the contract | So every endpoint can be tried from the browser, including signed-in ones |
 | Added `.vscode/tasks.json` (Start everything, Database, API, App, Update API types) | So the database, API and app are started in visible terminals with their logs, not hidden |
 | Screenshots of every start screen at 390 px, 820 px and 1440 × 900 | Checked the new desktop layout (Figma D01 to D03) and the phone and tablet layouts against the design |
+| Moved the desktop layout to start at 768 px, then screenshots at 768 × 1024 | Follows the team's "Phone vs Desktop" rule (desktop from Tailwind `md`); the tablet card was removed |
 | Headless Chrome walk-through of Welcome → Language → Who are you → Log in → Code → Home, officer and farmer | First live check of the app against the real API and database: wrong number, wrong code (server message shown), right code, farmer app, log out |
