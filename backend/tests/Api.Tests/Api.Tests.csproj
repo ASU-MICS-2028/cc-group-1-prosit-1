@@ -6,6 +6,7 @@
     <Include>[AgroConnect.Api]*,[AgroConnect.Data]*</Include>
     <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
     <ExcludeByFile>**/*.g.cs,**/*.generated.cs,**/Migrations/**</ExcludeByFile>
+    <SkipAutoProps>true</SkipAutoProps>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\APIs\agroconnect-api\agroconnect-api.csproj" />

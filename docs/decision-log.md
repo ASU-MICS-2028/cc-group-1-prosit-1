@@ -23,4 +23,7 @@
 | 2026-10-04 | `.env` files git-ignored; `.env.example` is the template | [0015](adr/0015-security-and-privacy.md) |
 | 2026-10-04 | C# confirmed as backend for all four weeks; any self-trained AI models go in a separate Python service | [0013](adr/0013-backend-dotnet-openapi.md) |
 | 2026-10-04 | Backend restructured from Clean Architecture layers to service class libraries behind a thin API host (company layout, own feature base) | [0020](adr/0020-backend-service-structure.md) |
+| 2026-10-04 | UI built from the AgroConnect Figma frames (marketplace template frames not built); responsive bottom bar to sidebar; system font kept | [0021](adr/0021-ui-from-figma-design.md) |
+| 2026-10-05 | Sign-in rules: 6-digit SMS code valid 10 min (45 s resend, 5 per hour, 5 tries), hashed storage, 7-day tokens, 30 requests per 5 min per address | [0022](adr/0022-sign-in-codes-and-tokens.md) |
+| 2026-10-05 | Database names in snake_case; links between tables enforced with foreign keys (photo links checked by the API) | [0023](adr/0023-database-naming-and-links.md) |
 | pending | Postgres vs NoSQL, phone-number auth, security plan: awaiting team confirmation | [0006](adr/0006-postgres-over-nosql.md), [0007](adr/0007-phone-number-auth.md), [0015](adr/0015-security-and-privacy.md) |

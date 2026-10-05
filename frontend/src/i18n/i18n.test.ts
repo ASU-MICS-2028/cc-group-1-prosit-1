@@ -12,13 +12,13 @@ describe("i18n", () => {
   })
 
   it("defaults to English", () => {
-    expect(i18n.t("home.title")).toBe("Welcome to AgroConnect")
+    expect(i18n.t("welcome.hello")).toBe("Hello,")
   })
 
   it("falls back to English for a language with no translation yet", async () => {
     await setLanguage("tw")
     expect(i18n.language).toBe("tw")
-    expect(i18n.t("home.title")).toBe("Welcome to AgroConnect")
+    expect(i18n.t("welcome.hello")).toBe("Hello,")
   })
 
   it("remembers the choice and sets the html lang attribute", async () => {

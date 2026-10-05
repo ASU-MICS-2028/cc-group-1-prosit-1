@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it } from "vitest"
 import i18n, { setLanguage } from "@/i18n"
@@ -22,6 +22,6 @@ describe("LanguagePicker", () => {
   it("changes the app language when a language is picked", async () => {
     render(<LanguagePicker />)
     await userEvent.selectOptions(screen.getByRole("combobox"), "tw")
-    expect(i18n.language).toBe("tw")
+    await waitFor(() => expect(i18n.language).toBe("tw"))
   })
 })
