@@ -1,0 +1,109 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start everything (database, API, app)",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Database: start",
+        "API and app: run"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "First-time setup (install packages and tools)",
+      "detail": "Run once after cloning or pulling new packages: npm ci in frontend/, dotnet restore and dotnet tool restore in backend/",
+      "type": "shell",
+      "command": "npm ci && cd ../backend && dotnet restore && dotnet tool restore",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Database: start",
+      "detail": "PostgreSQL in Docker on 127.0.0.1:5433 (Docker Desktop must be running)",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.dev.yml up -d db",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "API and app: run",
+      "dependsOn": [
+        "API: run",
+        "App: run"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "API: run",
+      "detail": "dotnet run on http://localhost:8000 (Swagger UI: http://localhost:8000/swagger)",
+      "type": "shell",
+      "command": "dotnet run --project APIs/agroconnect-api",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "isBackground": true,
+      "presentation": {
+        "panel": "dedicated",
+        "group": "run"
+      },
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^__never__$"
+        },
+        "background": {
+          "activesBegin": "Building",
+          "beginsPattern": "Building",
+          "endsPattern": "Now listening on"
+        }
+      }
+    },
+    {
+      "label": "App: run",
+      "detail": "npm run dev on http://localhost:5173 (sends /api to the API on port 8000)",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "isBackground": true,
+      "presentation": {
+        "panel": "dedicated",
+        "group": "run"
+      },
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^__never__$"
+        },
+        "background": {
+          "beginsPattern": "VITE",
+          "endsPattern": "Local:"
+        }
+      }
+    },
+    {
+      "label": "Database: stop",
+      "detail": "Stops the PostgreSQL container; the data is kept",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.dev.yml stop",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "App: update API types",
+      "detail": "After an API change: rebuilds the API (writes openapi/agroconnect.json), then regenerates src/api/schema.d.ts",
+      "type": "shell",
+      "command": "dotnet build ../backend/APIs/agroconnect-api && npm run api:types",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

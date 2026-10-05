@@ -216,6 +216,7 @@ A lot of what other stacks add as libraries is already inside ASP.NET Core. Usin
 | `Microsoft.AspNetCore.OpenApi` | 10.0.12 | API host | Describes every endpoint as OpenAPI (the contract) |
 | `Microsoft.Extensions.ApiDescription.Server` | 10.0.12 | API host (build only) | Writes that contract to `openapi/agroconnect.json` on every build |
 | `Serilog.AspNetCore` | 10.0.0 | API host | Structured logs: readable on a laptop, JSON on servers (Docker collects stdout) |
+| `Swashbuckle.AspNetCore.SwaggerUI` | 10.2.3 | API host (Development only) | The Swagger UI page at `/swagger` for trying every endpoint. Only the UI part: the API description itself is .NET's built-in OpenAPI document, so there is one contract, not two |
 | `Microsoft.AspNetCore.Authentication.JwtBearer` | 10.0.12 | AuthService | Reads and checks the sign-in token on each request; also brings the token-writing library |
 | `Npgsql.EntityFrameworkCore.PostgreSQL` | 10.0.3 | Data | EF Core's PostgreSQL driver, including arrays (crops stored as `integer[]`) |
 | `Microsoft.EntityFrameworkCore.Design` | 10.0.12 | API host (dev only) | What `dotnet-ef` needs to generate migrations |

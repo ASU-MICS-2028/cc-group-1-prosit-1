@@ -14,7 +14,8 @@
     "format:check": "prettier --check .",
     "test": "vitest",
     "test:ci": "vitest run --coverage --coverage.reporter=json-summary --coverage.reporter=text",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "api:types": "openapi-typescript ../backend/openapi/agroconnect.json -o src/api/schema.d.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

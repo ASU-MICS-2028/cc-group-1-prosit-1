@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
 
 namespace AgroConnect.Api.Tests;
 
@@ -52,6 +53,37 @@ public sealed class ApiPipelineTests : IAsyncLifetime
         using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync(CancellationToken.None));
         Assert.Equal("NOT_FOUND", body.RootElement.GetProperty("title").GetString());
         Assert.Equal("We could not find what you asked for.", body.RootElement.GetProperty("detail").GetString());
+    }
+
+    [Fact]
+    public async Task Development_serves_the_contract_and_swagger_with_the_token_scheme()
+    {
+        await using var development = _factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Development");
+            builder.UseSetting("Database:MigrateOnStartup", "false");
+        });
+        using var client = development.CreateClient();
+
+        var contract = await client.GetStringAsync("/openapi/v1.json", CancellationToken.None);
+        var swagger = await client.GetAsync("/swagger/index.html", CancellationToken.None);
+
+        using var document = JsonDocument.Parse(contract);
+        var root = document.RootElement;
+        Assert.Equal("bearer", root.GetProperty("components").GetProperty("securitySchemes").GetProperty("Bearer").GetProperty("scheme").GetString());
+        // Signed-in endpoints carry the lock; the sign-in endpoints do not.
+        Assert.True(root.GetProperty("paths").GetProperty("/api/me").GetProperty("get").TryGetProperty("security", out _));
+        Assert.False(root.GetProperty("paths").GetProperty("/api/auth/code").GetProperty("post").TryGetProperty("security", out _));
+        Assert.Equal(HttpStatusCode.OK, swagger.StatusCode);
+    }
+
+    [Fact]
+    public async Task Other_environments_do_not_publish_the_contract_or_swagger()
+    {
+        using var client = _factory.CreateClient();
+
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/openapi/v1.json", CancellationToken.None)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/swagger/index.html", CancellationToken.None)).StatusCode);
     }
 
     [Fact]

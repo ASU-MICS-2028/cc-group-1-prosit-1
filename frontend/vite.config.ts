@@ -15,6 +15,11 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(import.meta.dirname, "./src") },
   },
+  // `npm run dev`: send /api to the backend on this machine (dotnet run, port 8000),
+  // the same path nginx forwards on the servers, so the app code is identical everywhere.
+  server: {
+    proxy: { "/api": "http://localhost:8000" },
+  },
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],

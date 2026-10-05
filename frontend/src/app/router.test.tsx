@@ -26,12 +26,10 @@ describe("router", () => {
     ).toBeInTheDocument()
   })
 
-  it("sends a first-time visitor to choose a language", async () => {
+  it("sends a first-time visitor to the welcome screen", async () => {
     const { router } = renderRoute("/", { firstRun: true })
     expect(
-      await screen.findByRole("heading", {
-        name: "Which language do you speak?",
-      })
+      await screen.findByRole("heading", { name: "Farmer support for Ghana" })
     ).toBeInTheDocument()
     expect(router.state.location.pathname).toBe("/welcome")
   })

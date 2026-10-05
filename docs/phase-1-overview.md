@@ -4,7 +4,7 @@ Team Godabeg | ICS 534 Cloud Computing, Prosit 1 | We present on Thursday 8 Octo
 
 This is the short summary of what we are building, why, and how. It replaces the concise PDF (version 1.0, 4 October) and is kept up to date as the code changes. Decisions are in [`adr/`](adr/), the dated list is in [`decision-log.md`](decision-log.md), and the day-to-day handoff is in [`status.md`](status.md).
 
-_Last updated: Monday 5 October 2026, morning._
+_Last updated: Monday 5 October 2026, midday._
 
 ## 0. Where we are now
 
@@ -14,14 +14,19 @@ _Last updated: Monday 5 October 2026, morning._
 - **Backend base:** a thin API host plus services, shared tools, structured logs, standard error answers in the caller's language, and the OpenAPI contract written on every build.
 - **Database:** five tables (users, login_codes, farmers, visits, photos) and the first migration, with PostgreSQL-style names (`full_name`) and six enforced links (foreign keys), so the database itself refuses, for example, a visit for a farmer that does not exist. The API creates the tables when it starts and adds a demo officer and a sample farmer on a laptop.
 - **Sign-in (new, 5 Oct):** phone number plus a 6-digit SMS code, for officers and farmers. Endpoints: send code, check code, "who am I". Tried live against the local database.
-- **App base:** design tokens from Figma, the welcome and language screens, a responsive layout (bottom bar on phones, sidebar on wider screens), Home, Farmers, Sync and Profile pages, and audio buttons (recordings pending).
-- **Tests:** backend 109 tests (sign-in 99% covered; every project above 70%; includes a test that the database refuses broken links); frontend 52 tests, 98.7% of lines covered. Lint, format and build pass. First screen about 125 KB gzipped (budget 200 KB).
+- **Start and sign-in screens, built from Figma and connected to the API (5 Oct):** Welcome, Choose language, Who are you, Log in and Enter code, for officers and for farmers.
+  - The app sends the number, shows the server's own error messages (in the user's language), counts down to "Resend code", and opens the officer app or the farmer app after "Verify".
+  - Tried live in a browser against the real API and database.
+- **App base:** design tokens from Figma, a responsive layout (bottom bar on phones, sidebar on wider screens), Home, Farmers, Sync and Profile pages, and audio buttons (recordings pending).
+- **Phone, tablet and computer layouts for the start screens:** the phone design under 768 px, a centred card on tablets, and from 1024 px the desktop design from Figma (D01 to D03): a brand panel with the illustration on the left, the form on the right.
+- **Developer tools:** Swagger UI on laptops (`/swagger`) to try every endpoint, and one-click VS Code tasks that start the database, API and app in visible terminals.
+- **Tests:** backend 109 tests (sign-in 99% covered; every project above 70%; includes a test that the database refuses broken links); frontend 72 tests, 98.3% of lines covered. Lint, format and build pass. First screen about 127 KB gzipped (budget 200 KB); each screen loads separately at 1 to 3 KB.
 
 ### Next steps, in order
-1. **Farmer service (backend):** sync (send farmers and visits saved offline; safe to send twice), "what changed since my last sync", the duplicate phone check, farmer details, and photo upload links. With tests, then a live check.
-2. **Connect the app to the backend:** the dev proxy (`/api` to `localhost:8000`), an API client typed from the OpenAPI contract, and the saved sign-in token.
-3. **Offline engine (app):** the phone database (Dexie) with farmers, visits, photos and the "to send" queue; sync on open, on reconnect and with "Sync now".
-4. **Screens from Figma:** sign-in, the 7-step registration form, review and saved, farmer list and detail, edit, visits, the farmer's own view, help, sign-out, errors and the empty and offline states.
+1. **Officer home and navigation from Figma:** Home, Farmers, Visits, Profile, the "waiting / all synced" badge, and the no-farmers and no-network states.
+2. **Registration from Figma:** the 7-step form, review, saved, the error state and the duplicate warning, saved on the phone first (Dexie and the "to send" queue).
+3. **Farmer service (backend):** sync (safe to send twice), "what changed since my last sync", the duplicate phone check, farmer details, photo upload links; then the app's sync on open, on reconnect and with "Sync now".
+4. **The other screens from Figma:** farmer list, detail and edit, sync, profile, change language, log out, visits, the farmer's own view and help.
 5. **Installable app:** manifest, icons, offline caching, "update available" and "install" prompts.
 6. **USSD and SMS** with the Africa's Talking sandbox.
 7. **Docs:** ADRs for sign-in and sync, this file, `status.md`.
