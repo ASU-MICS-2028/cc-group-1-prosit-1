@@ -23,13 +23,13 @@ export function Component() {
       }
     >
       {/* Phone: name and picture on top. Computer: they are in the brand panel. */}
-      <p className="text-2xl leading-9 font-semibold text-primary lg:hidden">
+      <p className="text-2xl leading-9 font-semibold text-primary md:hidden">
         {t("app.name")}
       </p>
       <IllustrationCard
         name="welcome"
-        className="h-[330px] p-2.5 lg:hidden"
-        imageClassName="h-[310px]"
+        className="h-82.5 p-2.5 md:hidden"
+        imageClassName="h-77.5"
       />
       <div className="space-y-2">
         <h1 className="text-2xl leading-9 font-semibold text-foreground">

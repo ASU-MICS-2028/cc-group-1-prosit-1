@@ -11,11 +11,13 @@ export interface Brand {
 }
 
 /**
- * A full screen without the bottom bar (start, log in, forms). Three sizes, switched by screen width:
+ * A full screen without the bottom bar (start, log in, forms). The width picks the layout
+ * (team rule: desktop layout from Tailwind's md breakpoint, 768 px):
  * - phone (< 768 px): edge to edge, the main button (`footer`) pinned to the bottom;
- * - tablet (768 to 1023 px): the same phone layout as a centred card;
- * - computer (1024 px and up), when `brand` is given: the desktop design, a brand panel on the
- *   left and the content centred on the right, with the button straight under it.
+ * - 768 px and up, when `brand` is given: the desktop design (Figma D01 to D03), a brand panel
+ *   on the left and the content centred on the right, with the button straight under it;
+ * - 768 px and up without `brand`: the phone layout as a centred card, until the screen's
+ *   own desktop design is built.
  */
 export function ScreenShell({
   children,
@@ -33,19 +35,21 @@ export function ScreenShell({
   return (
     <main
       className={cn(
-        "min-h-svh bg-background md:grid md:place-items-center md:bg-muted md:p-8",
-        brand && "lg:flex lg:items-stretch lg:gap-10 lg:bg-background"
+        "min-h-svh bg-background md:p-8",
+        brand
+          ? "md:flex md:items-stretch md:gap-8 lg:gap-10"
+          : "md:grid md:place-items-center md:bg-muted"
       )}
     >
       {brand ? (
         <aside
           aria-hidden
-          className="sticky top-8 hidden h-[calc(100svh-4rem)] max-h-[56rem] min-h-[36rem] w-[min(40rem,45vw)] shrink-0 flex-col gap-4 overflow-hidden rounded-[30px] bg-cream p-10 lg:flex"
+          className="sticky top-8 hidden h-[calc(100svh-4rem)] max-h-[56rem] min-h-[36rem] w-[40vw] shrink-0 flex-col gap-4 overflow-hidden rounded-[30px] bg-cream p-8 md:flex lg:w-[min(40rem,45vw)] lg:p-10"
         >
           <p className="text-2xl leading-9 font-semibold text-primary">
             {t("app.name")}
           </p>
-          <p className="max-w-[30rem] text-xl leading-[30px] font-medium text-foreground">
+          <p className="max-w-[30rem] text-xl leading-7.5 font-medium text-foreground">
             {brand.tagline}
           </p>
           <img
@@ -60,20 +64,21 @@ export function ScreenShell({
       <div
         className={cn(
           "w-full",
-          brand && "lg:flex lg:flex-1 lg:items-center lg:justify-center"
+          brand && "md:flex md:flex-1 md:items-center md:justify-center"
         )}
       >
         <div
           className={cn(
-            "mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 bg-background px-4 pt-3 pb-6 md:min-h-[min(52rem,calc(100svh-4rem))] md:rounded-[30px] md:pt-6 md:shadow-lg md:ring-1 md:ring-border",
-            brand &&
-              "lg:min-h-0 lg:max-w-[28.75rem] lg:gap-[18px] lg:rounded-none lg:p-0 lg:shadow-none lg:ring-0",
+            "mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 bg-background px-4 pt-3 pb-6",
+            brand
+              ? "md:min-h-0 md:max-w-[28.75rem] md:gap-4.5 md:p-0"
+              : "md:min-h-[min(52rem,calc(100svh-4rem))] md:rounded-[30px] md:pt-6 md:shadow-lg md:ring-1 md:ring-border",
             className
           )}
         >
           {children}
           {footer ? (
-            <div className={cn("mt-auto pt-2", brand && "lg:mt-0 lg:pt-0")}>
+            <div className={cn("mt-auto pt-2", brand && "md:mt-0 md:pt-0")}>
               {footer}
             </div>
           ) : null}

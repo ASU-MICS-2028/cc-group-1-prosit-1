@@ -96,10 +96,7 @@ export function Component() {
           {t(role === "farmer" ? "login.farmerTag" : "login.officerTag")}
         </span>
       </div>
-      <IllustrationCard
-        name="phone-login"
-        className="h-[210px] py-2 lg:hidden"
-      />
+      <IllustrationCard name="phone-login" className="h-52.5 py-2 md:hidden" />
 
       <form
         id="code-form"
@@ -109,7 +106,7 @@ export function Component() {
       >
         <div className="space-y-2">
           <QuestionTitle title={t("login.codeTitle")} audioKey="code" />
-          <p className="text-sm font-medium text-muted-foreground lg:text-base lg:font-normal">
+          <p className="text-sm font-medium text-muted-foreground md:text-base md:font-normal">
             {t("login.sentTo", { phone: maskPhone(phone) })}{" "}
             <Link to={`/login/${role}`} className="ml-2 text-primary underline">
               {t("login.change")}

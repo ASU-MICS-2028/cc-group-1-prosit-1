@@ -10,7 +10,28 @@ resource "random_password" "staging_db" {
   special = false
 }
 
+# HMAC key the API signs sign-in tokens with (Auth:SigningKey, at least 32 bytes).
+resource "random_password" "auth_signing_key" {
+  for_each = var.environments
+  length   = 48
+  special  = false
+}
+
 locals {
+  # Staging is the demo: one fixed sign-in code (no SMS provider yet) and seeded demo
+  # accounts, as in appsettings.Development.json. Production gets neither.
+  demo_settings = {
+    staging = [
+      "Auth__FixedCode=123456",
+      "Seed__Officers__0__FullName=Fuseini Alhassan",
+      "Seed__Officers__0__Phone=+233240000001",
+      "Seed__Officers__0__Region=Northern",
+      "Seed__Officers__0__District=Savelugu",
+      "Seed__SampleFarmer=true",
+    ]
+    production = []
+  }
+
   db_settings = {
     staging = [
       "COMPOSE_PROFILES=localdb",
@@ -33,5 +54,7 @@ resource "aws_ssm_parameter" "dotenv" {
     "ASPNETCORE_ENVIRONMENT=${title(each.key)}",
     "AWS_REGION=${var.region}",
     "PHOTOS_BUCKET=${aws_s3_bucket.photos[each.key].bucket}",
-  ], local.db_settings[each.key]))}\n"
+    "Auth__SigningKey=${random_password.auth_signing_key[each.key].result}",
+    "Database__MigrateOnStartup=true",
+  ], local.db_settings[each.key], lookup(local.demo_settings, each.key, [])))}\n"
 }

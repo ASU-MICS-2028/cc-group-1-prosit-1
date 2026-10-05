@@ -55,7 +55,7 @@ export function CodeInput({
             <div
               key={index}
               className={cn(
-                "flex h-[60px] flex-1 items-center justify-center rounded-xl text-xl font-medium text-primary lg:h-[72px] lg:w-16 lg:flex-none lg:rounded-[14px] lg:text-2xl lg:font-semibold",
+                "flex h-15 flex-1 items-center justify-center rounded-xl text-xl font-medium text-primary lg:h-18 lg:w-16 lg:flex-none lg:rounded-[14px] lg:text-2xl lg:font-semibold",
                 digit
                   ? "border bg-secondary"
                   : active

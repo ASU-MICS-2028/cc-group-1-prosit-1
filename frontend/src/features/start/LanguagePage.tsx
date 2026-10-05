@@ -37,7 +37,7 @@ export function Component() {
       }
     >
       {/* Phone (Figma 01): name, greeting banner and the question. */}
-      <div className="contents lg:hidden">
+      <div className="contents md:hidden">
         <p className="text-2xl leading-9 font-semibold text-primary">
           {t("app.name")}
         </p>
@@ -58,7 +58,7 @@ export function Component() {
         </div>
       </div>
       {/* Computer (Figma D01): the greeting is in the brand panel. */}
-      <div className="hidden space-y-3.5 lg:block">
+      <div className="hidden space-y-3.5 md:block">
         <h1 className="text-2xl leading-9 font-semibold text-foreground">
           {t("welcome.desktopTitle")}
         </h1>
