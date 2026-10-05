@@ -329,6 +329,7 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | Tests hang or fail with Docker errors | Testcontainers needs Docker | Start Docker Desktop, or run `dotnet test --filter Category=Unit` |
 | `429` when asking for a code | The 45-second resend wait, or 5 codes an hour | Wait, or use another number |
 | On the very first start against an empty database, one `ERR Failed executing DbCommand ... FROM "__EFMigrationsHistory"` line, then `Database is up to date` | The migration tool first asks "which migrations have run?" before its history table exists; the query fails, it creates the table and carries on | Nothing: expected once per new database. Any other `ERR` line is a real problem |
+| `git commit` says `error: pathspec '<your message>' did not match any file(s)` | In PowerShell, `git commit -F - @'...'@` passes the message as a file name instead of feeding it in | Save the message to a file (e.g. inside `.git/`, which is never committed) and run `git commit -F <that file>`, or pipe it: `@'...'@ \| git commit -F -` |
 | You want a clean database | Old test data | `docker compose -f docker-compose.dev.yml down -v`, then `up -d db`, then restart the API |
 
 ---
