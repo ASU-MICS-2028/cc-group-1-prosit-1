@@ -1,5 +1,5 @@
 # Production database (Section 7.2). Staging keeps PostgreSQL in a container on
-# its VM. The master password is generated here and kept in SSM Parameter
+# its VM (see app-config.tf and deploy/docker-compose.yml). The master password is generated here and kept in SSM Parameter
 # Store (encrypted); it never appears in code.
 
 resource "random_password" "db" {
@@ -26,8 +26,10 @@ resource "aws_db_instance" "production" {
 
   identifier     = "agroconnect-production"
   engine         = "postgres"
-  engine_version = "16"
-  instance_class = var.rds_instance_class
+  engine_version = "17" # same major as the dev and staging containers
+
+  allow_major_version_upgrade = true
+  instance_class              = var.rds_instance_class
 
   allocated_storage = 20
   storage_type      = "gp3"

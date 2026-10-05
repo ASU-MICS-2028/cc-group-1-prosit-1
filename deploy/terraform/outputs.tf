@@ -1,5 +1,5 @@
 output "public_ips" {
-  description = "Fixed public IP per environment (use for DNS and the EC2_HOST GitHub secret)."
+  description = "Fixed public IP per environment (the app is served on http://<ip>)."
   value       = { for k, e in aws_eip.app : k => e.public_ip }
 }
 
@@ -25,9 +25,14 @@ output "rds_password_parameter" {
   value       = var.enable_rds ? aws_ssm_parameter.db_password[0].name : null
 }
 
-output "github_deploy_role_arn" {
-  description = "Set as AWS_ROLE_ARN in the GitHub environments to deploy through Session Manager."
-  value       = aws_iam_role.github_deploy.arn
+output "github_deploy_role_arns" {
+  description = "Roles the deploy workflow assumes (per GitHub environment) to roll out through Session Manager."
+  value       = { for k, r in aws_iam_role.github_deploy : k => r.arn }
+}
+
+output "app_config_parameters" {
+  description = "Each server's .env, written on every deploy. Read with: aws ssm get-parameter --with-decryption --name <this>"
+  value       = { for k, p in aws_ssm_parameter.dotenv : k => p.name }
 }
 
 output "ssh_open_to" {

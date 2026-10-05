@@ -1,5 +1,6 @@
-# Role for the EC2 instances: Session Manager access (no SSH needed) and
-# read/write to their own photo bucket only. No AWS keys are stored on servers.
+# Role for the EC2 instances: Session Manager access (no SSH needed),
+# read/write to their own photo bucket and read their own config in SSM
+# Parameter Store. No AWS keys are stored on servers.
 
 data "aws_iam_policy_document" "ec2_assume" {
   statement {
@@ -42,6 +43,21 @@ resource "aws_iam_role_policy" "photos" {
   policy   = data.aws_iam_policy_document.photos[each.key].json
 }
 
+data "aws_iam_policy_document" "config" {
+  for_each = var.environments
+  statement {
+    actions   = ["ssm:GetParameter"]
+    resources = ["arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/agroconnect/${each.key}/*"]
+  }
+}
+
+resource "aws_iam_role_policy" "config" {
+  for_each = var.environments
+  name     = "read-own-config"
+  role     = aws_iam_role.app[each.key].id
+  policy   = data.aws_iam_policy_document.config[each.key].json
+}
+
 resource "aws_iam_instance_profile" "app" {
   for_each = var.environments
   name     = "agroconnect-${each.key}-app"
@@ -56,7 +72,9 @@ resource "aws_iam_openid_connect_provider" "github" {
   client_id_list = ["sts.amazonaws.com"]
 }
 
+# One deploy role per environment: a staging job can only reach the staging server.
 data "aws_iam_policy_document" "github_assume" {
+  for_each = var.environments
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
@@ -68,31 +86,29 @@ data "aws_iam_policy_document" "github_assume" {
       variable = "token.actions.githubusercontent.com:aud"
       values   = ["sts.amazonaws.com"]
     }
-    # Only deploy jobs running in the staging/production GitHub environments.
+    # Only deploy jobs running in this GitHub environment.
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values = [
-        "repo:${var.github_repo}:environment:staging",
-        "repo:${var.github_repo}:environment:production",
-      ]
+      values   = ["repo:${var.github_repo}:environment:${each.key}"]
     }
   }
 }
 
 resource "aws_iam_role" "github_deploy" {
-  name               = "agroconnect-github-deploy"
-  assume_role_policy = data.aws_iam_policy_document.github_assume.json
+  for_each           = var.environments
+  name               = "agroconnect-github-deploy-${each.key}"
+  assume_role_policy = data.aws_iam_policy_document.github_assume[each.key].json
 }
 
 data "aws_iam_policy_document" "github_deploy" {
+  for_each = var.environments
   statement {
-    actions   = ["ssm:SendCommand"]
-    resources = ["arn:aws:ssm:${var.region}::document/AWS-RunShellScript"]
-  }
-  statement {
-    actions   = ["ssm:SendCommand"]
-    resources = [for i in aws_instance.app : i.arn]
+    actions = ["ssm:SendCommand"]
+    resources = [
+      "arn:aws:ssm:${var.region}::document/AWS-RunShellScript",
+      aws_instance.app[each.key].arn,
+    ]
   }
   statement {
     actions   = ["ssm:GetCommandInvocation", "ssm:ListCommandInvocations", "ec2:DescribeInstances"]
@@ -101,7 +117,8 @@ data "aws_iam_policy_document" "github_deploy" {
 }
 
 resource "aws_iam_role_policy" "github_deploy" {
-  name   = "deploy-via-ssm"
-  role   = aws_iam_role.github_deploy.id
-  policy = data.aws_iam_policy_document.github_deploy.json
+  for_each = var.environments
+  name     = "deploy-via-ssm"
+  role     = aws_iam_role.github_deploy[each.key].id
+  policy   = data.aws_iam_policy_document.github_deploy[each.key].json
 }
