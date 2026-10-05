@@ -105,7 +105,7 @@ frontend/
 │   │   └── locales/          en.json (built in), tw.json, ee.json, dag.json (downloaded only when chosen)
 │   ├── components/
 │   │   ├── ui/               shadcn primitives (button)
-│   │   ├── ScreenShell.tsx   full screen without the bottom bar: phone layout, a centred card on tablets, and the desktop brand-panel layout from 1024 px
+│   │   ├── ScreenShell.tsx   full screen without the bottom bar: phone layout under 768 px, the desktop brand-panel layout (Figma D01 to D03) from 768 px
 │   │   ├── BackButton.tsx, QuestionTitle.tsx (question + speaker), IllustrationCard.tsx
 │   │   ├── PhoneField.tsx    the "+233" phone box; CodeInput.tsx the six code boxes (one real input underneath)
 │   │   ├── AudioButton.tsx   speaker button that plays /audio/<lang>/<key>.mp3
