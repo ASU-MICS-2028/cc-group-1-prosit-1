@@ -3,6 +3,7 @@
 Everything we decided, and why. Start with the decision records; each one answers a "choose and justify" item from the Prosit brief or a choice the team made while building.
 
 ## Contents
+- [`study-manual.md`](study-manual.md): study guide: what labs 0 to 4 and the lectures taught, how each became part of AgroConnect, and how to build everything from scratch (Linux, Git, Docker, PostgreSQL, C#/.NET, React, CI/CD, AWS), with file names and commands explained.
 - [`phase-1-overview.md`](phase-1-overview.md): Phase 1 in plain words (replaces the concise PDF): done, next, what is built, the tables, sign-in, sync, servers, risks. Kept up to date.
 - [`data-dictionary.md`](data-dictionary.md): who is who (MoFA, officers, farmers, partners) and how they connect; every table and column, what the numbers mean (e.g. crops `{0,3}` = maize, groundnut), and useful queries.
 - [`local-development.md`](local-development.md): hands-on guide: every Docker, dotnet and database command we use, what it does, health checks, and how the laptop maps to the cloud servers.
