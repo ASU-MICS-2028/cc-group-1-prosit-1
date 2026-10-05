@@ -12,6 +12,7 @@
     <ProjectReference Include="..\..\Services\Libs\SharedLibrary\SharedLibrary.csproj" />
     <ProjectReference Include="..\..\Services\Libs\Data\Data.csproj" />
     <ProjectReference Include="..\..\Services\PlatformService\PlatformService.csproj" />
+    <ProjectReference Include="..\..\Services\AuthService\AuthService.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />

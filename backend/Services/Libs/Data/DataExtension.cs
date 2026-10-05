@@ -16,6 +16,10 @@ public static class DataExtension
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
         services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database");
 
+        services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
+        services.Configure<SeedOptions>(configuration.GetSection("Seed"));
+        services.AddHostedService<DatabaseMigrator>();
+
         return services;
     }
 }

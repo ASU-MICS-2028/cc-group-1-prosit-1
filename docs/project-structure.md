@@ -142,40 +142,69 @@ frontend/
 
 ## 4. `backend/` (ASP.NET Core 10 LTS, C#, services as class libraries behind a thin API host)
 
-The same layout the company's backends use (ADR 0020), on plain ASP.NET Core with our own small feature base. Built and verified; the farmer model and sync come next.
+The same layout the company's backends use (ADR 0020), on plain ASP.NET Core with our own small feature base. A request comes into the host, which hands it to one feature class in a service; the feature uses the shared tools and the database.
 
 ```
 backend/
-├── AgroConnect.sln
-├── APIs/agroconnect-api/              thin host: Program.cs, Serilog, problem details, OpenAPI, MapFeatures(). No business logic.
+├── AgroConnect.sln                    the list of all projects (build and test everything with it)
+├── APIs/agroconnect-api/              thin host, no business logic
+│   ├── Program.cs                     logging, errors, sign-in checks, rate limits; adds each service in one line
+│   ├── appsettings.json               settings for every environment
+│   ├── appsettings.Development.json   laptop only: local database, dev signing key, code 123456, demo officer
+│   └── Properties/launchSettings.json `dotnet run` listens on http://localhost:8000
 ├── Services/
-│   ├── PlatformService/               GET /health, GET /languages: the pattern every service follows
-│   │   ├── Features/                  one class per use case (implements IFeature, maps its own route)
-│   │   ├── Models/                    request and response types
-│   │   └── PlatformServiceExtension.cs   AddPlatformService()
-│   │   (a full service also has Providers/Interfaces + Implementations, and Langs/en.json)
-│   ├── (next)  FarmerService          register, list; Farmer, Farm, FarmPhoto, ExtensionVisit, FinancialProfile
-│   ├── (next)  SyncService            POST /api/sync/farmers: batch, idempotent, newest UpdatedAt wins
-│   ├── (next)  AuthService            phone number + OTP (a fixed test OTP for the demo)
-│   ├── (next)  MediaService           POST /api/photos/presign: the phone uploads straight to S3
-│   ├── (next)  UssdService            POST /api/ussd: Africa's Talking callback, menu state machine, SMS
+│   ├── PlatformService/               GET /health, GET /languages: the smallest example of a service
+│   ├── AuthService/                   sign-in with phone number + SMS code
+│   │   ├── Features/                  one file per endpoint: RequestCode (POST /api/auth/code),
+│   │   │                              VerifyCode (POST /api/auth/verify), GetMe (GET /api/me)
+│   │   ├── Models/                    the JSON the app sends and receives
+│   │   ├── Providers/Interfaces/      what the service needs from outside: code generator, SMS sender, token issuer
+│   │   ├── Providers/Implementations/ how: random or fixed code, log-only SMS (Africa's Talking later), JWT tokens, code hashing
+│   │   ├── Langs/en.json              the sign-in error messages, by key (other languages are more files)
+│   │   ├── AuthOptions.cs             limits: code lifetime, resend wait, tries, token lifetime, rate limit
+│   │   └── AuthServiceExtension.cs    AddAuthService(): registers all of the above
+│   ├── (next)  FarmerService          POST /api/sync, GET /api/sync/changes, farmer details, duplicate phone check, photos
+│   ├── (later) UssdService            POST /api/ussd: Africa's Talking callback, menu state machine, SMS
 │   └── Libs/
-│       ├── SharedLibrary/             Language and Channel enums, PhoneNumber, IFeature, ApiException + handler,
-│       │                              messages (Langs/*.json, X-Language), ISessionProvider, IClock, data masking
-│       └── Data/                      AppDbContext, EF Core migrations (Migrations/ added with the farmer model)
-├── tests/
-│   ├── Shared/                        [UnitTest] / [IntegrationTest] traits, ApiAssert
-│   ├── SharedLibrary.Tests/  PlatformService.Tests/     unit tests per project (70% line coverage gate each)
-│   └── Api.Tests/                     the whole API in memory plus a real PostgreSQL (Testcontainers)
+│       ├── SharedLibrary/             used by every service
+│       │   ├── ValueObjects/PhoneNumber.cs   "024 000 0001" -> "+233240000001"; rejects non-Ghana numbers
+│       │   ├── Errors/                ApiException (fail with a status and a message key) + the handler that answers in the caller's language
+│       │   ├── Messages/, Langs/      message lookup by key and language (X-Language header)
+│       │   ├── Features/              IFeature: the "one class per endpoint" pattern
+│       │   ├── Providers/             IClock (time, fakeable in tests), ISessionProvider (who is calling, in which language)
+│       │   ├── Enums/                 Language, Channel, and every fixed choice in the registration form (FarmerEnums.cs)
+│       │   ├── Security/Auth.cs       role names and token claim names
+│       │   └── Helpers/               data masking for logs; BuildTime (skips secret checks while the build writes the API contract)
+│       └── Data/                      the database
+│           ├── Entities/              one class per table: AppUser, LoginCode, Farmer, Visit, Photo
+│           ├── Persistence/AppDbContext.cs   class-to-table map: table names, lengths, indexes
+│           ├── Migrations/            GENERATED by dotnet-ef: the SQL steps that create and change the tables
+│           ├── DatabaseMigrator.cs    on start-up: apply migrations, then add demo accounts (if configured)
+│           └── DatabaseOptions.cs     the "Database" and "Seed" settings
+├── tests/                             one test project per code project; CI requires 70% line coverage in each
+│   ├── Shared/                        [UnitTest]/[IntegrationTest] traits, ApiAssert, PostgresFixture (real PostgreSQL in Docker), TestClock
+│   ├── SharedLibrary.Tests/  PlatformService.Tests/  AuthService.Tests/
+│   └── Api.Tests/                     the whole API in memory: health, errors, sign-in over HTTP against a migrated, seeded database
 ├── openapi/agroconnect.json           GENERATED on dotnet build; committed, the contract the frontend reads
-├── Dockerfile                         multi-stage: sdk build, Debian-based aspnet runtime (compose health check needs bash), non-root, port 8080
-├── docker-compose.dev.yml             PostgreSQL (and optionally the API) for local work
-└── Directory.Build.props / Directory.Packages.props / global.json / .editorconfig
+├── dotnet-tools.json                  local tools: dotnet-ef (run `dotnet tool restore` once)
+├── Dockerfile                         multi-stage: sdk build, Debian-based aspnet runtime, non-root, port 8080
+├── docker-compose.dev.yml             PostgreSQL on localhost:5433 (and optionally the API) for local work
+└── Directory.Build.props / Directory.Packages.props / global.json / .editorconfig   shared build settings, package versions, SDK version, code style
 ```
 
-**Why photos go straight to S3:** the t3.micro has 1 GiB of RAM. Streaming photos through it would be the first thing to fall over; a presigned URL keeps the API tiny.
+**Where to find things:**
+- **The code behind a URL:** search for the route text, e.g. `"/api/auth/verify"`. It is in one `Features/` file.
+- **A table:** look in `Data/Entities/` for the columns and in `AppDbContext.cs` for the names and indexes. The SQL is in `Data/Migrations/`.
+- **An error message:** search the key (e.g. `CODE_WRONG`) in the `Langs/*.json` files.
 
-**Auth for tomorrow:** the brief's choice is phone-number verification. For the demo, extension agents log in with a phone number and a fixed test OTP; real SMS OTP via Africa's Talking comes after. Write that down as a decision in `docs/`.
+**Changing a table:**
+1. Edit the entity.
+2. From `backend/`, run `dotnet dotnet-ef migrations add <WhatChanged> --project Services/Libs/Data --startup-project APIs/agroconnect-api --output-dir Migrations`.
+3. Restart the API; it applies the migration.
+
+**Looking inside the local database:** connect any PostgreSQL client to `127.0.0.1` port `5433` (not `localhost`: on Windows it can resolve to IPv6 `::1` first, and Docker publishes the port on IPv4 only), database `agroconnect`, user `agroconnect`, password `agroconnect_dev` (laptop only). Or run `docker exec -it backend-db-1 psql -U agroconnect -d agroconnect`.
+
+**Photos:** they follow ADR 0008. The API hands out a short-lived upload link and never streams photos, because the t3.micro has 1 GiB of RAM. On a laptop, until the S3 bucket exists, the link points at the API, which stores the file on disk.
 
 ---
 
