@@ -23,6 +23,7 @@ obj/
 *.user
 .vs/
 TestResults/
+coverage.json
 
 # Editors and OS (the shared VS Code settings are tracked)
 .vscode/*
@@ -35,5 +36,5 @@ TestResults/
 *.njsproj
 *.sw?
 
-# Local assistant instructions (personal, not shared)
+# Personal notes (not shared)
 CLAUDE.md

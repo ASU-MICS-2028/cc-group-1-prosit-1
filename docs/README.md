@@ -3,13 +3,16 @@
 Everything we decided, and why. Start with the decision records; each one answers a "choose and justify" item from the Prosit brief or a choice the team made while building.
 
 ## Contents
+- [`phase-1-overview.md`](phase-1-overview.md): Phase 1 in plain words (replaces the concise PDF): done, next, what is built, the tables, sign-in, sync, servers, risks. Kept up to date.
+- [`data-dictionary.md`](data-dictionary.md): who is who (MoFA, officers, farmers, partners) and how they connect; every table and column, what the numbers mean (e.g. crops `{0,3}` = maize, groundnut), and useful queries.
+- [`local-development.md`](local-development.md): hands-on guide: every Docker, dotnet and database command we use, what it does, health checks, and how the laptop maps to the cloud servers.
 - [`status.md`](status.md): where the project stands now: done, next steps, open questions.
 - [`decision-log.md`](decision-log.md): every decision in date order, one line each.
 - [`adr/`](adr/): Architecture Decision Records (Context / Decision / Alternatives / Consequences). Copy `adr/template.md` for new ones.
-- [`tech-choices.md`](tech-choices.md): why each frontend library is in (or out), with bundle-size reasoning.
+- [`tech-choices.md`](tech-choices.md): the whole stack: every framework, library, package, container image and tool (frontend, backend, data, servers, checks), what it does, why we chose it and what we rejected.
 - [`project-structure.md`](project-structure.md): the folder layout of the repository (`frontend/`, `backend/`, `deploy/`, docs) and what each file is for.
 
-Still to write: `architecture.md` (diagram), `data-dictionary.md`, `ussd-menu.md`, `consent-form.md`, `deploy.md`.
+Still to write: `architecture.md` (diagram), `ussd-menu.md`, `consent-form.md`, `deploy.md`.
 
 ## Decision records
 | # | Decision | Status |
@@ -34,5 +37,8 @@ Still to write: `architecture.md` (diagram), `data-dictionary.md`, `ussd-menu.md
 | [0018](adr/0018-git-hooks-and-commit-conventions.md) | Git hooks, formatting and commit conventions (pre-commit) | Accepted |
 | [0019](adr/0019-devops-pipeline.md) | DevOps pipeline: GHCR, SSH deploy, staging and production | Accepted |
 | [0020](adr/0020-backend-service-structure.md) | Backend structure: services as class libraries behind a thin API host | Accepted |
+| [0021](adr/0021-ui-from-figma-design.md) | Building the UI from the Figma design: mobile first, responsive, system font | Accepted |
+| [0022](adr/0022-sign-in-codes-and-tokens.md) | Sign-in details: SMS codes, 7-day tokens and limits | Accepted |
+| [0023](adr/0023-database-naming-and-links.md) | Database naming (snake_case) and enforced links (foreign keys) | Accepted |
 
 **Proposed** means recommended but waiting for the owning team member to confirm.

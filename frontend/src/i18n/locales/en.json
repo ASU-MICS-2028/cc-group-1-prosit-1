@@ -4,32 +4,66 @@
   },
   "common": {
     "loading": "Loading…",
-    "language": "Language"
+    "language": "Language",
+    "search": "Search",
+    "listen": "Listen to {{language}}"
   },
   "nav": {
     "home": "Home",
-    "register": "Register a farmer",
     "farmers": "Farmers",
-    "settings": "Settings"
+    "sync": "Sync",
+    "profile": "Profile",
+    "main": "Main"
+  },
+  "welcome": {
+    "hello": "Hello,",
+    "greeting": "Akwaaba!",
+    "choose": "Choose your language",
+    "question": "Which language do you speak?",
+    "hint": "Tap the speaker to hear each one",
+    "continueIn": "Continue in {{language}}",
+    "groupLabel": "Languages"
   },
   "home": {
-    "title": "Welcome to AgroConnect",
+    "title": "AgroConnect",
     "subtitle": "Register farmers and connect them with extension services, even without internet.",
+    "bannerTitle": "Register a farmer",
+    "bannerText": "Works without internet. Everything is saved on this phone and sent later.",
     "register": "Register a farmer",
-    "farmers": "See registered farmers"
+    "status": "Records on this phone",
+    "recent": "Recent farmers",
+    "viewAll": "View all",
+    "noRecent": "No farmers registered on this phone yet."
   },
   "register": {
     "title": "Register a farmer",
     "placeholder": "The registration form is coming soon."
   },
   "farmers": {
-    "title": "Registered farmers",
+    "title": "Farmers",
+    "search": "Search by name or phone",
+    "filterLabel": "Show",
+    "all": "All",
     "empty": "No farmers registered on this phone yet.",
+    "noMatch": "No farmer matches your search.",
+    "register": "Register a farmer",
     "detailTitle": "Farmer details"
   },
-  "settings": {
-    "title": "Settings",
-    "languageHelp": "Choose the language you want to use."
+  "sync": {
+    "title": "Sync",
+    "waiting": "{{count}} waiting",
+    "synced": "{{count}} synced",
+    "failed": "{{count}} failed",
+    "waitingStatus": "Waiting to sync",
+    "syncedStatus": "Synced",
+    "failedStatus": "Sync failed",
+    "allDone": "Everything on this phone is saved and synced.",
+    "explain": "Records are saved on this phone first. They are sent to the server whenever there is a connection."
+  },
+  "profile": {
+    "title": "Profile",
+    "languageHelp": "Choose the language you want to use.",
+    "languageTitle": "Language"
   },
   "notFound": {
     "title": "Page not found",

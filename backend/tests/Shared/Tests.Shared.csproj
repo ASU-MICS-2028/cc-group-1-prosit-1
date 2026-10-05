@@ -1,13 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Shared by every test project: trait attributes (so filtering by category works) and small helpers. -->
+  <!-- Shared by every test project: trait attributes (so filtering by category works), a real test database and small helpers. -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Services\Libs\SharedLibrary\SharedLibrary.csproj" />
+    <ProjectReference Include="..\..\Services\Libs\Data\Data.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="xunit" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
   </ItemGroup>
 </Project>

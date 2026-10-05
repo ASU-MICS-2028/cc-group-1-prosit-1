@@ -10,12 +10,21 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AgroConnect.Api.Tests;
 
 /// <summary>Starts the real API in memory, pointed at the database we give it.</summary>
-public sealed class ApiFactory(string connectionString) : WebApplicationFactory<Program>
+public sealed class ApiFactory(string connectionString, IReadOnlyDictionary<string, string>? settings = null) : WebApplicationFactory<Program>
 {
+    public static readonly string SigningKey = TestSettings.SigningKey;
+    public const string FixedCode = "123456";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Default", connectionString);
+        builder.UseSetting("Auth:SigningKey", SigningKey);
+        builder.UseSetting("Auth:FixedCode", FixedCode);
+        foreach (var (key, value) in settings ?? new Dictionary<string, string>())
+        {
+            builder.UseSetting(key, value);
+        }
 
         // Fail on wiring mistakes (a singleton using a per-request service) the way Development does, not only on a laptop.
         builder.UseDefaultServiceProvider(options =>

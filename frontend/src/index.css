@@ -25,6 +25,12 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-cream: var(--cream);
+  /* shadow/floating: the soft green glow under the bottom bar */
+  --shadow-floating: 0 0 14px #007e2f17;
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -49,25 +55,34 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  /* AgroConnect green: ~7:1 against white so it stays readable in sunlight */
-  --primary: oklch(0.42 0.1 152);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.55 0.1 152);
+  /* Exact values from the Figma variables (bg/screen, text/default, green/primary, ...). */
+  --background: #fdfdfd;
+  --foreground: #505050;
+  --card: #ffffff;
+  --card-foreground: #505050;
+  --popover: #ffffff;
+  --popover-foreground: #505050;
+  /* green/primary: about 5.9:1 against white, readable in sunlight */
+  --primary: #007e2f;
+  --primary-foreground: #fdfdfd;
+  /* green/tint: secondary buttons, language rows, avatars, nav highlight */
+  --secondary: #dff1e6;
+  --secondary-foreground: #00531f;
+  --muted: #f4f4f4;
+  /* Figma's text/muted is #939393 (3:1, too faint for small text); this is the same grey at 4.6:1 */
+  --muted-foreground: #6b6b6b;
+  --accent: #dff1e6;
+  --accent-foreground: #00531f;
+  --destructive: #d81b1b;
+  --destructive-soft: #fde7e7;
+  /* Sync states: waiting (amber), synced (green), failed (red) */
+  --warning: #b26b00;
+  --warning-soft: #fff0d3;
+  /* accent/cream: banners and illustrations */
+  --cream: #fff0d3;
+  --border: #ededed;
+  --input: #ededed;
+  --ring: #3a9d5c;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -76,12 +91,12 @@
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.42 0.1 152);
+  --sidebar-primary: oklch(0.5 0.15 150);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-accent: oklch(0.945 0.035 150);
+  --sidebar-accent-foreground: oklch(0.38 0.11 150);
+  --sidebar-border: oklch(0.92 0.006 150);
+  --sidebar-ring: oklch(0.58 0.15 150);
 }
 
 .dark {
@@ -91,15 +106,18 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.78 0.15 152);
-  --primary-foreground: oklch(0.2 0.04 152);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.74 0.17 150);
+  --primary-foreground: oklch(0.2 0.05 150);
+  --secondary: oklch(0.3 0.05 150);
+  --secondary-foreground: oklch(0.92 0.06 150);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.3 0.05 150);
+  --accent-foreground: oklch(0.92 0.06 150);
   --destructive: oklch(0.704 0.191 22.216);
+  --destructive-soft: oklch(0.3 0.06 25);
+  --warning: oklch(0.82 0.13 80);
+  --warning-soft: oklch(0.32 0.06 75);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);

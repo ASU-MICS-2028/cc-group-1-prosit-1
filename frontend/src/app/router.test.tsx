@@ -3,26 +3,46 @@ import { describe, expect, it } from "vitest"
 import { renderRoute } from "@/test/renderRoute"
 
 describe("router", () => {
-  it("renders the home page with its two actions", async () => {
+  it("renders the home page with its register button", async () => {
     renderRoute("/")
     expect(
-      await screen.findByRole("heading", { name: "Welcome to AgroConnect" })
+      await screen.findByRole("heading", { name: "AgroConnect" })
     ).toBeInTheDocument()
-    // one link in the page body, one in the bottom nav
-    const links = screen.getAllByRole("link", { name: "Register a farmer" })
-    expect(links).toHaveLength(2)
-    links.forEach((l) => expect(l).toHaveAttribute("href", "/register"))
+    expect(
+      screen.getByRole("link", { name: "Register a farmer" })
+    ).toHaveAttribute("href", "/register")
   })
 
   it.each([
     ["/register", "Register a farmer"],
-    ["/farmers", "Registered farmers"],
-    ["/settings", "Settings"],
+    ["/farmers", "Farmers"],
+    ["/sync", "Sync"],
+    ["/profile", "Profile"],
+    ["/design", "Components"],
   ])("renders %s", async (path, heading) => {
     renderRoute(path)
     expect(
-      await screen.findByRole("heading", { name: heading })
+      await screen.findByRole("heading", { level: 1, name: heading })
     ).toBeInTheDocument()
+  })
+
+  it("sends a first-time visitor to choose a language", async () => {
+    const { router } = renderRoute("/", { firstRun: true })
+    expect(
+      await screen.findByRole("heading", {
+        name: "Which language do you speak?",
+      })
+    ).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe("/welcome")
+  })
+
+  it("offers the same four places in the bottom bar and the sidebar", async () => {
+    renderRoute("/")
+    await screen.findByRole("heading", { name: "AgroConnect" })
+    for (const place of ["Home", "Farmers", "Sync", "Profile"]) {
+      // the CSS shows one of the two navigations per screen size; jsdom renders both
+      expect(screen.getAllByRole("link", { name: place })).toHaveLength(2)
+    }
   })
 
   it("shows the farmer id from the URL", async () => {

@@ -2,7 +2,7 @@
 
 Living file: where the project stands right now. Update it at the end of every working session (what was done, what's next). Decisions themselves go in `adr/` and `decision-log.md`; this file only tracks progress.
 
-_Last updated: 2026-10-04 (backend restructured to services, ADR 0020)_
+_Last updated: 2026-10-05 (sign-in backend and database on branch feature/ui-build; docs set: overview, data dictionary, stack, local guide)_
 
 ## The assignment (Prosit 1, AgroConnect Ghana)
 Ashesi ICS 534 Cloud Computing. A four-week build; we are building all four weeks into one product.
@@ -38,23 +38,39 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 - DevOps pipeline merged from `origin/development` and adapted: CI (`ci.yml`) now uses Node 24, a .NET backend job, `npm audit` and `format:check`; compose uses ASP.NET port 8080 and a bash health check; Dependabot covers npm, nuget, docker, actions; CODEOWNERS covers `frontend/.nginx/`. See ADR 0019.
 - Backend scaffold (branch `feature/backend-scaffold`): service-based layout from the company repos (ADR 0020): thin API host in `backend/APIs/agroconnect-api`, `PlatformService` (GET /health, GET /languages) as the pattern for later services, `Libs/SharedLibrary` (enums, PhoneNumber, feature base, ApiException, language-keyed messages via X-Language, session provider, data masking, clock), `Libs/Data` (EF Core + PostgreSQL), tests per project plus `Api.Tests` with Testcontainers; central package versions; Serilog, problem details, OpenAPI to `backend/openapi/agroconnect.json`; Dockerfile (non-root) and `docker-compose.dev.yml`; 69 tests, 97% to 100% coverage; `dotnet format` hook and CI wiring. Verified: build, format, tests, coverage gate, container `/health` 200 with the database healthy.
 - Backend language settled: C# / ASP.NET Core 10 for the whole project (Java and Python compared in ADR 0013).
+- UI from Figma (branch `feature/ui-build`, ADR 0021): design tokens, first-run language screen (`/welcome`, preview then Continue), responsive shell (floating bottom bar on phones, sidebar from 768 px), Home / Farmers (search + sync filters) / Sync / Profile pages, status chips, farmer rows, audio buttons (recordings pending), dev-only component sheet at `/design`. Lists read from `useFarmers()`, empty until the offline store exists. 52 tests, 98.7% line coverage; initial JS about 125 KB gzipped.
+
+- Database (branch `feature/ui-build`): five tables (`users`, `login_codes`, `farmers`, `visits`, `photos`) in the first EF Core migration (`InitialSchema`). The API applies migrations on start-up and, on a laptop, seeds a demo officer (Fuseini Alhassan, 024 000 0001) and a sample farmer (Ama Boateng, 024 000 1234). Every column is explained in `data-dictionary.md`.
+- Sign-in (`AuthService`): `POST /api/auth/code`, `POST /api/auth/verify`, `GET /api/me`.
+  - **Codes:** 6 digits, stored only as a hash, valid 10 minutes; one per 45 s and 5 per hour per phone; locked after 5 wrong tries.
+  - **Tokens:** 7-day signed tokens (JWT) with the role (officer or farmer) (ADR 0022).
+  - **Abuse limits:** 30 requests per 5 minutes per network address.
+  - **Farmer accounts:** created on first sign-in.
+  - **SMS:** written to the log until Africa's Talking is connected; the laptop code is always 123456.
+  - **Tests:** 31, 99% coverage.
+  - **Live check:** done against the local database.
+- Database clean-up (ADR 0023): snake_case names (`full_name`) and six enforced links (foreign keys); the first migration was regenerated before anything was committed or deployed. A test proves the database refuses a visit for a farmer that does not exist.
+- Backend tests: 109 in total; every test project above the 70% gate. A shared real-PostgreSQL test fixture (Testcontainers) and an end-to-end sign-in test over HTTP.
+- Docs: `phase-1-overview.md` (replaces the concise PDF), `data-dictionary.md` (who is who, every table, column and code), `tech-choices.md` (the whole stack), `local-development.md` (every command, health checks, laptop vs servers), and `project-structure.md` (backend file guide).
 
 ## Bernard's to-do right now
-1. Install the hooks once: `pip install pre-commit && pre-commit install` (and `npm ci` in `frontend/` for the ESLint/Prettier hooks).
-2. Push `feature/scaffold` and open a PR into `development`. It touches `.github/`, `deploy/` and Dockerfiles, so the DevOps lead must approve it.
-3. With the DevOps lead: decide how to get **HTTPS** onto staging and production (domain + Caddy/Let's Encrypt, or CloudFront). Without it the service worker, camera and GPS do not work on the deployed app.
+1. Open the pull request for this branch into `development` (sign-in, database, docs, UI so far).
+2. With the DevOps lead: HTTPS for staging and production, and the `Auth__SigningKey` secret on each server.
+3. Share `docs/` with the team (Liza: `data-dictionary.md`; slides: `phase-1-overview.md`).
 
 ## Next steps (in order)
-1. **Frontend foundation (remaining):** Vitest; a first-screen language picker with audio (`AudioPrompt`); `OfflineBanner`; real translations for tw/ee/dag.
-2. **PWA:** configure `vite-plugin-pwa` (manifest, icons, Workbox caching, update prompt).
-3. **Offline data:** Dexie schema (farmers, photos, outbox), client UUIDs, sync loop.
-4. **Registration wizard:** react-hook-form + zod steps for the five profile sections; photo (lazy-loaded compression) + GPS.
-5. **Backend (scaffold done; next: farmer model, migration, sync endpoint):** ASP.NET Core 10 Minimal API as service class libraries behind a thin host (ADR 0020), EF Core + Npgsql, OpenAPI to `backend/openapi/agroconnect.json`; `frontend/` runs `openapi-typescript` to generate `frontend/src/api/schema.d.ts`. It needs `backend/Dockerfile` and a `/health` endpoint (ADR 0019), tests via coverlet.msbuild.
-6. **USSD endpoint** (Africa's Talking sandbox) in the API.
-7. **Infra (mostly DevOps lead):** TLS for both environments, GitHub Environment secrets and the two EC2 instances (`deploy/README.md`), later S3 + CloudFront for the PWA.
-8. **Write-up:** architecture justifications for the lecturer, drawn from the ADRs.
+1. **Farmer service (backend):** `POST /api/sync` (farmers and visits, safe to resend), `GET /api/sync/changes`, farmer details, the duplicate phone check, photo upload links. Tests and a live check.
+2. **Connect the app to the backend:** Vite dev proxy, API client typed from the OpenAPI contract, saved sign-in token.
+3. **Offline engine:** Dexie (farmers, visits, photos, outbox), sync on open, on reconnect and with "Sync now".
+4. **Screens from Figma:** sign-in, the 7-step registration, review and saved, farmer list and detail, edit, visits, the farmer's own view, help, sign-out, error, empty and offline states.
+5. **Installable app:** manifest, icons, Workbox caching, update and install prompts.
+6. **USSD and SMS** with the Africa's Talking sandbox.
+7. **Infra (DevOps lead):** TLS, environment secrets, the two EC2 instances, later S3 for photos.
+8. **Write-up and slides:** from `phase-1-overview.md` and the ADRs.
 
 ## Open questions
 - Team sign-off still needed on ADR 0006 (Postgres), 0007 (phone-number auth) and 0015 (security plan).
 - Postgres hosting: RDS free tier vs Postgres in Docker on the EC2 instance (depends on credits).
 - Week 4 AI scope: hosted models only (C# calls them) or self-trained models (separate Python service).
+- Sign-in: tokens last 7 days (ADR 0022); a "sign out everywhere" switch is still to design.
+- Who may see which farmers: today each officer sees the farmers they registered; sharing within a district needs MoFA agreement.
