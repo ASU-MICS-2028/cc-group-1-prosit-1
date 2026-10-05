@@ -27,4 +27,5 @@
 | 2026-10-05 | Sign-in rules: 6-digit SMS code valid 10 min (45 s resend, 5 per hour, 5 tries), hashed storage, 7-day tokens, 30 requests per 5 min per address | [0022](adr/0022-sign-in-codes-and-tokens.md) |
 | 2026-10-05 | Database names in snake_case; links between tables enforced with foreign keys (photo links checked by the API) | [0023](adr/0023-database-naming-and-links.md) |
 | 2026-10-05 | Three roles (MoFA admin, extension officer, farmer; no "district office"). Admins add officers, officers register farmers, the first admin comes from a script. Farmers phone only, officers phone and computer, admins computer only on a separate `/admin` sign-in | [0024](adr/0024-roles-accounts-and-devices.md) |
+| 2026-10-05 | Pictures on choice tiles are small WebP files loaded only when online and kept in a runtime cache; not precached; offline the tile shows its icon | [0025](adr/0025-pictures-online-icons-offline.md) |
 | pending | Postgres vs NoSQL, phone-number auth, security plan: awaiting team confirmation | [0006](adr/0006-postgres-over-nosql.md), [0007](adr/0007-phone-number-auth.md), [0015](adr/0015-security-and-privacy.md) |

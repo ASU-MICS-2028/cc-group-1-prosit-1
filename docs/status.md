@@ -76,6 +76,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 7. **Infra (DevOps lead):** TLS, environment secrets, the two EC2 instances, later S3 for photos.
 8. **Write-up and slides:** from `phase-1-overview.md` and the ADRs.
 9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend `/admin` sign-in, farmer-on-a-computer and admin-on-a-phone screens, the *Add a person* form.
+10. **Pictures (ADR 0025):** export tile pictures as 160 px WebP outside the bundle, a Workbox cache-first rule for them, and the icon fallback when offline.
 
 ## Open questions
 - Team sign-off still needed on ADR 0006 (Postgres), 0007 (phone-number auth) and 0015 (security plan).
