@@ -1,7 +1,9 @@
 # Production/staging stack, run on each EC2 instance from /opt/agroconnect.
 # The deploy workflow copies this file over and sets IMAGE_TAG / IMAGE_PREFIX.
-# App secrets (DB URL, API keys, ...) live in /opt/agroconnect/.env on the
-# server and are never committed.
+# App config and secrets (DB connection, bucket, ...) live in
+# /opt/agroconnect/.env on the server. The deploy workflow writes that file from
+# SSM Parameter Store (/agroconnect/<env>/dotenv, managed by Terraform); it is
+# never committed.
 #
 # Backend: ASP.NET Core listens on 8080 inside the container (the .NET default
 # for containers). Frontend: nginx-unprivileged listens on 8080 and proxies
@@ -27,3 +29,21 @@ services:
     env_file: .env
     ports:
       - "80:${FRONTEND_PORT:-8080}"
+
+  # Staging only: PostgreSQL in a container (production uses RDS). Enabled by
+  # COMPOSE_PROFILES=localdb in staging's .env; not reachable from outside.
+  db:
+    image: postgres:17-alpine
+    profiles: ["localdb"]
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:
