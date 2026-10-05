@@ -1,10 +1,14 @@
+import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { LanguageOptions } from "@/components/LanguageOptions"
 import { PageHeader } from "@/components/PageHeader"
+import { Button } from "@/components/ui/button"
+import { clearSession } from "@/auth/session"
 import { LANGUAGES, setLanguage } from "@/i18n"
 
 export function Component() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const current = LANGUAGES.find((l) => l.code === i18n.language)?.code ?? "en"
 
   return (
@@ -22,6 +26,17 @@ export function Component() {
           onChange={(code) => void setLanguage(code)}
         />
       </section>
+      <Button
+        size="xl"
+        variant="secondary"
+        className="w-full"
+        onClick={() => {
+          clearSession()
+          void navigate("/who", { replace: true })
+        }}
+      >
+        {t("common.logOut")}
+      </Button>
     </div>
   )
 }

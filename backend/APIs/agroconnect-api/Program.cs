@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using AgroConnect.Api.OpenApi;
 using AgroConnect.AuthService;
 using AgroConnect.Data;
 using AgroConnect.PlatformService;
@@ -25,11 +26,21 @@ builder.Host.UseSerilog((context, _, logger) =>
 });
 
 builder.Services.AddProblemDetails();
-builder.Services.AddOpenApi();
+// The API contract (OpenAPI), with the sign-in token described so tools know which calls need it.
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    options.AddOperationTransformer<BearerRequirementTransformer>();
+});
 builder.Services.AddResponseCompression();
 
 // Enums travel as their snake_case names ("officer", "maize"), the same strings the app uses.
-builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+// Numbers must be JSON numbers (not "45" as text), which also keeps the contract's number types exact.
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
+});
 
 // The API only runs behind nginx on a private Docker network, so trust its X-Forwarded-For for the client address
 // (the sign-in rate limit is per address).
@@ -60,9 +71,18 @@ app.UseRateLimiter();
 
 app.MapFeatures();
 
+// Development only: the contract at /openapi/v1.json and Swagger UI at /swagger to try every endpoint.
+// Never on the servers, where the API should not describe itself to the internet.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "AgroConnect API");
+        options.RoutePrefix = "swagger";
+        options.DocumentTitle = "AgroConnect API";
+        options.EnablePersistAuthorization();
+    });
 }
 
 app.Run();

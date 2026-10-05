@@ -91,6 +91,17 @@ healthcheck:
 
 ## 5. Everyday commands
 
+### 5.0 The quick way: VS Code tasks
+
+Everything below can be started from VS Code with one click, each part in **its own terminal** so you can see its log:
+1. Make sure **Docker Desktop** is running.
+2. Press `Ctrl+Shift+P`, type **Tasks: Run Task**, and choose **Start everything (database, API, app)**.
+3. Three things happen: the database starts in Docker; a terminal named **API: run** shows the API's log; a terminal named **App: run** shows the app's log.
+4. Open the app at `http://localhost:5173` and Swagger UI at `http://localhost:8000/swagger`.
+5. To stop the API or the app, click into its terminal and press `Ctrl+C`. To stop the database, run the task **Database: stop**. Your data stays.
+
+The tasks are defined in [`.vscode/tasks.json`](../.vscode/tasks.json), which is in the repository, so every team member gets them. Each one runs a command from the sections below. The first time on a new laptop (or after new packages are added), run **First-time setup (install packages and tools)** once; it needs Docker Desktop, the .NET 10 SDK and Node 24 installed. Other tasks: **Database: start**, **API: run**, **App: run**, and **App: update API types** (after an API change).
+
 ### 5.1 Start the database
 
 ```powershell
@@ -153,7 +164,19 @@ docker compose -f docker-compose.dev.yml --profile api up --build
 
 ### 5.4 Try the endpoints
 
-In a browser: `http://localhost:8000/health`, and the API contract at `http://localhost:8000/openapi/v1.json` (Development only).
+**The easiest way: Swagger UI.** Open `http://localhost:8000/swagger` in a browser. It lists every endpoint, with its inputs and answers, and a **Try it out** button.
+
+To try a signed-in endpoint such as `GET /api/me`:
+1. `POST /api/auth/code` → **Try it out** → body `{ "phone": "0240000001", "role": "officer" }` → **Execute**. Answer: `202`.
+2. `POST /api/auth/verify` → body `{ "phone": "0240000001", "role": "officer", "code": "123456" }` → **Execute**. Copy the `token` from the answer.
+3. Click **Authorize** (top right, or the padlock on an endpoint), paste the token, then **Authorize**. Endpoints that need sign-in show a padlock.
+4. `GET /api/me` → **Try it out** → **Execute**. Answer: Fuseini Alhassan.
+
+Notes:
+- **Only on laptops:** Swagger UI and the contract (`/openapi/v1.json`) exist only in **Development**. On staging and production they are switched off on purpose, so the API does not describe itself to the internet. A test checks this.
+- **Same rules as the app:** Swagger UI calls the same API, so limits apply. Asking for a code twice within 45 seconds gives `429`.
+
+**Other ways:** `http://localhost:8000/health` in a browser, or PowerShell as below.
 
 **Sign in as the demo officer from PowerShell.** Use `Invoke-RestMethod`; in Windows PowerShell 5.1, `curl` is not the real curl.
 ```powershell
@@ -174,7 +197,52 @@ What to notice:
 - **Asking again within 45 seconds** gives a `429 Too Many Requests` "problem" in JSON. Every error from the API has this shape: `title` is a stable key the app can check, `detail` is the message in the caller's language.
 - **Step 3 without the header** gives `401 Unauthorized`.
 
-### 5.5 Run the tests
+### 5.5 Run the app together with the API
+
+With the database (5.1) and the API (5.3) running, start the app in a second terminal:
+
+```powershell
+cd frontend
+npm run dev
+```
+
+Open `http://localhost:5173`. The first time, the app shows Welcome, then the language, then "Who are you?". Sign in:
+
+| Who | Phone | Code |
+|---|---|---|
+| Officer (Fuseini Alhassan) | `024 000 0001` | `123456` |
+| Farmer (Ama Boateng) | `024 000 1234` | `123456` |
+
+**How the app reaches the API: the dev proxy.** The app calls paths like `/api/auth/code` on its own address. In `vite.config.ts`, `server.proxy` forwards every `/api/...` request from port 5173 to the API on port 8000.
+- **Why:** on the servers, nginx does the same job (`frontend/.nginx/nginx.conf`), so the app code is identical on a laptop and in the cloud.
+- **No CORS needed:** the browser only ever talks to one address, so the API needs no CORS (cross-origin) rules.
+- **The setting:** `VITE_API_BASE_URL` in `.env.example` stays empty for this reason. Set it only to point a laptop at another server.
+
+**Keeping the app and the API in agreement:** after any change to the API, rebuild it (which rewrites `backend/openapi/agroconnect.json`), then from `frontend/`:
+```powershell
+npm run api:types
+```
+This regenerates `src/api/schema.d.ts`, the TypeScript description of every request and response. If a field was renamed on the server, the app now fails to build, so the mismatch is caught on the laptop and not on a farmer's phone.
+
+**Where the sign-in is kept:** after "Verify", the token and the person are saved in the browser's local storage (`agroconnect.session`) for the token's 7 days, so the app keeps working offline. To start again as a new user, use Profile → Log out, or clear the site data in the browser.
+
+### 5.6 Check the phone, tablet and computer layouts
+
+The app picks its layout from the **width of the screen** (CSS breakpoints), not from the kind of device:
+
+| Width | Layout | Figma |
+|---|---|---|
+| under 768 px (phones) | Phone design, edge to edge, main button at the bottom | P1 phone screens (00, 01, 01b, 02a to 02d) |
+| 768 to 1023 px (tablets) | The phone design as a centred card | (no tablet frames) |
+| 1024 px and up (laptops, PCs) | Desktop design: cream brand panel on the left, the form on the right | D01 Choose Language, D02 Login, D03 Enter Code; Welcome and Who are you follow the same pattern |
+
+How to check all three on one computer:
+1. Open the app (`http://localhost:5173`) in Chrome or Edge at full width: you see the **desktop** design.
+2. Make the window narrower by dragging its edge: the layout switches at 1024 px (to the card) and at 768 px (to the phone layout).
+3. For exact phone sizes, open **DevTools** (`F12`) and click the **device toolbar** icon (phone and tablet, or `Ctrl+Shift+M`). Pick **iPhone 12 Pro** (390 px, the Figma phone width), **iPad Air** (820 px) or **Responsive** and type a width.
+4. On a real phone on the same Wi-Fi: run the app with `npm run dev -- --host` (in `frontend/`) and open the "Network" address it prints, e.g. `http://192.168.1.20:5173`. Windows may ask to allow Node.js through the firewall; allow it for private networks only. GPS and the camera will not work this way (they need HTTPS); everything else does.
+
+### 5.7 Run the tests
 
 ```powershell
 cd backend
@@ -188,7 +256,7 @@ dotnet test -p:CollectCoverage=true -p:Threshold=70 -p:ThresholdType=line -p:Thr
 
 Frontend, from `frontend/`: `npm run lint`, `npm run format:check`, `npm run test:ci`, `npm run build`.
 
-### 5.6 Stop things
+### 5.8 Stop things
 
 | Command | Effect | Data |
 |---|---|---|
@@ -350,3 +418,9 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | `docker compose -f docker-compose.dev.yml down -v` then `up -d db` | Deleted the local database volume and started an empty one, so the new first migration could run from scratch |
 | `dotnet run ...`, then sign-in as officer `0240000001` and farmer `0240001234` | Live check of the new schema: tokens now expire after 7 days (ADR 0022); Ama's farmer account was created and linked (`users.farmer_id`) |
 | `select conname ... from pg_constraint where contype = 'f'` | Listed the six links the database now enforces |
+| `npm run api:types` | Generated the app's TypeScript types from the API contract (sign-in requests and answers) |
+| `npm run dev`, then `curl -X POST localhost:5173/api/auth/code ...` | Checked the dev proxy: a request to the app's address reached the API (answer `202`) |
+| Added Swagger UI (`/swagger`, Development only) and the Bearer token scheme to the contract | So every endpoint can be tried from the browser, including signed-in ones |
+| Added `.vscode/tasks.json` (Start everything, Database, API, App, Update API types) | So the database, API and app are started in visible terminals with their logs, not hidden |
+| Screenshots of every start screen at 390 px, 820 px and 1440 × 900 | Checked the new desktop layout (Figma D01 to D03) and the phone and tablet layouts against the design |
+| Headless Chrome walk-through of Welcome → Language → Who are you → Log in → Code → Home, officer and farmer | First live check of the app against the real API and database: wrong number, wrong code (server message shown), right code, farmer app, log out |
