@@ -74,12 +74,14 @@ Dashed lines are planned, not yet built.
 
 | Role | Signs in with | Can do | Cannot do | Stored as |
 |---|---|---|---|---|
-| **Extension officer** | Phone + SMS code | Register farmers, edit the farmers they registered, plan and record visits, sync | See or change other officers' farmers | `users` row with `role = 0` |
-| **Farmer** | Phone + SMS code (the phone the officer registered) | See their own profile and visits, change their language | See other farmers, register anyone | `users` row with `role = 1`, and `farmer_id` = their `farmers` row (created at first sign-in) |
+| **Extension officer** (account added by a MoFA admin; phone and computer) | Phone + SMS code | Register farmers, edit the farmers they registered, plan and record visits, sync | See or change other officers' farmers | `users` row with `role = 0` |
+| **Farmer** (registered by an officer; phone only) | Phone + SMS code (the phone the officer registered) | See their own profile and visits, change their language | See other farmers, register anyone | `users` row with `role = 1`, and `farmer_id` = their `farmers` row (created at first sign-in) |
 | **Farmer with a simple phone** | Nothing to install: USSD menu and SMS | Register or confirm details by USSD, receive SMS | Use the app | A `farmers` row; contact preferences in `reach_channels` |
 | **Farmer with no phone** | Not applicable | Is registered and visited by the officer | Be contacted directly | A `farmers` row with `has_no_phone = true` |
-| **MoFA administrator** (planned) | Phone + SMS code | Read-only summaries by region and district | Change farmer records | A new `admin` role |
+| **MoFA administrator** (planned; first one created by a script, then added by other admins; computer only, on the separate `/admin` sign-in) | Phone + SMS code | Read-only summaries for their region or district; add and remove extension officers and admins; turn off a lost phone | Change farmer records | A new `admin` role |
 | **Agro-dealer** (planned, Weeks 2 and 3) | To be decided | Share prices and stock | See farmers' personal data | New tables in Week 2 |
+
+There is no separate "district office" role: a MoFA admin's access covers one region or district. Who creates each account and which device each role uses: ADR 0024.
 
 ### 2.3 The relationships, one by one
 

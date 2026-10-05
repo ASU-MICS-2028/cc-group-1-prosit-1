@@ -58,6 +58,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
   - The sign-in is kept on the phone for 7 days.
   - Frontend tests: 72, 98.3% lines.
   - Checked live in headless Chrome against the API and database.
+- Roles, accounts and devices decided (ADR 0024): three roles; admins add officers, officers register farmers; farmers phone only, officers phone and computer, admins computer only on a separate `/admin` sign-in. Designed in Figma (desktop *Who are you?*, farmer-on-a-computer, admin sign-in and code, *Add a person*, admin-on-a-phone), not built yet.
 - Docs: `phase-1-overview.md` (replaces the concise PDF), `data-dictionary.md` (who is who, every table, column and code), `tech-choices.md` (the whole stack), `local-development.md` (every command, health checks, laptop vs servers), and `project-structure.md` (backend file guide).
 
 ## Bernard's to-do right now
@@ -74,6 +75,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 6. **USSD and SMS** with the Africa's Talking sandbox.
 7. **Infra (DevOps lead):** TLS, environment secrets, the two EC2 instances, later S3 for photos.
 8. **Write-up and slides:** from `phase-1-overview.md` and the ADRs.
+9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend `/admin` sign-in, farmer-on-a-computer and admin-on-a-phone screens, the *Add a person* form.
 
 ## Open questions
 - Team sign-off still needed on ADR 0006 (Postgres), 0007 (phone-number auth) and 0015 (security plan).
