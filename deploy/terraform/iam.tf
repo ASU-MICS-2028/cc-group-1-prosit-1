@@ -86,11 +86,15 @@ data "aws_iam_policy_document" "github_assume" {
       variable = "token.actions.githubusercontent.com:aud"
       values   = ["sts.amazonaws.com"]
     }
-    # Only deploy jobs running in this GitHub environment.
+    # Only deploy jobs running in this GitHub environment. GitHub sends the
+    # immutable (ID-based) subject for this repo; the name form is kept too.
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:environment:${each.key}"]
+      values = [
+        "repo:${var.github_repo_immutable}:environment:${each.key}",
+        "repo:${var.github_repo}:environment:${each.key}",
+      ]
     }
   }
 }
