@@ -1,5 +1,5 @@
 # Stage 1: build the static app
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 # The cache mount keeps downloaded packages between builds, so a retry after a
