@@ -30,11 +30,12 @@ export function LanguageOptions({
         return (
           <div
             key={language.code}
-            className="group/option relative flex min-h-16 items-center rounded-full bg-secondary py-2 pr-4 pl-3 text-secondary-foreground transition-colors has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+            className="group/option relative flex items-center gap-3 rounded-full bg-secondary py-1.5 pr-5 pl-1.5 text-foreground transition-colors has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
           >
             <AudioButton
               src={`/audio/${language.code}/language.mp3`}
               label={t("common.listen", { language: language.label })}
+              className="size-12 bg-card"
             />
             <input
               type="radio"
@@ -47,19 +48,19 @@ export function LanguageOptions({
             />
             <label
               htmlFor={id}
-              className="flex flex-1 cursor-pointer items-center gap-3 self-stretch pl-3 after:absolute after:inset-0 after:content-['']"
+              className="flex flex-1 cursor-pointer items-center gap-3 self-stretch after:absolute after:inset-0 after:content-['']"
             >
               <span className="flex-1">
-                <span className="block text-base leading-tight font-medium">
+                <span className="block text-base leading-6 font-medium">
                   {language.label}
                 </span>
-                <span className="block text-sm leading-tight opacity-75">
+                <span className="block text-sm leading-5 font-medium text-muted-foreground group-has-checked/option:text-secondary">
                   {language.sub}
                 </span>
               </span>
               <span
                 aria-hidden
-                className="flex size-7 items-center justify-center rounded-full border-2 border-current/40 group-has-checked/option:border-primary-foreground group-has-checked/option:bg-primary-foreground"
+                className="flex size-7 items-center justify-center rounded-full border-2 border-muted-foreground group-has-checked/option:border-card group-has-checked/option:bg-card"
               >
                 <Check className="size-4 text-primary opacity-0 group-has-checked/option:opacity-100" />
               </span>
