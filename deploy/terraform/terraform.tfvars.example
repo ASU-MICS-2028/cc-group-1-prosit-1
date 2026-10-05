@@ -1,0 +1,22 @@
+# Copy to terraform.tfvars (git-ignored) and fill in.
+
+budget_limit_usd = 20
+budget_emails    = ["you@example.com", "teammate@example.com"]
+
+# Public keys only (the private keys go into GitHub environment secrets).
+deploy_public_keys = {
+  staging    = "ssh-ed25519 AAAA... gha-staging"
+  production = "ssh-ed25519 AAAA... gha-production"
+}
+
+# Empty = SSH closed; use `terraform output shell_access` instead.
+# ./allow-my-ip.sh adds your current IP here and applies.
+ssh_allowed_cidrs = []
+
+# Turn servers on/off without destroying them.
+environments = {
+  staging    = { instance_type = "t3.micro", running = false }
+  production = { instance_type = "t3.micro", running = false }
+}
+
+enable_rds = true
