@@ -67,10 +67,7 @@ export function Component() {
           {t(role === "farmer" ? "login.farmerTag" : "login.officerTag")}
         </span>
       </div>
-      <IllustrationCard
-        name="phone-login"
-        className="h-[210px] py-2 md:hidden"
-      />
+      <IllustrationCard name="phone-login" className="h-52.5 py-2 md:hidden" />
 
       <form
         id="login-form"
@@ -86,7 +83,7 @@ export function Component() {
           </p>
         </div>
         {/* Computer (Figma D02) */}
-        <div className="hidden space-y-[18px] md:block">
+        <div className="hidden space-y-4.5 md:block">
           <h1 className="text-2xl leading-9 font-semibold text-foreground">
             {t("login.desktopTitle")}
           </h1>

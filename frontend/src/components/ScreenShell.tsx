@@ -49,7 +49,7 @@ export function ScreenShell({
           <p className="text-2xl leading-9 font-semibold text-primary">
             {t("app.name")}
           </p>
-          <p className="max-w-[30rem] text-xl leading-[30px] font-medium text-foreground">
+          <p className="max-w-[30rem] text-xl leading-7.5 font-medium text-foreground">
             {brand.tagline}
           </p>
           <img
@@ -71,7 +71,7 @@ export function ScreenShell({
           className={cn(
             "mx-auto flex min-h-svh w-full max-w-md flex-col gap-6 bg-background px-4 pt-3 pb-6",
             brand
-              ? "md:min-h-0 md:max-w-[28.75rem] md:gap-[18px] md:p-0"
+              ? "md:min-h-0 md:max-w-[28.75rem] md:gap-4.5 md:p-0"
               : "md:min-h-[min(52rem,calc(100svh-4rem))] md:rounded-[30px] md:pt-6 md:shadow-lg md:ring-1 md:ring-border",
             className
           )}

@@ -28,8 +28,8 @@ export function Component() {
       </p>
       <IllustrationCard
         name="welcome"
-        className="h-[330px] p-2.5 md:hidden"
-        imageClassName="h-[310px]"
+        className="h-82.5 p-2.5 md:hidden"
+        imageClassName="h-77.5"
       />
       <div className="space-y-2">
         <h1 className="text-2xl leading-9 font-semibold text-foreground">

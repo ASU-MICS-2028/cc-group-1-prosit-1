@@ -96,10 +96,7 @@ export function Component() {
           {t(role === "farmer" ? "login.farmerTag" : "login.officerTag")}
         </span>
       </div>
-      <IllustrationCard
-        name="phone-login"
-        className="h-[210px] py-2 md:hidden"
-      />
+      <IllustrationCard name="phone-login" className="h-52.5 py-2 md:hidden" />
 
       <form
         id="code-form"

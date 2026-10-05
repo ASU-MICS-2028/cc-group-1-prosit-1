@@ -22,13 +22,13 @@ export function PhoneField({
   return (
     <div
       className={cn(
-        "flex h-[60px] items-center gap-3 rounded-[30px] border-2 bg-card py-1.5 pr-4 pl-1.5 focus-within:ring-3 focus-within:ring-ring/50",
+        "flex h-15 items-center gap-3 rounded-[30px] border-2 bg-card py-1.5 pr-4 pl-1.5 focus-within:ring-3 focus-within:ring-ring/50",
         invalid ? "border-destructive" : "border-primary"
       )}
     >
       <span
         aria-hidden
-        className="flex h-12 w-[84px] shrink-0 items-center justify-center rounded-3xl bg-secondary font-medium text-primary"
+        className="flex h-12 w-21 shrink-0 items-center justify-center rounded-3xl bg-secondary font-medium text-primary"
       >
         +233
       </span>
