@@ -108,11 +108,24 @@ resource "aws_iam_role" "github_deploy" {
 data "aws_iam_policy_document" "github_deploy" {
   for_each = var.environments
   statement {
-    actions = ["ssm:SendCommand"]
-    resources = [
-      "arn:aws:ssm:${var.region}::document/AWS-RunShellScript",
-      aws_instance.app[each.key].arn,
-    ]
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:${var.region}::document/AWS-RunShellScript"]
+  }
+  # Servers come and go with Auto Scaling, so the role may run commands on any
+  # instance tagged with its own environment, and nothing else.
+  statement {
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ec2:${var.region}:${data.aws_caller_identity.current.account_id}:instance/*"]
+    condition {
+      test     = "StringEquals"
+      variable = "ssm:resourceTag/Environment"
+      values   = [each.key]
+    }
+  }
+  # Record the deployed tag, so servers Auto Scaling starts later run the same version.
+  statement {
+    actions   = ["ssm:PutParameter"]
+    resources = [aws_ssm_parameter.image_tag[each.key].arn]
   }
   statement {
     actions   = ["ssm:GetCommandInvocation", "ssm:ListCommandInvocations", "ec2:DescribeInstances"]

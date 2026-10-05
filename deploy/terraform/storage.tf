@@ -55,8 +55,41 @@ resource "aws_s3_bucket_cors_configuration" "photos" {
   bucket   = aws_s3_bucket.photos[each.key].id
   cors_rule {
     allowed_methods = ["PUT", "GET"]
-    allowed_origins = ["*"]
+    allowed_origins = var.photo_upload_origins # only the app's own addresses (ADR 0026)
     allowed_headers = ["*"]
     max_age_seconds = 3000
   }
+}
+
+# HTTPS only (ADR 0026). Phones upload with presigned URLs straight from the internet,
+# so the bucket cannot be limited to the VPC endpoint; access stays limited by IAM
+# (only the app role can sign URLs) and the public-access block above.
+data "aws_iam_policy_document" "photos_tls_only" {
+  for_each = var.environments
+  statement {
+    sid     = "DenyInsecureTransport"
+    effect  = "Deny"
+    actions = ["s3:*"]
+    resources = [
+      aws_s3_bucket.photos[each.key].arn,
+      "${aws_s3_bucket.photos[each.key].arn}/*",
+    ]
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "photos" {
+  for_each = var.environments
+  bucket   = aws_s3_bucket.photos[each.key].id
+  policy   = data.aws_iam_policy_document.photos_tls_only[each.key].json
+
+  depends_on = [aws_s3_bucket_public_access_block.photos]
 }
