@@ -47,7 +47,7 @@ terraform plan
 
 ## Turning environments on and off
 
-In `terraform.tfvars`, set `running = true` or `false` per environment, then `terraform apply`. `false` scales the group to 0 servers; nothing is destroyed. The load balancer and fck-nat keep running (and costing) while the environment is off.
+In `terraform.tfvars`, set `running = true` or `false` per environment, then `terraform apply`. `false` scales the group to 0 servers; nothing is destroyed. A deploy while an environment is at 0 servers only records the version; turning the environment on boots that version. The load balancer and fck-nat keep running (and costing) while the environment is off.
 
 The database is started and stopped outside Terraform (AWS restarts a stopped database after 7 days):
 
