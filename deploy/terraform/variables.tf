@@ -52,17 +52,6 @@ variable "nat_instance_type" {
   default     = "t4g.nano"
 }
 
-variable "ghcr_pull_token" {
-  description = "GitHub token with read:packages only. New servers started by Auto Scaling use it to pull the app images; stored encrypted in SSM."
-  type        = string
-  sensitive   = true
-}
-
-variable "ghcr_pull_user" {
-  description = "GitHub user that owns ghcr_pull_token."
-  type        = string
-}
-
 variable "photo_upload_origins" {
   description = "Web addresses allowed to upload photos straight to S3 from the browser (CORS). Add the HTTPS domain when there is one."
   type        = list(string)

@@ -131,6 +131,27 @@ jobs:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/agroconnect-github-deploy-${{ needs.setup.outputs.environment }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # Servers pull from ECR with their IAM role (ADR 0026), so copy the images there.
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Copy images to ECR
+        id: ecr
+        env:
+          IMAGE_TAG: ${{ needs.setup.outputs.image_tag }}
+          IMAGE_PREFIX: ${{ needs.setup.outputs.image_prefix }}
+          SERVICES: ${{ join(fromJSON(needs.setup.outputs.services), ' ') }}
+        run: |
+          registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+          aws ecr get-login-password | docker login "$registry" -u AWS --password-stdin
+          for s in $SERVICES; do
+            docker buildx imagetools create -t "$registry/agroconnect/$s:$IMAGE_TAG" "$IMAGE_PREFIX/$s:$IMAGE_TAG"
+          done
+          echo "prefix=$registry/agroconnect" >> "$GITHUB_OUTPUT"
+
       - name: Find the servers
         id: server
         env:
@@ -152,16 +173,14 @@ jobs:
           ENVIRONMENT: ${{ needs.setup.outputs.environment }}
           INSTANCE_IDS: ${{ steps.server.outputs.ids }}
           IMAGE_TAG: ${{ needs.setup.outputs.image_tag }}
-          IMAGE_PREFIX: ${{ needs.setup.outputs.image_prefix }}
+          IMAGE_PREFIX: ${{ steps.ecr.outputs.prefix }}
           SERVICES: ${{ join(fromJSON(needs.setup.outputs.services), ' ') }}
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GHCR_USER: ${{ github.actor }}
-        # The script travels base64-encoded inside the SSM command. GHCR_TOKEN is
-        # the job's GITHUB_TOKEN, which expires when this job ends.
+        # The script travels base64-encoded inside the SSM command. The server logs
+        # in to ECR with its own IAM role; no registry token leaves this job.
         run: |
           {
-            printf 'export APP_DIR=%q ENVIRONMENT=%q AWS_REGION=%q IMAGE_TAG=%q IMAGE_PREFIX=%q SERVICES=%q HEALTHCHECK_URL=%q GHCR_USER=%q GHCR_TOKEN=%q COMPOSE_B64=%q\n' \
-              "$APP_DIR" "$ENVIRONMENT" "$AWS_REGION" "$IMAGE_TAG" "$IMAGE_PREFIX" "$SERVICES" "$HEALTHCHECK_URL" "$GHCR_USER" "$GHCR_TOKEN" \
+            printf 'export APP_DIR=%q ENVIRONMENT=%q AWS_REGION=%q IMAGE_TAG=%q IMAGE_PREFIX=%q SERVICES=%q HEALTHCHECK_URL=%q COMPOSE_B64=%q\n' \
+              "$APP_DIR" "$ENVIRONMENT" "$AWS_REGION" "$IMAGE_TAG" "$IMAGE_PREFIX" "$SERVICES" "$HEALTHCHECK_URL" \
               "$(base64 -w0 deploy/docker-compose.yml)"
             cat <<'REMOTE'
           set -euo pipefail
@@ -183,7 +202,8 @@ jobs:
           chown deploy:deploy .env docker-compose.yml
           chmod 600 .env
 
-          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
+          registry="${IMAGE_PREFIX%%/*}"
+          /snap/bin/aws ecr get-login-password --region "$AWS_REGION" | docker login "$registry" -u AWS --password-stdin >/dev/null
 
           previous=$(cat .current_tag 2>/dev/null || true)
           echo "Deploying $IMAGE_TAG (previous: ${previous:-none}) services: $SERVICES"
@@ -211,13 +231,13 @@ jobs:
               echo "Rolling back to $previous"
               IMAGE_TAG="$previous" docker compose up -d $SERVICES
             fi
-            docker logout ghcr.io >/dev/null || true
+            docker logout "$registry" >/dev/null || true
             exit 1
           fi
 
           echo "$IMAGE_TAG" > .current_tag
           docker image prune -f >/dev/null
-          docker logout ghcr.io >/dev/null || true
+          docker logout "$registry" >/dev/null || true
           echo "Deployed $IMAGE_TAG"
           REMOTE
           } > deploy-script.sh

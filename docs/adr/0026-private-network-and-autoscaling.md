@@ -39,7 +39,7 @@ Security groups chain the layers: internet → load balancer (80, 443) → app s
 
 Unhealthy servers (load balancer health check) are replaced. A changed launch template rolls servers one at a time (instance refresh).
 
-**Servers start themselves.** A new server installs Docker, reads its `.env`, a read-only GHCR token and the last deployed image tag from SSM Parameter Store, and starts the app. The deploy workflow rolls out to every server of the environment through SSM, one at a time, then records the tag in `/agroconnect/<env>/image_tag`.
+**Servers start themselves.** A new server installs Docker, reads its `.env` and the last deployed image tag from SSM Parameter Store, pulls that image from **Amazon ECR with its IAM role**, and starts the app. The deploy workflow builds to GHCR, copies the images to ECR, rolls out to every server of the environment through SSM, one at a time, then records the tag in `/agroconnect/<env>/image_tag`. No GitHub token is stored on any server.
 
 **Database:** moved into the database subnets by restoring a snapshot into a new instance (`agroconnect-prod`); the old one is released from Terraform without being deleted. Multi-AZ is a switch (`rds_multi_az`), off by default for cost.
 
@@ -51,6 +51,7 @@ Unhealthy servers (load balancer health check) are replaced. A changed launch te
 - **App servers stay in public subnets behind the load balancer:** cheaper and simpler, but every server keeps a public IP; rejected because the brief is to keep data paths off the internet.
 - **A load balancer per environment:** cleaner separation, double the cost. Host-name rules on one load balancer separate them instead.
 - **Staging on its own RDS:** keeps staging data across server replacements, but costs as much as production's database. Staging data is demo data and is re-seeded on start.
+- **A GitHub token on the servers to pull from GHCR:** simpler, but GitHub cannot issue a narrow token programmatically, and a broad token on an internet-facing server could write to every repository of its owner.
 - **ECS on Fargate:** no servers to manage, but a bigger change to the pipeline than this phase needs.
 
 ## Consequences

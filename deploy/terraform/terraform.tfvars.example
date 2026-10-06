@@ -4,11 +4,6 @@
 budget_limit_usd = 100
 budget_emails    = ["you@example.com", "teammate@example.com"]
 
-# GitHub token with read:packages only (Settings > Developer settings > Personal access
-# tokens). New servers started by Auto Scaling use it to pull the app images.
-ghcr_pull_user  = "your-github-user"
-ghcr_pull_token = "ghp_..."
-
 # running = false scales an environment to 0 servers. host = its domain, "" for none yet.
 environments = {
   staging    = { instance_type = "t3.micro", running = false, min_size = 1, max_size = 1, host = "" }

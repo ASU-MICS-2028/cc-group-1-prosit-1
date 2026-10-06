@@ -6,7 +6,7 @@
 #
 #   /agroconnect/${environment}/dotenv     the app's .env (app-config.tf)
 #   /agroconnect/${environment}/image_tag  last deployed tag, written by the deploy workflow
-#   /agroconnect/${environment}/ghcr       "user:token" with read:packages, to pull images
+#   images come from ECR (${image_prefix}), pulled with the server's IAM role
 set -euo pipefail
 exec > >(tee -a /var/log/agroconnect-boot.log) 2>&1
 
@@ -55,12 +55,12 @@ if [ "$IMAGE_TAG" = none ]; then
   exit 0
 fi
 
-ghcr=$(param ghcr) || { echo "Could not read GHCR credentials"; exit 1; }
-printf '%s' "$${ghcr#*:}" | docker login ghcr.io -u "$${ghcr%%:*}" --password-stdin >/dev/null
+registry="$${IMAGE_PREFIX%%/*}"
+/snap/bin/aws ecr get-login-password --region "$AWS_REGION" | docker login "$registry" -u AWS --password-stdin >/dev/null
 
 export IMAGE_TAG IMAGE_PREFIX
 docker compose pull
 docker compose up -d --remove-orphans
-docker logout ghcr.io >/dev/null || true
+docker logout "$registry" >/dev/null || true
 echo "$IMAGE_TAG" > .current_tag
 echo "==> $(date -Is) started $IMAGE_TAG"

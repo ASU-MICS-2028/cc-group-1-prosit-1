@@ -74,12 +74,3 @@ resource "aws_ssm_parameter" "image_tag" {
     ignore_changes = [value] # owned by the deploy workflow after creation
   }
 }
-
-# Lets new servers pull the private app images from GHCR without a deploy running.
-# A GitHub token with read:packages only.
-resource "aws_ssm_parameter" "ghcr" {
-  for_each = var.environments
-  name     = "/agroconnect/${each.key}/ghcr"
-  type     = "SecureString"
-  value    = "${var.ghcr_pull_user}:${var.ghcr_pull_token}"
-}

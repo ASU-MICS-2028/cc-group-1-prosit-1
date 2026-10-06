@@ -21,7 +21,8 @@ internet ──► load balancer (public subnets, 2 zones)
 | `asg.tf` | One Auto Scaling group per environment (production 2 to 4, staging 1), scaling on CPU; servers set themselves up with `../server-boot.sh.tftpl` |
 | `database.tf` | Production PostgreSQL 17 on RDS in the db subnets (private, encrypted, 7-day backups, optional Multi-AZ); password in SSM |
 | `storage.tf` | One private S3 bucket per environment for photos; HTTPS only; uploads only from `photo_upload_origins` |
-| `app-config.tf` | Each server's `.env`, the last deployed image tag and the image pull token, in SSM Parameter Store |
+| `app-config.tf` | Each server's `.env` and the last deployed image tag, in SSM Parameter Store |
+| `ecr.tf` | Private image registry (ECR) for backend and frontend; servers pull with their IAM role, keeps the last 30 images |
 | `iam.tf` | Server roles (Session Manager, photo bucket, own config) and the GitHub Actions deploy role (OIDC, no stored AWS keys) |
 | `monitoring.tf` | Email alarms: a server failing its health check, an environment with no healthy server, more than 20 server errors in 5 minutes |
 | `budget.tf` | Monthly cost budget with email alerts at 50%, 80%, 100% and forecast 100% |
@@ -31,7 +32,7 @@ internet ──► load balancer (public subnets, 2 zones)
 
 ```sh
 export AWS_PROFILE=<the AgroConnect account's profile>
-cp terraform.tfvars.example terraform.tfvars   # fill in emails and the GHCR pull token
+cp terraform.tfvars.example terraform.tfvars   # fill in the alert emails
 terraform init
 terraform plan
 ```
@@ -40,8 +41,8 @@ terraform plan
 
 ## How servers start and deploy
 
-- A new server (scale-out, replacement, or instance refresh) runs `server-boot.sh.tftpl`: it installs Docker, reads its `.env`, the GHCR token and the last deployed image tag from SSM, and starts the app. No SSH and no deploy needed.
-- The deploy workflow (`.github/workflows/deploy.yml`) finds every running server of the environment, rolls out to them one at a time through SSM, then writes the new tag to `/agroconnect/<env>/image_tag`.
+- A new server (scale-out, replacement, or instance refresh) runs `server-boot.sh.tftpl`: it installs Docker, reads its `.env` and the last deployed image tag from SSM, pulls that image from ECR with its IAM role, and starts the app. No SSH, no stored token, no deploy needed.
+- The deploy workflow (`.github/workflows/deploy.yml`) builds to GHCR, copies the images to ECR, finds every running server of the environment, rolls out to them one at a time through SSM, then writes the new tag to `/agroconnect/<env>/image_tag`.
 - The load balancer only sends traffic to servers whose `/health` answers 200. Auto Scaling replaces servers that stay unhealthy.
 
 ## Turning environments on and off
@@ -73,7 +74,7 @@ The first apply of this version replaces the old setup. Plan a short downtime wi
      --db-instance-identifier agroconnect-production --db-snapshot-identifier agroconnect-production-move
    aws rds wait db-snapshot-available --region af-south-1 --db-snapshot-identifier agroconnect-production-move
    ```
-2. In `terraform.tfvars`, set `rds_restore_snapshot = "agroconnect-production-move"` and fill in the new variables (`ghcr_pull_user`, `ghcr_pull_token`, the new `environments` shape).
+2. In `terraform.tfvars`, set `rds_restore_snapshot = "agroconnect-production-move"` and switch `environments` to the new shape (`min_size`, `max_size`, `host`); remove `deploy_public_keys` and `ssh_allowed_cidrs`.
 3. `terraform plan`. Expect: the new VPC, subnets, fck-nat, load balancer, Auto Scaling groups and `agroconnect-prod` created; the two old instances, their public IPs and the old web security group destroyed; the old database, its subnet group and security group **released, not destroyed** (`removed` blocks in `database.tf`).
 4. `terraform apply`, then run the deploy workflow for each environment so the image tag is recorded and the servers start the app.
 5. Check the app on `terraform output app_url` and the data in the new database.

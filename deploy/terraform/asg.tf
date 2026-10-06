@@ -24,7 +24,7 @@ data "aws_ami" "ubuntu" {
 }
 
 locals {
-  image_prefix = "ghcr.io/${lower(var.github_repo)}"
+  image_prefix = "${local.ecr_registry}/agroconnect" # ecr.tf
 }
 
 resource "aws_launch_template" "app" {
