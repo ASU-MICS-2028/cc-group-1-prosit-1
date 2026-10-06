@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/coverage/
+tests/
+openapi/
+.vs/
+.idea/
+*.md
+Dockerfile
+.dockerignore
+docker-compose*.yml

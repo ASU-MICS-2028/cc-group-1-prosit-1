@@ -22,9 +22,10 @@ permissions:
 
 env:
   COVERAGE_MIN: 70
-  PYTHON_VERSION: "3.12"
-  NODE_VERSION: "20"
-  BACKEND_DIR: backend   # FastAPI service
+  PYTHON_VERSION: "3.12"   # only used to run pre-commit
+  NODE_VERSION: "24"
+  DOTNET_VERSION: "10.0.x"
+  BACKEND_DIR: backend   # ASP.NET Core service
   FRONTEND_DIR: frontend # React app
 
 jobs:
@@ -74,20 +75,22 @@ jobs:
     name: Pre-commit hooks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
       - run: pip install pre-commit
       - name: Run hooks on all files
         # gitleaks runs in its own job below (the hook only scans staged files);
-        # no-commit-to-branch only makes sense on a developer's machine.
+        # no-commit-to-branch only makes sense on a developer's machine;
+        # eslint/prettier need node_modules and dotnet-format needs the SDK, so the
+        # frontend and backend jobs run them.
         env:
-          SKIP: gitleaks,no-commit-to-branch
+          SKIP: gitleaks,no-commit-to-branch,eslint,prettier,dotnet-format
         run: pre-commit run --all-files --show-diff-on-failure --color=always
 
   # ---------------------------------------------------------------------------
@@ -97,7 +100,7 @@ jobs:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Install gitleaks
@@ -131,12 +134,12 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend == 'true' && steps.exists.outputs.frontend == 'true' }}
       docker: ${{ steps.filter.outputs.docker }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: exists
         run: |
-          [ -d "$BACKEND_DIR" ] && echo "backend=true" >> "$GITHUB_OUTPUT" || echo "backend=false" >> "$GITHUB_OUTPUT"
+          ls "$BACKEND_DIR"/*.sln >/dev/null 2>&1 && echo "backend=true" >> "$GITHUB_OUTPUT" || echo "backend=false" >> "$GITHUB_OUTPUT"
           [ -f "$FRONTEND_DIR/package.json" ] && echo "frontend=true" >> "$GITHUB_OUTPUT" || echo "frontend=false" >> "$GITHUB_OUTPUT"
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -154,10 +157,11 @@ jobs:
               - 'deploy/**'
 
   # ---------------------------------------------------------------------------
-  # Backend: FastAPI — lint, format, unit tests + coverage gate
+  # Backend: ASP.NET Core (C#) — format, build, unit tests + coverage gate
+  # (the test projects reference the coverlet.msbuild package)
   # ---------------------------------------------------------------------------
   backend:
-    name: Backend (lint + unit tests)
+    name: Backend (format + build + unit tests)
     needs: changes
     if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
@@ -165,41 +169,30 @@ jobs:
       run:
         working-directory: ${{ env.BACKEND_DIR }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: |
-            ${{ env.BACKEND_DIR }}/requirements*.txt
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          [ -f requirements.txt ] && pip install -r requirements.txt
-          [ -f requirements-dev.txt ] && pip install -r requirements-dev.txt
-          pip install ruff pytest pytest-cov httpx
-      - name: Lint (ruff)
-        run: ruff check .
-      - name: Format check (ruff format)
-        run: ruff format --check .
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore
+        run: dotnet restore
+      - name: Format check
+        run: dotnet format --verify-no-changes --no-restore
+      - name: Build
+        run: dotnet build --no-restore -c Release
       - name: Unit tests with coverage gate
-        # pytest exits non-zero if no tests are found — so "no tests" fails CI.
+        # The build fails if line coverage is below COVERAGE_MIN.
         run: |
-          pytest tests \
-            --cov=app \
-            --cov-report=term-missing \
-            --cov-report=xml \
-            --cov-fail-under="${COVERAGE_MIN}"
+          dotnet test --no-restore -c Release             /p:CollectCoverage=true             /p:CoverletOutputFormat=cobertura             /p:CoverletOutput=./coverage/             /p:Threshold="${COVERAGE_MIN}"             /p:ThresholdType=line             /p:ThresholdStat=total
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: backend-coverage
-          path: ${{ env.BACKEND_DIR }}/coverage.xml
+          path: ${{ env.BACKEND_DIR }}/**/coverage/*.xml
           if-no-files-found: ignore
 
   # ---------------------------------------------------------------------------
-  # Frontend: React — lint, unit tests + coverage gate, production build
+  # Frontend: React — lint, format, audit, unit tests + coverage gate, build
   # ---------------------------------------------------------------------------
   frontend:
     name: Frontend (lint + unit tests + build)
@@ -210,7 +203,7 @@ jobs:
       run:
         working-directory: ${{ env.FRONTEND_DIR }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -220,6 +213,10 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint
+      - name: Format check
+        run: npm run format:check
+      - name: Dependency audit (shipped code only)
+        run: npm audit --omit=dev
       - name: Unit tests with coverage
         # The frontend must define a "test:ci" script that runs tests once
         # (no watch mode) and writes coverage/coverage-summary.json
@@ -257,7 +254,7 @@ jobs:
       matrix:
         service: [backend, frontend]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: check
         run: |
           if [ -f "${{ matrix.service }}/Dockerfile" ]; then
@@ -266,7 +263,7 @@ jobs:
             echo "No ${{ matrix.service }}/Dockerfile yet — skipping."
             echo "present=false" >> "$GITHUB_OUTPUT"
           fi
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
         if: steps.check.outputs.present == 'true'
       - uses: docker/build-push-action@v7
         if: steps.check.outputs.present == 'true'

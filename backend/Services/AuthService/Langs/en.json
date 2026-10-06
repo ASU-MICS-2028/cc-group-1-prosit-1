@@ -1,0 +1,9 @@
+[
+  { "Lang": "en", "Key": "INVALID_PHONE", "Text": "That is not a Ghana phone number. Check it and try again." },
+  { "Lang": "en", "Key": "CODE_WRONG", "Text": "That code is not right. Check the SMS and try again." },
+  { "Lang": "en", "Key": "CODE_EXPIRED", "Text": "That code has expired. Ask for a new one." },
+  { "Lang": "en", "Key": "TOO_MANY_ATTEMPTS", "Text": "Too many wrong codes. Ask for a new code." },
+  { "Lang": "en", "Key": "RESEND_TOO_SOON", "Text": "Please wait a moment before asking for another code." },
+  { "Lang": "en", "Key": "TOO_MANY_CODES", "Text": "Too many codes asked for. Try again in an hour." },
+  { "Lang": "en", "Key": "LOGIN_CODE_SMS", "Text": "Your AgroConnect code is {0}. It works for 10 minutes. Do not share it." }
+]

@@ -1,5 +1,6 @@
-# Weekly dependency update PRs (they go through CI like any other PR).
-# Add "pip" (/backend) and "npm" (/frontend) entries once those folders exist.
+# Weekly dependency updates, batched: at most one PR per ecosystem each Monday,
+# with every update for that ecosystem (major, minor and patch) grouped into it.
+# The nuget entry takes effect once backend/ has a .csproj.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -7,3 +8,52 @@ updates:
     target-branch: development
     schedule:
       interval: weekly
+      day: monday
+    open-pull-requests-limit: 1
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /frontend
+    target-branch: development
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 1
+    groups:
+      frontend-npm:
+        patterns: ["*"]
+    ignore:
+      # TypeScript majors break typescript-eslint until it catches up (TS 7 did).
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Node type majors are only taken together with a Node upgrade.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: nuget
+    directory: /backend
+    target-branch: development
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 1
+    groups:
+      backend-nuget:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /frontend
+    target-branch: development
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 1
+    groups:
+      frontend-docker:
+        patterns: ["*"]
+    ignore:
+      # Stay on Node 24 LTS (matches engines in package.json and CI).
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]

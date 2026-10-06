@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "AgroConnect"
+  },
+  "common": {
+    "loading": "Loading…",
+    "language": "Language",
+    "search": "Search",
+    "listen": "Listen to {{language}}",
+    "back": "Back",
+    "logOut": "Log out"
+  },
+  "nav": {
+    "home": "Home",
+    "farmers": "Farmers",
+    "sync": "Sync",
+    "profile": "Profile",
+    "main": "Main"
+  },
+  "welcome": {
+    "hello": "Hello,",
+    "greeting": "Akwaaba!",
+    "choose": "Choose your language",
+    "question": "Which language do you speak?",
+    "hint": "Tap the speaker to hear each one",
+    "continueIn": "Continue in {{language}}",
+    "groupLabel": "Languages",
+    "brand": "Akwaaba! Choose the language you understand best.",
+    "desktopTitle": "Choose your language",
+    "desktopHint": "Tap the speaker to hear each one."
+  },
+  "home": {
+    "title": "AgroConnect",
+    "subtitle": "Register farmers and connect them with extension services, even without internet.",
+    "bannerTitle": "Register a farmer",
+    "bannerText": "Works without internet. Everything is saved on this phone and sent later.",
+    "register": "Register a farmer",
+    "status": "Records on this phone",
+    "recent": "Recent farmers",
+    "viewAll": "View all",
+    "noRecent": "No farmers registered on this phone yet."
+  },
+  "register": {
+    "title": "Register a farmer",
+    "placeholder": "The registration form is coming soon."
+  },
+  "farmers": {
+    "title": "Farmers",
+    "search": "Search by name or phone",
+    "filterLabel": "Show",
+    "all": "All",
+    "empty": "No farmers registered on this phone yet.",
+    "noMatch": "No farmer matches your search.",
+    "register": "Register a farmer",
+    "detailTitle": "Farmer details"
+  },
+  "sync": {
+    "title": "Sync",
+    "waiting": "{{count}} waiting",
+    "synced": "{{count}} synced",
+    "failed": "{{count}} failed",
+    "waitingStatus": "Waiting to sync",
+    "syncedStatus": "Synced",
+    "failedStatus": "Sync failed",
+    "allDone": "Everything on this phone is saved and synced.",
+    "explain": "Records are saved on this phone first. They are sent to the server whenever there is a connection."
+  },
+  "profile": {
+    "title": "Profile",
+    "languageHelp": "Choose the language you want to use.",
+    "languageTitle": "Language"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Go back home"
+  },
+  "errors": {
+    "offline": "No network. Connect to the internet and try again.",
+    "generic": "Something went wrong. Please try again."
+  },
+  "start": {
+    "tagline": "Farmer support for Ghana",
+    "intro": "Register farmers, get advice, prices and help, even when there is no network.",
+    "getStarted": "Get started",
+    "brand": "Register farmers anywhere, even without network."
+  },
+  "who": {
+    "title": "Who are you?",
+    "subtitle": "This sets up the app for the work you do.",
+    "officer": "Extension officer",
+    "officerHint": "I work for MoFA and visit farmers",
+    "farmer": "Farmer",
+    "farmerHint": "I want to see my details, prices and help",
+    "office": "Office or MoFA staff? Use AgroConnect on a computer for reports and admin."
+  },
+  "login": {
+    "officerTag": "Officer log in",
+    "farmerTag": "Farmer log in",
+    "title": "Log in with your phone number",
+    "sms": "We will send you a 6-digit code by SMS.",
+    "phoneLabel": "Phone number",
+    "shared": "A shared family phone is fine.",
+    "send": "Send code",
+    "sending": "Sending…",
+    "invalidPhone": "Enter a Ghana number, like 24 000 0000.",
+    "codeTitle": "Enter the code we sent you",
+    "sentTo": "Sent to {{phone}}",
+    "change": "Change",
+    "codeLabel": "6-digit code",
+    "resendIn": "Didn't get it? Resend code in {{time}}",
+    "resendPrompt": "Didn't get it?",
+    "resend": "Resend code",
+    "resent": "A new code is on its way.",
+    "verify": "Verify",
+    "verifying": "Checking…",
+    "codeIncomplete": "Enter all 6 digits.",
+    "desktopTitle": "Log in",
+    "desktopSms": "Enter your phone number. We will send you a 6-digit code by SMS."
+  },
+  "farmerHome": {
+    "hello": "Hello, {{name}}"
+  }
+}
