@@ -156,19 +156,26 @@ jobs:
         id: server
         env:
           ENVIRONMENT: ${{ needs.setup.outputs.environment }}
+          IMAGE_TAG: ${{ needs.setup.outputs.image_tag }}
         # Auto Scaling runs one or more servers per environment (ADR 0026); deploy to all.
         run: |
           ids=$(aws ec2 describe-instances \
             --filters "Name=tag:Name,Values=agroconnect-$ENVIRONMENT" "Name=instance-state-name,Values=running" \
             --query 'Reservations[].Instances[].InstanceId' --output text | xargs)
           if [ -z "$ids" ] || [ "$ids" = None ]; then
-            echo "::error::No running agroconnect-$ENVIRONMENT servers. Set running = true for it in terraform.tfvars and apply."
-            exit 1
+            # Scaled to 0 (running = false): record the approved version; servers that
+            # Auto Scaling starts later boot it (ADR 0026).
+            aws ssm put-parameter --name "/agroconnect/$ENVIRONMENT/image_tag" --value "$IMAGE_TAG" \
+              --type String --overwrite >/dev/null
+            echo "::notice::No running agroconnect-$ENVIRONMENT servers. Recorded $IMAGE_TAG; servers will boot it when the environment is scaled up."
+            echo "ids=" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           echo "ids=$ids" >> "$GITHUB_OUTPUT"
           echo "Servers: $ids"
 
       - name: Roll out
+        if: steps.server.outputs.ids != ''
         env:
           ENVIRONMENT: ${{ needs.setup.outputs.environment }}
           INSTANCE_IDS: ${{ steps.server.outputs.ids }}
