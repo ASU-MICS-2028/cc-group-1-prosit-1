@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { initials, maskPhone } from "./phone"
+import { initials, maskPhone, toE164 } from "./phone"
 
 describe("maskPhone", () => {
   it("hides the middle digits like the design", () => {
@@ -21,5 +21,20 @@ describe("initials", () => {
   it("copes with one name or none", () => {
     expect(initials("Fatima")).toBe("F")
     expect(initials("   ")).toBe("?")
+  })
+})
+
+describe("toE164", () => {
+  it("accepts the ways people type a Ghana number", () => {
+    expect(toE164("24 000 0001")).toBe("+233240000001")
+    expect(toE164("0240000001")).toBe("+233240000001")
+    expect(toE164("233 24 000 0001")).toBe("+233240000001")
+    expect(toE164("+233 55-123-4567")).toBe("+233551234567")
+  })
+
+  it("refuses numbers that are not Ghana numbers", () => {
+    expect(toE164("12345")).toBeNull()
+    expect(toE164("0140000001")).toBeNull()
+    expect(toE164("")).toBeNull()
   })
 })

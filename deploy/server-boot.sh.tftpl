@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Runs once when Auto Scaling starts a new app server (ADR 0026). Rendered by Terraform
+# (deploy/terraform/asg.tf). The server has no public IP and no SSH: it sets itself up,
+# reads its config from SSM Parameter Store with its own IAM role, and starts the app
+# at the image tag the last successful deploy recorded.
+#
+#   /agroconnect/${environment}/dotenv     the app's .env (app-config.tf)
+#   /agroconnect/${environment}/image_tag  last deployed tag, written by the deploy workflow
+#   images come from ECR (${image_prefix}), pulled with the server's IAM role
+set -euo pipefail
+exec > >(tee -a /var/log/agroconnect-boot.log) 2>&1
+
+ENVIRONMENT="${environment}"
+AWS_REGION="${region}"
+IMAGE_PREFIX="${image_prefix}"
+APP_DIR=/opt/agroconnect
+
+echo "==> $(date -Is) booting agroconnect-$ENVIRONMENT"
+
+fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+echo "==> Docker and AWS CLI"
+command -v docker >/dev/null || curl -fsSL https://get.docker.com | sh
+systemctl enable --now docker
+[ -x /snap/bin/aws ] || snap install aws-cli --classic
+
+# The deploy workflow runs as root through SSM and hands files to this user.
+id deploy >/dev/null 2>&1 || useradd --create-home --shell /bin/bash deploy
+usermod -aG docker deploy
+install -d -m 750 -o deploy -g deploy "$APP_DIR"
+cd "$APP_DIR"
+
+echo '${compose_b64}' | base64 -d > docker-compose.yml
+
+param() {
+  # Piped through cat: the aws-cli snap writes nothing when stdout goes straight to a file.
+  for _ in 1 2 3 4 5 6; do
+    out=$(/snap/bin/aws ssm get-parameter --region "$AWS_REGION" --name "/agroconnect/$ENVIRONMENT/$1" \
+      --with-decryption --query Parameter.Value --output text 2>/dev/null | cat) && [ -n "$out" ] && { printf '%s' "$out"; return 0; }
+    sleep 10
+  done
+  return 1
+}
+
+param dotenv > .env.new || { echo "Could not read dotenv from SSM"; exit 1; }
+printf '\n' >> .env.new
+mv .env.new .env
+chown deploy:deploy .env docker-compose.yml
+chmod 600 .env
+
+IMAGE_TAG=$(param image_tag || echo none)
+if [ "$IMAGE_TAG" = none ]; then
+  echo "No deploy recorded yet for $ENVIRONMENT; the first deploy will start the app."
+  exit 0
+fi
+
+registry="$${IMAGE_PREFIX%%/*}"
+/snap/bin/aws ecr get-login-password --region "$AWS_REGION" | docker login "$registry" -u AWS --password-stdin >/dev/null
+
+export IMAGE_TAG IMAGE_PREFIX
+docker compose pull
+docker compose up -d --remove-orphans
+docker logout "$registry" >/dev/null || true
+echo "$IMAGE_TAG" > .current_tag
+echo "==> $(date -Is) started $IMAGE_TAG"

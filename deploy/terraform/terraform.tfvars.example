@@ -1,22 +1,23 @@
 # Copy to terraform.tfvars (git-ignored) and fill in.
 
-budget_limit_usd = 20
+# Expected about $90 a month with staging on, $80 with it off (ADR 0026).
+budget_limit_usd = 100
 budget_emails    = ["you@example.com", "teammate@example.com"]
 
-# Public keys only (the private keys go into GitHub environment secrets).
-deploy_public_keys = {
-  staging    = "ssh-ed25519 AAAA... gha-staging"
-  production = "ssh-ed25519 AAAA... gha-production"
-}
-
-# Empty = SSH closed; use `terraform output shell_access` instead.
-# ./allow-my-ip.sh adds your current IP here and applies.
-ssh_allowed_cidrs = []
-
-# Turn servers on/off without destroying them.
+# running = false scales an environment to 0 servers. host = its domain, "" for none yet.
 environments = {
-  staging    = { instance_type = "t3.micro", running = false }
-  production = { instance_type = "t3.micro", running = false }
+  staging    = { instance_type = "t3.micro", running = false, min_size = 1, max_size = 1, host = "" }
+  production = { instance_type = "t3.micro", running = false, min_size = 2, max_size = 4, host = "" }
 }
 
-enable_rds = true
+# HTTPS once there is a domain and an ACM certificate for it (in af-south-1).
+certificate_arn = ""
+
+# Browser addresses allowed to upload photos to S3 (add the HTTPS domain later).
+photo_upload_origins = ["http://localhost:5173"]
+
+enable_rds   = true
+rds_multi_az = false
+
+# Only for the one-time move of the database into the private subnets (README).
+# rds_restore_snapshot = "agroconnect-production-move"

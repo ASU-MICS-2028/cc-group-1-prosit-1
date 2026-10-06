@@ -26,4 +26,6 @@
 | 2026-10-04 | UI built from the AgroConnect Figma frames (marketplace template frames not built); responsive bottom bar to sidebar; system font kept | [0021](adr/0021-ui-from-figma-design.md) |
 | 2026-10-05 | Sign-in rules: 6-digit SMS code valid 10 min (45 s resend, 5 per hour, 5 tries), hashed storage, 7-day tokens, 30 requests per 5 min per address | [0022](adr/0022-sign-in-codes-and-tokens.md) |
 | 2026-10-05 | Database names in snake_case; links between tables enforced with foreign keys (photo links checked by the API) | [0023](adr/0023-database-naming-and-links.md) |
+| 2026-10-05 | Phone vs desktop: one app at one URL; the screen width picks the layout (desktop from Tailwind md, 768 px), the signed-in role picks menus and routes; no device detection, no blocked pages ("easier on a computer" notice instead) | Team decision note "AgroConnect: Phone vs Desktop" |
+| 2026-10-05 | Proposed: own VPC in two zones with private app and database subnets, fck-nat instead of a NAT Gateway, one load balancer, Auto Scaling (production 2 to 4, staging 1), S3 HTTPS-only with restricted CORS | [0026](adr/0026-private-network-and-autoscaling.md) |
 | pending | Postgres vs NoSQL, phone-number auth, security plan: awaiting team confirmation | [0006](adr/0006-postgres-over-nosql.md), [0007](adr/0007-phone-number-auth.md), [0015](adr/0015-security-and-privacy.md) |

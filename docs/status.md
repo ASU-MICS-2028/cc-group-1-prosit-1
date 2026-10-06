@@ -2,7 +2,7 @@
 
 Living file: where the project stands right now. Update it at the end of every working session (what was done, what's next). Decisions themselves go in `adr/` and `decision-log.md`; this file only tracks progress.
 
-_Last updated: 2026-10-05 (sign-in backend and database on branch feature/ui-build; docs set: overview, data dictionary, stack, local guide)_
+_Last updated: 2026-10-05 midday (start and sign-in screens from Figma, connected to the API, on branch feature/ui-implementation)_
 
 ## The assignment (Prosit 1, AgroConnect Ghana)
 Ashesi ICS 534 Cloud Computing. A four-week build; we are building all four weeks into one product.
@@ -51,10 +51,18 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
   - **Live check:** done against the local database.
 - Database clean-up (ADR 0023): snake_case names (`full_name`) and six enforced links (foreign keys); the first migration was regenerated before anything was committed or deployed. A test proves the database refuses a visit for a farmer that does not exist.
 - Backend tests: 109 in total; every test project above the 70% gate. A shared real-PostgreSQL test fixture (Testcontainers) and an end-to-end sign-in test over HTTP.
+- PR #31 (sign-in, database, docs, UI foundation) merged into `development`.
+- Start and sign-in screens from Figma (branch `feature/ui-implementation`): Welcome, Language, Who are you, Log in, Enter code, for officers and farmers.
+  - Wired to the real API through a typed client generated from the OpenAPI contract (`npm run api:types`) and a Vite dev proxy (`/api` to `localhost:8000`).
+  - Route guards: signed-out people see the start screens; officers get `/`; farmers get `/farmer`.
+  - The sign-in is kept on the phone for 7 days.
+  - Frontend tests: 72, 98.3% lines.
+  - Checked live in headless Chrome against the API and database.
+- Roles, accounts and devices decided (ADR 0024): three roles; admins add officers, officers register farmers; farmers phone only, officers phone and computer, admins computer only on a separate `/admin` sign-in. Designed in Figma (desktop *Who are you?*, farmer-on-a-computer, admin sign-in and code, *Add a person*, admin-on-a-phone), not built yet.
 - Docs: `phase-1-overview.md` (replaces the concise PDF), `data-dictionary.md` (who is who, every table, column and code), `tech-choices.md` (the whole stack), `local-development.md` (every command, health checks, laptop vs servers), and `project-structure.md` (backend file guide).
 
 ## Bernard's to-do right now
-1. Open the pull request for this branch into `development` (sign-in, database, docs, UI so far).
+1. Try the start screens yourself: `npm run dev` in `frontend/` with the API running (see `local-development.md` 5.5).
 2. With the DevOps lead: HTTPS for staging and production, and the `Auth__SigningKey` secret on each server.
 3. Share `docs/` with the team (Liza: `data-dictionary.md`; slides: `phase-1-overview.md`).
 
@@ -67,6 +75,8 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 6. **USSD and SMS** with the Africa's Talking sandbox.
 7. **Infra (DevOps lead):** TLS, environment secrets, the two EC2 instances, later S3 for photos.
 8. **Write-up and slides:** from `phase-1-overview.md` and the ADRs.
+9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend `/admin` sign-in, farmer-on-a-computer and admin-on-a-phone screens, the *Add a person* form.
+10. **Pictures (ADR 0025):** export tile pictures as 160 px WebP outside the bundle, a Workbox cache-first rule for them, and the icon fallback when offline.
 
 ## Open questions
 - Team sign-off still needed on ADR 0006 (Postgres), 0007 (phone-number auth) and 0015 (security plan).
