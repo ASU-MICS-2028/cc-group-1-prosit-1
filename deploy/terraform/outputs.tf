@@ -1,15 +1,30 @@
-output "public_ips" {
-  description = "Fixed public IP per environment (the app is served on http://<ip>)."
-  value       = { for k, e in aws_eip.app : k => e.public_ip }
+output "app_url" {
+  description = "Where the app answers. Production on port 80 (443 with a certificate); staging on port 8080 until it has a host name."
+  value = {
+    production = "http://${aws_lb.main.dns_name}"
+    staging    = "http://${aws_lb.main.dns_name}:8080"
+  }
 }
 
-output "instance_ids" {
-  value = { for k, i in aws_instance.app : k => i.id }
+output "load_balancer_dns" {
+  description = "Point the domain's DNS (CNAME or Route 53 alias) here once there is one."
+  value       = aws_lb.main.dns_name
+}
+
+output "autoscaling_groups" {
+  value = { for k, g in aws_autoscaling_group.app : k => g.name }
 }
 
 output "shell_access" {
-  description = "Open a shell without SSH (works from any IP)."
-  value       = { for k, i in aws_instance.app : k => "aws ssm start-session --target ${i.id} --region ${var.region}" }
+  description = "Servers have no public IP and no SSH. List them, then open a shell with Session Manager."
+  value = {
+    for k in keys(var.environments) : k => join(" ", [
+      "aws ec2 describe-instances --region ${var.region}",
+      "--filters Name=tag:Name,Values=agroconnect-${k} Name=instance-state-name,Values=running",
+      "--query 'Reservations[].Instances[].InstanceId' --output text",
+      "# then: aws ssm start-session --region ${var.region} --target <instance-id>",
+    ])
+  }
 }
 
 output "photo_buckets" {
@@ -17,7 +32,7 @@ output "photo_buckets" {
 }
 
 output "rds_endpoint" {
-  value = var.enable_rds ? aws_db_instance.production[0].address : null
+  value = var.enable_rds ? aws_db_instance.main[0].address : null
 }
 
 output "rds_password_parameter" {
@@ -31,10 +46,11 @@ output "github_deploy_role_arns" {
 }
 
 output "app_config_parameters" {
-  description = "Each server's .env, written on every deploy. Read with: aws ssm get-parameter --with-decryption --name <this>"
+  description = "Each server's .env, read at boot and on every deploy. Read with: aws ssm get-parameter --with-decryption --name <this>"
   value       = { for k, p in aws_ssm_parameter.dotenv : k => p.name }
 }
 
-output "ssh_open_to" {
-  value = length(var.ssh_allowed_cidrs) == 0 ? "nobody (use shell_access)" : join(", ", var.ssh_allowed_cidrs)
+output "nat_instance" {
+  description = "fck-nat: outbound internet for the private servers."
+  value       = "fck-nat on ${var.nat_instance_type}, high-availability mode"
 }

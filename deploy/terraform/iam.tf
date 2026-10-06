@@ -58,6 +58,25 @@ resource "aws_iam_role_policy" "config" {
   policy   = data.aws_iam_policy_document.config[each.key].json
 }
 
+# Pull the app images from ECR (ecr.tf) with the server's own role; no registry token.
+data "aws_iam_policy_document" "ecr_pull" {
+  statement {
+    actions   = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+  }
+  statement {
+    actions   = ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer", "ecr:BatchCheckLayerAvailability"]
+    resources = [for r in aws_ecr_repository.app : r.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "ecr_pull" {
+  for_each = var.environments
+  name     = "pull-app-images"
+  role     = aws_iam_role.app[each.key].id
+  policy   = data.aws_iam_policy_document.ecr_pull.json
+}
+
 resource "aws_iam_instance_profile" "app" {
   for_each = var.environments
   name     = "agroconnect-${each.key}-app"
@@ -108,15 +127,40 @@ resource "aws_iam_role" "github_deploy" {
 data "aws_iam_policy_document" "github_deploy" {
   for_each = var.environments
   statement {
-    actions = ["ssm:SendCommand"]
-    resources = [
-      "arn:aws:ssm:${var.region}::document/AWS-RunShellScript",
-      aws_instance.app[each.key].arn,
-    ]
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ssm:${var.region}::document/AWS-RunShellScript"]
+  }
+  # Servers come and go with Auto Scaling, so the role may run commands on any
+  # instance tagged with its own environment, and nothing else.
+  statement {
+    actions   = ["ssm:SendCommand"]
+    resources = ["arn:aws:ec2:${var.region}:${data.aws_caller_identity.current.account_id}:instance/*"]
+    condition {
+      test     = "StringEquals"
+      variable = "ssm:resourceTag/Environment"
+      values   = [each.key]
+    }
+  }
+  # Record the deployed tag, so servers Auto Scaling starts later run the same version.
+  statement {
+    actions   = ["ssm:PutParameter"]
+    resources = [aws_ssm_parameter.image_tag[each.key].arn]
   }
   statement {
     actions   = ["ssm:GetCommandInvocation", "ssm:ListCommandInvocations", "ec2:DescribeInstances"]
     resources = ["*"]
+  }
+  # Copy the built images from GHCR into ECR before rolling out.
+  statement {
+    actions   = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+  }
+  statement {
+    actions = [
+      "ecr:BatchCheckLayerAvailability", "ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer",
+      "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload", "ecr:PutImage",
+    ]
+    resources = [for r in aws_ecr_repository.app : r.arn]
   }
 }
 
