@@ -47,7 +47,7 @@ export default defineConfig({
         // Saved on install: every page's code, styles, the small icons and the language files,
         // so the whole app opens offline. Pictures are not (ADR 0025): see runtimeCaching.
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
-        globIgnores: ["illustrations/**", "app-icon.svg"],
+        globIgnores: ["illustrations/**", "pictures/**", "app-icon.svg"],
         // Any address opened offline (/farmers, /register?step=3) gets the app, which routes it.
         navigateFallback: "/index.html",
         // ...except the API and its test pages, which must always go to the server.
@@ -55,11 +55,13 @@ export default defineConfig({
         runtimeCaching: [
           {
             // Pictures: downloaded when first shown, then kept for offline use (ADR 0025)
-            urlPattern: ({ url }) => url.pathname.startsWith("/illustrations/"),
+            urlPattern: ({ url }) =>
+              url.pathname.startsWith("/illustrations/") ||
+              url.pathname.startsWith("/pictures/"),
             handler: "CacheFirst",
             options: {
               cacheName: "pictures",
-              expiration: { maxEntries: 60, maxAgeSeconds: 30 * 24 * 60 * 60 },
+              expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
             },
           },
         ],

@@ -96,7 +96,9 @@ describe("start screens", () => {
     await userEvent.type(screen.getByLabelText("Phone number"), "6")
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()
     expect(
-      screen.getByText("A shared family phone is fine.")
+      screen.getByText(
+        "New officer? Your MoFA admin adds you first, then you can log in."
+      )
     ).toBeInTheDocument()
   })
 

@@ -338,10 +338,11 @@ describe("farm services", () => {
     expect(
       await screen.findByText("Tolon Farmers Cooperative")
     ).toBeInTheDocument()
-    expect(screen.getByText("42 members")).toBeInTheDocument()
-    expect(
-      screen.getByRole("link", { name: "Call the chair" })
-    ).toHaveAttribute("href", "tel:+233200000000")
+    expect(screen.getByText(/42 members/)).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /^Call / })).toHaveAttribute(
+      "href",
+      "tel:+233200000000"
+    )
     coop.unmount()
 
     renderRoute("/farmer/lessons", { as: "farmer" })

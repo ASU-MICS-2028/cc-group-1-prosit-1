@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 import { renderRoute } from "@/test/renderRoute"
@@ -44,52 +44,31 @@ describe("router", () => {
     expect(router.state.location.pathname).toBe("/welcome")
   })
 
-  it("offers the work places in the bottom bar and the sidebar, Profile in the account menu", async () => {
+  it("offers the work places in the bottom bar and the sidebar", async () => {
     renderRoute("/")
     await screen.findByRole("heading", { name: "Fuseini" })
     // the CSS shows one of the two navigations per screen size; jsdom renders both
-    for (const place of ["Home", "Farmers", "Visits"])
+    for (const place of ["Home", "Farmers", "Visits", "Market", "Profile"])
       expect(screen.getAllByRole("link", { name: place })).toHaveLength(2)
-    // phones: Profile in the bottom bar; computers: in the account menu at the top right
-    expect(screen.getAllByRole("link", { name: "Profile" })).toHaveLength(1)
+    // computers only: requests from farmers and money live in the sidebar
+    for (const place of ["Requests", "Money"])
+      expect(screen.getAllByRole("link", { name: place })).toHaveLength(1)
     expect(screen.getByRole("link", { name: "AgroConnect" })).toHaveAttribute(
       "href",
       "/"
     )
   })
 
-  it("the account menu opens Profile and asks before logging out", async () => {
-    const { router } = renderRoute("/")
+  it("collapses the sidebar and remembers it", async () => {
+    renderRoute("/")
+    await screen.findByRole("heading", { name: "Fuseini" })
     await userEvent.click(
-      await screen.findByRole("button", {
-        name: "Account menu for Fuseini Alhassan",
-      })
-    )
-    const menu = await screen.findByRole("menu")
-    for (const item of [
-      "Profile",
-      "Language",
-      "Help",
-      "Install the app",
-      "Log out",
-    ])
-      expect(
-        within(menu).getByRole("menuitem", { name: item })
-      ).toBeInTheDocument()
-    await userEvent.click(
-      within(menu).getByRole("menuitem", { name: "Profile" })
-    )
-    await waitFor(() => expect(router.state.location.pathname).toBe("/profile"))
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "Account menu for Fuseini Alhassan" })
-    )
-    await userEvent.click(
-      await screen.findByRole("menuitem", { name: "Log out" })
+      screen.getByRole("button", { name: "Close the menu" })
     )
     expect(
-      await screen.findByRole("dialog", { name: "Log out?" })
+      screen.getByRole("button", { name: "Open the menu" })
     ).toBeInTheDocument()
+    expect(localStorage.getItem("agroconnect.sidebar")).toBe("closed")
   })
 
   it("says so when a farmer is not on this device", async () => {
