@@ -35,7 +35,7 @@ export function ContactStep({ showTitle = true }: StepProps = {}) {
               tiles={PHONE_TYPES.map((p) => ({
                 value: p.code,
                 label: t(`register.phoneTypes.${p.code}`),
-                icon: p.icon,
+                picture: p.picture,
               }))}
               value={field.value}
               onChange={field.onChange}
@@ -81,7 +81,7 @@ export function ContactStep({ showTitle = true }: StepProps = {}) {
               tiles={CHANNELS.map((c) => ({
                 value: c.code,
                 label: t(`register.channels.${c.code}`),
-                icon: c.icon,
+                picture: c.picture,
               }))}
               value={field.value}
               onChange={field.onChange}

@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, MessageSquareText, Wallet } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { useSession } from "@/auth/session"
@@ -7,6 +7,7 @@ import { FarmerSearch } from "@/components/FarmerSearch"
 import { SyncBadge } from "@/components/SyncBadge"
 import { buttonVariants } from "@/components/ui/button"
 import { Avatar, FarmerRow } from "@/features/farmers/FarmerRow"
+import { loans, requests } from "@/features/sample/data"
 import { countByStatus, useDraft, useFarmers } from "@/features/farmers/farmers"
 import { STEPS } from "@/features/registration/schema"
 import { isToday, partOfDay } from "@/lib/dates"
@@ -37,12 +38,11 @@ export function Component() {
             {firstName}
           </h1>
         </div>
-        {/* Computers: the search and the badge are in the top bar */}
-        <SyncBadge
-          waiting={counts.waiting}
-          failed={counts.failed}
-          className="md:hidden"
-        />
+        {/* Figma D04: on computers the search sits next to the badge in the page header */}
+        <div className="flex items-center gap-3">
+          <FarmerSearch className="hidden h-11 w-72 md:flex lg:w-80" />
+          <SyncBadge waiting={counts.waiting} failed={counts.failed} />
+        </div>
       </header>
 
       <FarmerSearch className="md:hidden" />
@@ -52,6 +52,7 @@ export function Component() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,740fr)_minmax(0,364fr)]">
         <div className="min-w-0 space-y-6">
           <HomeBanner />
+          <MoreWork />
           {farmers.length === 0 ? (
             <>
               <ContinueDraft />
@@ -167,6 +168,60 @@ function Today({
         ))}
       </ul>
     </section>
+  )
+}
+
+/**
+ * Figma 03 (phone): requests from farmers and money sit on the home screen, because phones have no
+ * sidebar. Computers reach them from the sidebar. Counts are sample data until the backend has them.
+ */
+function MoreWork() {
+  const { t } = useTranslation()
+  const cards = [
+    {
+      to: "/requests",
+      icon: MessageSquareText,
+      title: t("nav.requests"),
+      text: t("home.requestsOpen", {
+        count: requests.filter((r) => !r.answered).length,
+      }),
+      tone: "bg-cream",
+    },
+    {
+      to: "/money",
+      icon: Wallet,
+      title: t("nav.money"),
+      text: t("home.loansToReview", {
+        count: loans.filter((l) => l.status === "review").length,
+      }),
+      tone: "bg-secondary",
+    },
+  ]
+  return (
+    <ul className="grid grid-cols-2 gap-3 md:hidden">
+      {cards.map(({ to, icon: Icon, title, text, tone }) => (
+        <li key={to}>
+          <Link
+            to={to}
+            className={cn(
+              "flex h-full flex-col gap-2 rounded-[20px] p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+              tone
+            )}
+          >
+            <span
+              aria-hidden
+              className="flex size-10 items-center justify-center rounded-full bg-card text-primary"
+            >
+              <Icon className="size-5" />
+            </span>
+            <span className="text-base font-medium text-foreground">
+              {title}
+            </span>
+            <span className="text-sm text-muted-foreground">{text}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   )
 }
 

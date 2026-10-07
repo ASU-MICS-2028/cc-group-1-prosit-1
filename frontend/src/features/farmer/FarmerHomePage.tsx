@@ -1,15 +1,11 @@
 import {
   CheckCheck,
+  ChevronRight,
   ClipboardList,
-  CloudSun,
-  Leaf,
   Pencil,
   Phone,
-  PlayCircle,
-  Store,
-  TrendingUp,
-  Users,
   Volume2,
+  Wallet,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
@@ -18,24 +14,62 @@ import { useSession } from "@/auth/session"
 import { AudioButton } from "@/components/AudioButton"
 import { ListRow, SectionTitle } from "@/components/Blocks"
 import { FieldArt } from "@/components/FieldArt"
+import { Picture, type PictureSource } from "@/components/Picture"
 import { farmerSpeech } from "@/features/farmers/describe"
 import { Avatar } from "@/features/farmers/FarmerRow"
 import { promptAudio } from "@/lib/audio"
 import { formatShortDate } from "@/lib/dates"
 import { maskPhone } from "@/lib/phone"
 import { speak } from "@/lib/speech"
+import { cn } from "@/lib/utils"
 import { toFacts } from "./profile"
 import { useServerData } from "./useServerData"
 import { WeatherIcon } from "./WeatherIcon"
 
-const SERVICES = [
-  { key: "prices", to: "/farmer/prices", icon: Store },
-  { key: "weather", to: "/farmer/weather", icon: CloudSun },
-  { key: "cropCheck", to: "/farmer/crop-check", icon: Leaf },
-  { key: "harvest", to: "/farmer/harvest", icon: TrendingUp },
-  { key: "cooperative", to: "/farmer/cooperative", icon: Users },
-  { key: "lessons", to: "/farmer/lessons", icon: PlayCircle },
-] as const
+const SERVICES: {
+  key:
+    "prices" | "weather" | "cropCheck" | "harvest" | "cooperative" | "lessons"
+  to: string
+  picture: PictureSource
+  tone: string
+}[] = [
+  {
+    key: "prices",
+    to: "/farmer/prices",
+    picture: { photo: "options/trading", emoji: "chart-increasing" },
+    tone: "bg-secondary",
+  },
+  {
+    key: "weather",
+    to: "/farmer/weather",
+    picture: { photo: "options/rainy", emoji: "sun-behind-rain-cloud" },
+    tone: "bg-cream",
+  },
+  {
+    key: "cropCheck",
+    to: "/farmer/crop-check",
+    picture: { photo: "options/pests", emoji: "magnifying-glass" },
+    tone: "bg-cream",
+  },
+  {
+    key: "harvest",
+    to: "/farmer/harvest",
+    picture: { photo: "options/corn", emoji: "ear-of-corn" },
+    tone: "bg-secondary",
+  },
+  {
+    key: "cooperative",
+    to: "/farmer/cooperative",
+    picture: { photo: "options/cooperative", emoji: "handshake" },
+    tone: "bg-secondary",
+  },
+  {
+    key: "lessons",
+    to: "/farmer/lessons",
+    picture: { photo: "options/phone", emoji: "television" },
+    tone: "bg-cream",
+  },
+]
 
 /**
  * The farmer's home (Figma 23): Akwaaba, registered with MoFA, their status, the farm services and their own
@@ -98,26 +132,52 @@ export function Component() {
           <SectionTitle id="farmer-services">
             {t("farmerApp.home.services")}
           </SectionTitle>
-          <ul className="grid grid-cols-3 gap-3 md:gap-4">
-            {SERVICES.map(({ key, to, icon: Icon }) => (
+          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
+            {SERVICES.map(({ key, to, picture, tone }) => (
               <li key={key}>
                 <Link
                   to={to}
-                  className="flex h-full min-h-24 flex-col items-center justify-center gap-2 rounded-[20px] border bg-card px-2 py-3 text-center outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 md:min-h-28"
+                  className={cn(
+                    "flex h-full flex-col gap-2 rounded-[20px] p-3 outline-none transition-[filter] hover:brightness-[0.97] focus-visible:ring-3 focus-visible:ring-ring/50",
+                    tone
+                  )}
                 >
-                  <span
-                    aria-hidden
-                    className="flex size-11 items-center justify-center rounded-full bg-secondary text-primary"
-                  >
-                    <Icon className="size-5.5" />
-                  </span>
-                  <span className="text-sm leading-5 font-medium text-foreground md:text-base">
+                  <Picture
+                    source={picture}
+                    fit="contain"
+                    className="h-16 w-full rounded-2xl bg-card/70 p-1.5 md:h-20"
+                    emojiClassName="mx-auto h-16 w-12 md:h-20"
+                  />
+                  <span className="text-base leading-6 font-medium text-foreground">
                     {t(`farmerApp.tiles.${key}`)}
+                  </span>
+                  <span className="text-sm leading-5 text-muted-foreground">
+                    {t(`farmerApp.tiles.${key}Hint`)}
                   </span>
                 </Link>
               </li>
             ))}
           </ul>
+          <Link
+            to="/farmer/money"
+            className="flex items-center gap-3 rounded-[20px] bg-primary p-4 text-primary-foreground outline-none hover:brightness-110 focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <span
+              aria-hidden
+              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white/15"
+            >
+              <Wallet className="size-5.5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-medium">
+                {t("farmerApp.tiles.money")}
+              </span>
+              <span className="block text-sm opacity-90">
+                {t("farmerApp.tiles.moneyHint")}
+              </span>
+            </span>
+            <ChevronRight aria-hidden className="size-5 shrink-0" />
+          </Link>
         </section>
 
         <div className="space-y-6 self-start lg:col-start-2 lg:row-start-1">

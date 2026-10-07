@@ -18,6 +18,10 @@ export const routes: RouteObject[] = [
       },
       { path: "/who", lazy: () => import("@/features/start/WhoPage") },
       {
+        path: "/farmer-on-computer",
+        lazy: () => import("@/features/start/FarmerOnComputerPage"),
+      },
+      {
         path: "/login/:role",
         lazy: () => import("@/features/start/LoginPage"),
       },
@@ -70,7 +74,201 @@ export const routes: RouteObject[] = [
       {
         path: "cooperative",
         handle: { hideBottomNav: true },
-        lazy: () => import("@/features/farmer/CooperativePage"),
+        lazy: () =>
+          import("@/features/cooperative/cooperative").then((m) => ({
+            Component: m.CooperativeHome,
+          })),
+      },
+      {
+        path: "cooperative/savings",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/cooperative/cooperative").then((m) => ({
+            Component: m.Savings,
+          })),
+      },
+      {
+        path: "cooperative/savings/done",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/cooperative/cooperative").then((m) => ({
+            Component: m.SavingsAdded,
+          })),
+      },
+      {
+        path: "cooperative/meeting",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/cooperative/cooperative").then((m) => ({
+            Component: m.Meeting,
+          })),
+      },
+      {
+        path: "cooperative/meeting/done",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/cooperative/cooperative").then((m) => ({
+            Component: m.MeetingConfirmed,
+          })),
+      },
+      {
+        path: "cooperative/order",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/cooperative/cooperative").then((m) => ({
+            Component: m.GroupOrder,
+          })),
+      },
+      {
+        path: "cooperative/order/done",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/cooperative/cooperative").then((m) => ({
+            Component: m.OrderJoined,
+          })),
+      },
+      {
+        path: "cooperative/sell",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/cooperative/cooperative").then((m) => ({
+            Component: m.SellTogether,
+          })),
+      },
+      {
+        path: "cooperative/sell/done",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/cooperative/cooperative").then((m) => ({
+            Component: m.BagsAdded,
+          })),
+      },
+      {
+        path: "money",
+        lazy: () =>
+          import("@/features/money/home").then((m) => ({
+            Component: m.MoneyHome,
+          })),
+      },
+      {
+        path: "money/link",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/link").then((m) => ({
+            Component: m.LinkWallet,
+          })),
+      },
+      {
+        path: "money/link/approve",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/link").then((m) => ({
+            Component: m.ApproveOnPhone,
+          })),
+      },
+      {
+        path: "money/link/done",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/link").then((m) => ({
+            Component: m.WalletLinked,
+          })),
+      },
+      {
+        path: "money/buy",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/buy").then((m) => ({
+            Component: m.ChooseInputs,
+          })),
+      },
+      {
+        path: "money/buy/shop",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/buy").then((m) => ({
+            Component: m.ChooseShop,
+          })),
+      },
+      {
+        path: "money/buy/pay",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/buy").then((m) => ({
+            Component: m.PayForInputs,
+          })),
+      },
+      {
+        path: "money/buy/paid",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/buy").then((m) => ({
+            Component: m.InputsPaid,
+          })),
+      },
+      {
+        path: "money/delivery",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/buy").then((m) => ({
+            Component: m.TrackDelivery,
+          })),
+      },
+      {
+        path: "money/loan",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/services").then((m) => ({
+            Component: m.LoanOffer,
+          })),
+      },
+      {
+        path: "money/loan/amount",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/services").then((m) => ({
+            Component: m.LoanAmount,
+          })),
+      },
+      {
+        path: "money/loan/sent",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/services").then((m) => ({
+            Component: m.LoanSent,
+          })),
+      },
+      {
+        path: "money/insurance",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/services").then((m) => ({
+            Component: m.Insurance,
+          })),
+      },
+      {
+        path: "money/insurance/done",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/services").then((m) => ({
+            Component: m.Insured,
+          })),
+      },
+      {
+        path: "money/get-paid",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/services").then((m) => ({
+            Component: m.GetPaid,
+          })),
+      },
+      {
+        path: "money/get-paid/sent",
+        handle: { hideBottomNav: true },
+        lazy: () =>
+          import("@/features/money/services").then((m) => ({
+            Component: m.PaymentRequested,
+          })),
       },
       {
         path: "lessons",
@@ -137,6 +335,55 @@ export const routes: RouteObject[] = [
         lazy: () => import("@/features/visits/LogVisitPage"),
       },
       { path: "visits", lazy: () => import("@/features/visits/VisitsPage") },
+      {
+        path: "requests",
+        lazy: () =>
+          import("@/features/officer/requests").then((m) => ({
+            Component: m.Requests,
+          })),
+      },
+      {
+        path: "requests/:id",
+        lazy: () =>
+          import("@/features/officer/requests").then((m) => ({
+            Component: m.Requests,
+          })),
+      },
+      {
+        path: "money",
+        lazy: () =>
+          import("@/features/officer/money").then((m) => ({
+            Component: m.MoneyHealth,
+          })),
+      },
+      {
+        path: "money/loans",
+        lazy: () =>
+          import("@/features/officer/money").then((m) => ({
+            Component: m.Loans,
+          })),
+      },
+      {
+        path: "money/loans/:id",
+        lazy: () =>
+          import("@/features/officer/money").then((m) => ({
+            Component: m.Loans,
+          })),
+      },
+      {
+        path: "money/loans/:id/approved",
+        lazy: () =>
+          import("@/features/officer/money").then((m) => ({
+            Component: m.LoanApproved,
+          })),
+      },
+      {
+        path: "market",
+        lazy: () =>
+          import("@/features/officer/money").then((m) => ({
+            Component: m.OfficerMarket,
+          })),
+      },
       {
         path: "sync",
         handle: { hideBottomNav: true },

@@ -333,15 +333,9 @@ describe("farmer app", () => {
     expect(
       await screen.findByRole("heading", { name: "Ama" })
     ).toBeInTheDocument()
-    // phones: bottom bar; computers: Home and Help in the top bar, Profile in the account menu
-    for (const place of ["Home", "Help"])
-      expect(screen.getAllByRole("link", { name: place })).toHaveLength(2)
-    expect(screen.getAllByRole("link", { name: "Profile" })).toHaveLength(1)
-
-    expect(screen.getByRole("link", { name: "AgroConnect" })).toHaveAttribute(
-      "href",
-      "/farmer"
-    )
+    // farmers use phones (ADR 0024): the bottom bar is the only navigation
+    for (const place of ["Home", "Market", "Money", "Help", "Profile"])
+      expect(screen.getAllByRole("link", { name: place })).toHaveLength(1)
     await userEvent.click(screen.getAllByRole("link", { name: "Help" })[0])
     expect(
       await screen.findByText("How to check my details")

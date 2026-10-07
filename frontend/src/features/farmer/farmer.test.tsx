@@ -168,7 +168,12 @@ describe("farmer home", () => {
       "My cooperative",
       "Lessons",
     ])
-      expect(screen.getByRole("link", { name: service })).toBeInTheDocument()
+      expect(
+        screen.getByRole("link", { name: new RegExp(`^${service}`) })
+      ).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: /Pay for inputs/ })
+    ).toHaveAttribute("href", "/farmer/money")
     expect(
       screen.getByRole("link", { name: /Call my officer/ })
     ).toHaveAttribute("href", "tel:+233240000001")
@@ -298,9 +303,21 @@ describe("farm services", () => {
           advice: ["check_under_leaves", "ask_officer_spray"],
         }),
     })
+    // the leaf photo stays on the phone and is shown with the answer
+    Object.assign(URL, {
+      createObjectURL: vi.fn(() => "blob:leaf"),
+      revokeObjectURL: vi.fn(),
+    })
     renderRoute("/farmer/crop-check", { as: "farmer" })
 
-    await userEvent.click(await screen.findByRole("button", { name: "Check" }))
+    await userEvent.upload(
+      await screen.findByLabelText("Take a photo"),
+      new File(["leaf"], "leaf.jpg", { type: "image/jpeg" })
+    )
+    expect(
+      screen.getByRole("img", { name: "Your leaf photo" })
+    ).toHaveAttribute("src", "blob:leaf")
+    await userEvent.click(screen.getByRole("button", { name: "Check" }))
     expect(screen.getByText("Choose the crop.")).toBeInTheDocument()
     await userEvent.click(screen.getByRole("radio", { name: "Maize" }))
     await userEvent.click(screen.getByRole("button", { name: "Check" }))
@@ -319,7 +336,15 @@ describe("farm services", () => {
     expect(
       screen.getByText(/Ask your officer which spray to use/)
     ).toBeInTheDocument()
-    await userEvent.click(screen.getByRole("button", { name: "Check again" }))
+    expect(
+      screen.getByRole("img", { name: "Your leaf photo" })
+    ).toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole("button", { name: "Check another leaf" })
+    )
+    expect(
+      screen.queryByRole("img", { name: "Your leaf photo" })
+    ).not.toBeInTheDocument()
     expect(
       screen.getByRole("checkbox", { name: "Holes in leaves" })
     ).not.toBeChecked()
@@ -338,10 +363,11 @@ describe("farm services", () => {
     expect(
       await screen.findByText("Tolon Farmers Cooperative")
     ).toBeInTheDocument()
-    expect(screen.getByText("42 members")).toBeInTheDocument()
-    expect(
-      screen.getByRole("link", { name: "Call the chair" })
-    ).toHaveAttribute("href", "tel:+233200000000")
+    expect(screen.getByText(/42 members/)).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /^Call / })).toHaveAttribute(
+      "href",
+      "tel:+233200000000"
+    )
     coop.unmount()
 
     renderRoute("/farmer/lessons", { as: "farmer" })

@@ -3,43 +3,89 @@ import {
   CircleHelp,
   CircleUser,
   House,
+  MessageSquareText,
   Store,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react"
 
 export interface NavItem {
   to: string
-  key: `nav.${"home" | "farmers" | "visits" | "profile" | "help" | "market"}`
+  key: `nav.${"home" | "farmers" | "visits" | "requests" | "market" | "money" | "profile" | "help"}`
   icon: LucideIcon
   end: boolean
 }
 
+const home: NavItem = { to: "/", key: "nav.home", icon: House, end: true }
+const farmers: NavItem = {
+  to: "/farmers",
+  key: "nav.farmers",
+  icon: Users,
+  end: false,
+}
+const visits: NavItem = {
+  to: "/visits",
+  key: "nav.visits",
+  icon: CalendarCheck,
+  end: false,
+}
+const requests: NavItem = {
+  to: "/requests",
+  key: "nav.requests",
+  icon: MessageSquareText,
+  end: false,
+}
+const market: NavItem = {
+  to: "/market",
+  key: "nav.market",
+  icon: Store,
+  end: false,
+}
+const money: NavItem = {
+  to: "/money",
+  key: "nav.money",
+  icon: Wallet,
+  end: false,
+}
+const profile: NavItem = {
+  to: "/profile",
+  key: "nav.profile",
+  icon: CircleUser,
+  end: false,
+}
+
 /**
- * The officer's four places (Figma "Phone Nav · Extension Officer", D04 sidebar). Market and Money
- * join in Phase 2 with their screens; Sync is reached from the waiting badge and Profile.
+ * The officer's phone bar (Figma "Phone Nav · Extension Officer"): five tabs. Requests and Money
+ * open from cards on Home, because a phone bar has room for five.
  */
 export const navItems: readonly NavItem[] = [
-  { to: "/", key: "nav.home", icon: House, end: true },
-  { to: "/farmers", key: "nav.farmers", icon: Users, end: false },
-  { to: "/visits", key: "nav.visits", icon: CalendarCheck, end: false },
-  { to: "/profile", key: "nav.profile", icon: CircleUser, end: false },
+  home,
+  farmers,
+  visits,
+  market,
+  profile,
 ]
 
-/** Computers: the work sections in the sidebar; Profile moves to the account menu (ADR 0030). */
-export const sideNavItems: readonly NavItem[] = navItems.filter(
-  (item) => item.key !== "nav.profile"
-)
+/**
+ * The officer's sidebar on computers (Figma "Desktop Sidebar · Office"): every place, so the
+ * officer can do on a computer everything they can do on a phone.
+ */
+export const sideNavItems: readonly NavItem[] = [
+  home,
+  farmers,
+  visits,
+  requests,
+  market,
+  money,
+  profile,
+]
 
-/** The farmer's places (Figma "Phone Nav · Farmer"); Money joins with the mobile money service (Phase 3). */
+/** The farmer's places (Figma "Phone Nav · Farmer"). Farmers are phone only (ADR 0024). */
 export const farmerNavItems: readonly NavItem[] = [
   { to: "/farmer", key: "nav.home", icon: House, end: true },
   { to: "/farmer/prices", key: "nav.market", icon: Store, end: false },
+  { to: "/farmer/money", key: "nav.money", icon: Wallet, end: false },
   { to: "/farmer/help", key: "nav.help", icon: CircleHelp, end: false },
   { to: "/farmer/profile", key: "nav.profile", icon: CircleUser, end: false },
 ]
-
-/** Computers: the farmer's places as links in the top bar; Profile is in the account menu. */
-export const farmerTopItems: readonly NavItem[] = farmerNavItems.filter(
-  (item) => item.key !== "nav.profile"
-)
