@@ -1,6 +1,6 @@
 # ADR 0026: Private network, fck-nat, load balancer and Auto Scaling
 
-- **Status:** Proposed (Terraform drafted; not applied)
+- **Status:** Accepted, applied 2026-10-06 (staging) and 2026-10-07 (production). Live state: [`../infrastructure.md`](../infrastructure.md)
 - **Date:** 2026-10-05
 
 ## Context

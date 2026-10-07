@@ -2,7 +2,7 @@
 
 Living file: where the project stands right now. Update it at the end of every working session (what was done, what's next). Decisions themselves go in `adr/` and `decision-log.md`; this file only tracks progress.
 
-_Last updated: 2026-10-05 midday (start and sign-in screens from Figma, connected to the API, on branch feature/ui-implementation)_
+_Last updated: 2026-10-07 (private network live: staging and production behind the load balancer; see infrastructure.md)_
 
 ## The assignment (Prosit 1, AgroConnect Ghana)
 Ashesi ICS 534 Cloud Computing. A four-week build; we are building all four weeks into one product.
@@ -59,6 +59,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
   - Frontend tests: 72, 98.3% lines.
   - Checked live in headless Chrome against the API and database.
 - Roles, accounts and devices decided (ADR 0024): three roles; admins add officers, officers register farmers; farmers phone only, officers phone and computer, admins computer only. *Who are you?* shows Extension officer / Farmer on a phone and Extension officer / MoFA admin on a computer (amended 2026-10-06). Designed in Figma (desktop *Who are you?*, farmer-on-a-computer, admin sign-in and code, *Add a person*, admin-on-a-phone), not built yet.
+- Infrastructure live (ADR 0026, 2026-10-06/07): own VPC with private app and database subnets, fck-nat, one load balancer, Auto Scaling (production 2 to 4 servers, staging 1), images from ECR, RDS `agroconnect-prod` in private subnets, CloudWatch alarms by email, budget $100. Production runs `sha-1355e3e`, staging `sha-75c52f7`. Old servers and the old database are deleted. Details and runbook: `infrastructure.md`.
 - Docs: `phase-1-overview.md` (replaces the concise PDF), `data-dictionary.md` (who is who, every table, column and code), `tech-choices.md` (the whole stack), `local-development.md` (every command, health checks, laptop vs servers), and `project-structure.md` (backend file guide).
 
 ## Bernard's to-do right now
@@ -73,7 +74,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 4. **Screens from Figma:** sign-in, the 7-step registration, review and saved, farmer list and detail, edit, visits, the farmer's own view, help, sign-out, error, empty and offline states.
 5. **Installable app:** manifest, icons, Workbox caching, update and install prompts.
 6. **USSD and SMS** with the Africa's Talking sandbox.
-7. **Infra (DevOps lead):** TLS, environment secrets, the two EC2 instances, later S3 for photos.
+7. **Infra (DevOps lead):** HTTPS (domain + ACM certificate on the load balancer), a staging host name. The private network, Auto Scaling, ECR, alarms and the photo buckets are live (`infrastructure.md`).
 8. **Write-up and slides:** from `phase-1-overview.md` and the ADRs.
 9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend: *Who are you?* choices by screen width, admin sign-in, farmer-on-a-computer and admin-on-a-phone screens, the *Add a person* form.
 10. **Pictures (ADR 0025):** export tile pictures as 160 px WebP outside the bundle, a Workbox cache-first rule for them, and the icon fallback when offline.
