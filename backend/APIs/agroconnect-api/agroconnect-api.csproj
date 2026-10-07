@@ -13,6 +13,8 @@
     <ProjectReference Include="..\..\Services\Libs\Data\Data.csproj" />
     <ProjectReference Include="..\..\Services\PlatformService\PlatformService.csproj" />
     <ProjectReference Include="..\..\Services\AuthService\AuthService.csproj" />
+    <ProjectReference Include="..\..\Services\FarmerService\FarmerService.csproj" />
+    <ProjectReference Include="..\..\Services\SyncService\SyncService.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />

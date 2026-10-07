@@ -78,8 +78,10 @@ describe("sync status", () => {
     )
     expect(screen.getByText("3 waiting")).toBeInTheDocument()
     expect(screen.getByText("1 synced")).toBeInTheDocument()
-    expect(screen.getByText("0 failed")).toBeInTheDocument()
-    expect(screen.getByRole("img", { name: "Sync failed" })).toBeInTheDocument()
+    expect(screen.getByText("0 to fix")).toBeInTheDocument()
+    expect(
+      screen.getByRole("img", { name: "Needs fixing" })
+    ).toBeInTheDocument()
   })
 })
 

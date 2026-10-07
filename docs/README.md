@@ -42,5 +42,14 @@ Still to write: `architecture.md` (diagram), `ussd-menu.md`, `consent-form.md`, 
 | [0021](adr/0021-ui-from-figma-design.md) | Building the UI from the Figma design: mobile first, responsive, system font | Accepted |
 | [0022](adr/0022-sign-in-codes-and-tokens.md) | Sign-in details: SMS codes, 7-day tokens and limits | Accepted |
 | [0023](adr/0023-database-naming-and-links.md) | Database naming (snake_case) and enforced links (foreign keys) | Accepted |
+| [0024](adr/0024-roles-accounts-and-devices.md) | Roles, how accounts are made, and which device each role uses | Accepted, amended 2026-10-06 |
+| [0025](adr/0025-pictures-online-icons-offline.md) | Pictures load online; icons are the offline placeholder | Accepted |
+| [0026](adr/0026-private-network-and-autoscaling.md) | Private network, fck-nat, load balancer and Auto Scaling | Proposed |
+| [0027](adr/0027-registration-form-flow.md) | How the registration form works on the phone: steps, drafts, consent, duplicates | Accepted |
+| [0028](adr/0028-installable-app-and-updates.md) | Installing the app, working offline, and updates (service worker) | Accepted |
+| [0029](adr/0029-app-screens-and-sync-contract.md) | The Phase 1 app screens, their navigation, and the sync contract the app expects | Accepted |
+| [0030](adr/0030-desktop-top-bar-and-account-menu.md) | A top bar and an account menu on computers | Accepted |
+| [0031](adr/0031-farmer-services-with-sample-providers.md) | The farmer's app and farm services, built now with sample providers | Accepted |
+| [0032](adr/0032-sync-service.md) | The sync service: how the server stores what officers saved offline | Accepted |
 
 **Proposed** means recommended but waiting for the owning team member to confirm.

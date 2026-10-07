@@ -26,7 +26,8 @@ public static class AuthServiceExtension
     {
         var authOptions = services.AddOptions<AuthOptions>()
             .Bind(configuration.GetSection(AuthOptions.Section))
-            .Validate(o => Encoding.UTF8.GetByteCount(o.SigningKey) >= 32, "Auth:SigningKey must be at least 32 bytes (set Auth__SigningKey).");
+            .Validate(o => Encoding.UTF8.GetByteCount(o.SigningKey) >= 32, "Auth:SigningKey must be at least 32 bytes (set Auth__SigningKey).")
+            .Validate(o => o.TokenLifetime > TimeSpan.Zero, "Auth:TokenLifetime must be longer than zero, e.g. 7.00:00:00.");
         if (!BuildTime.IsOpenApiExport)
         {
             authOptions.ValidateOnStart();

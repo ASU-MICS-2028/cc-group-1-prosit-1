@@ -1,6 +1,6 @@
 # ADR 0024: Roles, how accounts are made, and which device each role uses
 
-- **Status:** Accepted, amended 2026-10-06 (desktop sign-in choice; see *Amendment*)
+- **Status:** Accepted, amended 2026-10-06 (desktop sign-in choice) and 2026-10-07 (farmers on a computer); see the *Amendments*
 - **Date:** 2026-10-05
 
 ## Context
@@ -59,3 +59,16 @@ The DevOps lead changed where MoFA admins choose their role. *Who are you?* now 
 - **Computer:** Extension officer or MoFA admin. Farmers are phone only, so a farmer choice on a computer would only lead to a dead end; they get one small line pointing to the phone instead.
 
 The separate `/admin` page is dropped: admins use the same address as everyone else and pick *MoFA admin* on a computer. The device rule is still the 768 px width check, never the user agent. Everything else in this ADR (three roles, who creates each account, devices per role, unknown-number handling) is unchanged.
+
+## Amendment (2026-10-07): farmers on a computer too
+
+Farmers are no longer phone only. A farmer who travels to town and signs in on a laptop, or in a cyber café, gets the same app in the computer layout, exactly like an extension officer: **the screen width picks the layout, the role picks the menus** (team rule "Phone vs Desktop").
+
+- **Under 768 px:** the farmer's phone design with the bottom bar (Home, Help, Profile).
+- **From 768 px:** the sidebar with the same places, and wider pages (the farmer's Home in two columns, Profile in two columns).
+- ***Who are you?*** keeps **Farmer** at every width. On a computer it will also offer **MoFA admin** once the admin sign-in exists.
+- The *Farmers use AgroConnect on the phone* screen (D02f) is no longer needed.
+
+**Why:** farmers do reach computers (district offices, cyber cafés, a relative's laptop), and turning them away to a phone they may not have with them helps nobody. One responsive app already serves both sizes, so this costs no extra screens.
+
+**Still true:** MoFA admins remain computer only (their pages are dashboards); farmers without a smartphone still have USSD, SMS and their officer.

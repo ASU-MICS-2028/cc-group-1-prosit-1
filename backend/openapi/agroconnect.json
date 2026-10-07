@@ -192,10 +192,570 @@
           }
         ]
       }
+    },
+    "/api/farmer/me": {
+      "get": {
+        "tags": [
+          "Farmer"
+        ],
+        "operationId": "GetMyFarm",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyFarmResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/farmer/prices": {
+      "get": {
+        "tags": [
+          "Farmer"
+        ],
+        "operationId": "GetPrices",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/farmer/weather": {
+      "get": {
+        "tags": [
+          "Farmer"
+        ],
+        "operationId": "GetWeather",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/farmer/crop-check": {
+      "post": {
+        "tags": [
+          "Farmer"
+        ],
+        "operationId": "CheckCrop",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CropCheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CropCheckResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/farmer/harvest-forecast": {
+      "get": {
+        "tags": [
+          "Farmer"
+        ],
+        "operationId": "GetHarvestForecast",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HarvestForecastResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/farmer/cooperative": {
+      "get": {
+        "tags": [
+          "Farmer"
+        ],
+        "operationId": "GetCooperative",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CooperativeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/farmer/lessons": {
+      "get": {
+        "tags": [
+          "Farmer"
+        ],
+        "operationId": "GetLessons",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/farmer/change-requests": {
+      "post": {
+        "tags": [
+          "Farmer"
+        ],
+        "operationId": "RequestChange",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeRequestResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/sync": {
+      "post": {
+        "tags": [
+          "Sync"
+        ],
+        "operationId": "SyncRecords",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
     }
   },
   "components": {
     "schemas": {
+      "AgeBand": {
+        "enum": [
+          "18-25",
+          "26-35",
+          "36-50",
+          "over_50",
+          null
+        ]
+      },
+      "AreaUnit": {
+        "enum": [
+          "acres",
+          "hectares"
+        ]
+      },
       "AuthResponse": {
         "required": [
           "token",
@@ -213,6 +773,463 @@
           },
           "user": {
             "$ref": "#/components/schemas/MeResponse"
+          }
+        }
+      },
+      "ChangeArea": {
+        "enum": [
+          "phone",
+          "farm",
+          "crops",
+          "other"
+        ]
+      },
+      "ChangeRequest": {
+        "required": [
+          "area",
+          "details"
+        ],
+        "type": "object",
+        "properties": {
+          "area": {
+            "$ref": "#/components/schemas/ChangeArea"
+          },
+          "details": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeRequestResponse": {
+        "required": [
+          "source",
+          "reference"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/DataSource"
+          },
+          "reference": {
+            "type": "string"
+          }
+        }
+      },
+      "ContactChannel": {
+        "enum": [
+          "sms",
+          "ussd",
+          "call",
+          "app"
+        ]
+      },
+      "CooperativeResponse": {
+        "required": [
+          "source",
+          "name",
+          "community",
+          "members",
+          "chairName",
+          "chairPhoneE164",
+          "nextMeeting",
+          "meetingPlace"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/DataSource"
+          },
+          "name": {
+            "type": "string"
+          },
+          "community": {
+            "type": "string"
+          },
+          "members": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "chairName": {
+            "type": "string"
+          },
+          "chairPhoneE164": {
+            "type": "string"
+          },
+          "nextMeeting": {
+            "type": "string",
+            "format": "date"
+          },
+          "meetingPlace": {
+            "type": "string"
+          }
+        }
+      },
+      "Crop": {
+        "enum": [
+          "maize",
+          "sorghum",
+          "rice",
+          "groundnut",
+          "yam",
+          "cassava"
+        ]
+      },
+      "CropAdvice": {
+        "enum": [
+          "check_under_leaves",
+          "pick_and_crush",
+          "ask_officer_spray",
+          "remove_sick_leaves",
+          "add_fertiliser",
+          "water_early",
+          "mulch_soil",
+          "improve_drainage",
+          "show_officer"
+        ]
+      },
+      "CropCheckRequest": {
+        "required": [
+          "crop",
+          "symptoms"
+        ],
+        "type": "object",
+        "properties": {
+          "crop": {
+            "$ref": "#/components/schemas/Crop"
+          },
+          "symptoms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CropSymptom"
+            }
+          }
+        }
+      },
+      "CropCheckResponse": {
+        "required": [
+          "source",
+          "likelyProblem",
+          "urgent",
+          "advice"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/DataSource"
+          },
+          "likelyProblem": {
+            "$ref": "#/components/schemas/CropProblem"
+          },
+          "urgent": {
+            "type": "boolean"
+          },
+          "advice": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CropAdvice"
+            }
+          }
+        }
+      },
+      "CropForecast": {
+        "required": [
+          "crop",
+          "lowBags",
+          "highBags",
+          "harvestMonth"
+        ],
+        "type": "object",
+        "properties": {
+          "crop": {
+            "$ref": "#/components/schemas/Crop"
+          },
+          "lowBags": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "highBags": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "harvestMonth": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CropPrice": {
+        "required": [
+          "crop",
+          "markets",
+          "weekChangePercent",
+          "last30Days"
+        ],
+        "type": "object",
+        "properties": {
+          "crop": {
+            "$ref": "#/components/schemas/Crop"
+          },
+          "markets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarketPrice"
+            }
+          },
+          "weekChangePercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "last30Days": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        }
+      },
+      "CropProblem": {
+        "enum": [
+          "fall_armyworm",
+          "leaf_spot",
+          "nutrient_shortage",
+          "drought_stress",
+          "root_rot",
+          "unclear"
+        ]
+      },
+      "CropSymptom": {
+        "enum": [
+          "yellow_leaves",
+          "holes_in_leaves",
+          "spots_on_leaves",
+          "wilting",
+          "insects_seen",
+          "stunted",
+          "rotting"
+        ]
+      },
+      "DataPurchase": {
+        "enum": [
+          "daily",
+          "weekly",
+          "monthly",
+          "none",
+          null
+        ]
+      },
+      "DataSource": {
+        "enum": [
+          "sample",
+          "live"
+        ]
+      },
+      "FarmObservation": {
+        "enum": [
+          "all_good",
+          "pests",
+          "disease",
+          "dry_soil",
+          "flooding"
+        ]
+      },
+      "FarmerProfile": {
+        "required": [
+          "id",
+          "fullName",
+          "phoneE164",
+          "hasNoPhone",
+          "gender",
+          "ageBand",
+          "community",
+          "regionDistrict",
+          "language",
+          "consentAt",
+          "crops",
+          "farmSize",
+          "farmSizeUnit",
+          "soil",
+          "plantingSeasons",
+          "latitude",
+          "longitude",
+          "locationAccuracyMetres",
+          "phoneType",
+          "reachChannels",
+          "mobileMoney",
+          "helpNeeded",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phoneE164": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hasNoPhone": {
+            "type": "boolean"
+          },
+          "gender": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ]
+          },
+          "ageBand": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AgeBand"
+              }
+            ]
+          },
+          "community": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "regionDistrict": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "language": {
+            "$ref": "#/components/schemas/Language"
+          },
+          "consentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "crops": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Crop"
+            }
+          },
+          "farmSize": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "farmSizeUnit": {
+            "$ref": "#/components/schemas/AreaUnit"
+          },
+          "soil": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/SoilType"
+              }
+            ]
+          },
+          "plantingSeasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlantingSeason"
+            }
+          },
+          "latitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "locationAccuracyMetres": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "phoneType": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PhoneType"
+              }
+            ]
+          },
+          "reachChannels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactChannel"
+            }
+          },
+          "mobileMoney": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MobileMoneyUse"
+              }
+            ]
+          },
+          "helpNeeded": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HelpNeed"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Gender": {
+        "enum": [
+          "female",
+          "male",
+          "other",
+          "prefer_not_to_say",
+          null
+        ]
+      },
+      "HarvestForecastResponse": {
+        "required": [
+          "source",
+          "crops"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/DataSource"
+          },
+          "crops": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CropForecast"
+            }
           }
         }
       },
@@ -238,6 +1255,32 @@
           }
         }
       },
+      "HelpNeed": {
+        "enum": [
+          "seeds",
+          "fertiliser",
+          "pests",
+          "market_prices",
+          "weather",
+          "loans"
+        ]
+      },
+      "IncomeSource": {
+        "enum": [
+          "crops",
+          "animals",
+          "trading",
+          "other"
+        ]
+      },
+      "Language": {
+        "enum": [
+          "en",
+          "tw",
+          "ee",
+          "dag"
+        ]
+      },
       "LanguageDto": {
         "required": [
           "code",
@@ -250,6 +1293,79 @@
           },
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "LastAgentVisit": {
+        "enum": [
+          "never",
+          "this_year",
+          "last_year",
+          "longer_ago",
+          null
+        ]
+      },
+      "Lesson": {
+        "required": [
+          "id",
+          "topic",
+          "minutes"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "topic": {
+            "$ref": "#/components/schemas/LessonTopic"
+          },
+          "minutes": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "LessonTopic": {
+        "enum": [
+          "storage",
+          "pests",
+          "planting",
+          "soil",
+          "selling",
+          "money"
+        ]
+      },
+      "LessonsResponse": {
+        "required": [
+          "source",
+          "lessons"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/DataSource"
+          },
+          "lessons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Lesson"
+            }
+          }
+        }
+      },
+      "MarketPrice": {
+        "required": [
+          "market",
+          "pricePerKg"
+        ],
+        "type": "object",
+        "properties": {
+          "market": {
+            "type": "string"
+          },
+          "pricePerKg": {
+            "type": "number",
+            "format": "double"
           }
         }
       },
@@ -296,6 +1412,113 @@
               "string"
             ],
             "format": "uuid"
+          }
+        }
+      },
+      "MobileMoneyUse": {
+        "enum": [
+          "yes",
+          "no",
+          "skip",
+          null
+        ]
+      },
+      "MyFarmResponse": {
+        "required": [
+          "farmer",
+          "officer",
+          "visits"
+        ],
+        "type": "object",
+        "properties": {
+          "farmer": {
+            "$ref": "#/components/schemas/FarmerProfile"
+          },
+          "officer": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/OfficerContact"
+              }
+            ]
+          },
+          "visits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VisitSummary"
+            }
+          }
+        }
+      },
+      "OfficerContact": {
+        "required": [
+          "fullName",
+          "phoneE164",
+          "district"
+        ],
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "phoneE164": {
+            "type": "string"
+          },
+          "district": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PhoneType": {
+        "enum": [
+          "smartphone",
+          "basic_phone",
+          "no_phone",
+          null
+        ]
+      },
+      "PlantingSeason": {
+        "enum": [
+          "rainy",
+          "dry"
+        ]
+      },
+      "PricesResponse": {
+        "required": [
+          "source",
+          "updatedAt",
+          "currency",
+          "markets",
+          "prices"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/DataSource"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "markets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CropPrice"
+            }
           }
         }
       },
@@ -367,6 +1590,392 @@
           }
         }
       },
+      "SoilType": {
+        "enum": [
+          "sandy",
+          "clay",
+          "loamy",
+          "not_sure",
+          null
+        ]
+      },
+      "SyncFarmer": {
+        "required": [
+          "id",
+          "consentGiven",
+          "consentAt",
+          "language",
+          "fullName",
+          "phoneE164",
+          "hasNoPhone",
+          "gender",
+          "ageBand",
+          "community",
+          "regionDistrict",
+          "crops",
+          "farmSize",
+          "farmSizeUnit",
+          "soil",
+          "plantingSeasons",
+          "latitude",
+          "longitude",
+          "locationAccuracyMetres",
+          "photoId",
+          "phoneType",
+          "dataPurchase",
+          "reachChannels",
+          "incomeSources",
+          "hasBankAccount",
+          "mobileMoney",
+          "lastAgentVisit",
+          "helpNeeded",
+          "clientUpdatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentGiven": {
+            "type": "boolean"
+          },
+          "consentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "language": {
+            "$ref": "#/components/schemas/Language"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phoneE164": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hasNoPhone": {
+            "type": "boolean"
+          },
+          "gender": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ]
+          },
+          "ageBand": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AgeBand"
+              }
+            ]
+          },
+          "community": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "regionDistrict": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "crops": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Crop"
+            }
+          },
+          "farmSize": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "farmSizeUnit": {
+            "$ref": "#/components/schemas/AreaUnit"
+          },
+          "soil": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/SoilType"
+              }
+            ]
+          },
+          "plantingSeasons": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/PlantingSeason"
+            }
+          },
+          "latitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "locationAccuracyMetres": {
+            "type": [
+              "null",
+              "number"
+            ],
+            "format": "double"
+          },
+          "photoId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "phoneType": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PhoneType"
+              }
+            ]
+          },
+          "dataPurchase": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/DataPurchase"
+              }
+            ]
+          },
+          "reachChannels": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ContactChannel"
+            }
+          },
+          "incomeSources": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/IncomeSource"
+            }
+          },
+          "hasBankAccount": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "mobileMoney": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MobileMoneyUse"
+              }
+            ]
+          },
+          "lastAgentVisit": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LastAgentVisit"
+              }
+            ]
+          },
+          "helpNeeded": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/HelpNeed"
+            }
+          },
+          "clientUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SyncOutcome": {
+        "enum": [
+          "created",
+          "updated",
+          "unchanged",
+          "invalid",
+          "forbidden"
+        ]
+      },
+      "SyncRequest": {
+        "required": [
+          "farmers",
+          "visits"
+        ],
+        "type": "object",
+        "properties": {
+          "farmers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyncFarmer"
+            }
+          },
+          "visits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyncVisit"
+            }
+          }
+        }
+      },
+      "SyncResponse": {
+        "required": [
+          "results"
+        ],
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyncResult"
+            }
+          }
+        }
+      },
+      "SyncResult": {
+        "required": [
+          "id",
+          "outcome"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/SyncOutcome"
+          },
+          "problem": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "SyncVisit": {
+        "required": [
+          "id",
+          "farmerId",
+          "status",
+          "scheduledFor",
+          "completedAt",
+          "topics",
+          "observations",
+          "notes",
+          "photoIds",
+          "clientUpdatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "farmerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/VisitStatus"
+          },
+          "scheduledFor": {
+            "type": "string",
+            "format": "date"
+          },
+          "completedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "topics": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/VisitTopic"
+            }
+          },
+          "observations": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/FarmObservation"
+            }
+          },
+          "notes": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "photoIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "clientUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "UserRole": {
         "enum": [
           "officer",
@@ -391,6 +2000,156 @@
             "type": "string"
           }
         }
+      },
+      "VisitStatus": {
+        "enum": [
+          "planned",
+          "done"
+        ]
+      },
+      "VisitSummary": {
+        "required": [
+          "id",
+          "status",
+          "scheduledFor",
+          "completedAt",
+          "topics",
+          "observations",
+          "notes"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/VisitStatus"
+          },
+          "scheduledFor": {
+            "type": "string",
+            "format": "date"
+          },
+          "completedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VisitTopic"
+            }
+          },
+          "observations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FarmObservation"
+            }
+          },
+          "notes": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "VisitTopic": {
+        "enum": [
+          "seeds",
+          "fertiliser",
+          "pests",
+          "weather",
+          "selling",
+          "loans",
+          "storage"
+        ]
+      },
+      "WeatherAdvice": {
+        "enum": [
+          "good_to_spray",
+          "rain_soon_dont_spray",
+          "dry_spell_water",
+          "storm_protect_harvest"
+        ]
+      },
+      "WeatherCondition": {
+        "enum": [
+          "sunny",
+          "partly_cloudy",
+          "cloudy",
+          "rain",
+          "storm"
+        ]
+      },
+      "WeatherDay": {
+        "required": [
+          "date",
+          "condition",
+          "maxC",
+          "minC",
+          "rainChancePercent"
+        ],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "condition": {
+            "$ref": "#/components/schemas/WeatherCondition"
+          },
+          "maxC": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minC": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rainChancePercent": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "WeatherResponse": {
+        "required": [
+          "source",
+          "updatedAt",
+          "place",
+          "today",
+          "nextDays",
+          "advice"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/DataSource"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "place": {
+            "type": "string"
+          },
+          "today": {
+            "$ref": "#/components/schemas/WeatherDay"
+          },
+          "nextDays": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeatherDay"
+            }
+          },
+          "advice": {
+            "$ref": "#/components/schemas/WeatherAdvice"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -408,6 +2167,12 @@
     },
     {
       "name": "Auth"
+    },
+    {
+      "name": "Farmer"
+    },
+    {
+      "name": "Sync"
     }
   ]
 }
