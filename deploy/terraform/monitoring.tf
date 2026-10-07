@@ -13,7 +13,7 @@ resource "aws_sns_topic_subscription" "alerts_email" {
   endpoint  = each.value
 }
 
-# A server has failed the /health check for 3 minutes in a row.
+# A server has failed the /health check for 10 minutes in a row (a boot takes 5 to 8).
 resource "aws_cloudwatch_metric_alarm" "unhealthy_servers" {
   for_each = { for k, e in var.environments : k => e if e.running }
 
@@ -23,7 +23,7 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_servers" {
   metric_name         = "UnHealthyHostCount"
   statistic           = "Maximum"
   period              = 60
-  evaluation_periods  = 3
+  evaluation_periods  = 10 # longer than a server needs to boot, so start-up alone never alerts
   threshold           = 0
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching"
@@ -34,7 +34,6 @@ resource "aws_cloudwatch_metric_alarm" "unhealthy_servers" {
   }
 
   alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
 }
 
 # No healthy server at all: the environment is down.
