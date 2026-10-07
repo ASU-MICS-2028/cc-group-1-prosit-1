@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { requestCode } from "@/api/auth"
 import { ApiError } from "@/api/client"
@@ -8,15 +8,25 @@ import { IllustrationCard } from "@/components/IllustrationCard"
 import { PhoneField } from "@/components/PhoneField"
 import { QuestionTitle } from "@/components/QuestionTitle"
 import { ScreenShell } from "@/components/ScreenShell"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { toE164 } from "@/lib/phone"
+import { useIsDesktop } from "@/lib/useIsDesktop"
+import { cn } from "@/lib/utils"
 import { roleFrom, type CodeScreenState } from "./login"
 
-/** 02a / 02c Log in: the phone number gets a 6-digit SMS code. Officers and farmers use the same screen. */
+/**
+ * 02a / 02c / D02 / P4 · D0 Log in: the phone number gets a 6-digit SMS code. Officers, farmers and
+ * MoFA admins use the same screen with their own words. Admin sign-in is computer only (ADR 0024);
+ * the API has no admin accounts yet, so that form says so instead of sending a code.
+ */
 export function Component() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const role = roleFrom(useParams().role)
+  const param = useParams().role
+  const admin = param === "admin"
+  const role = roleFrom(param)
+  const desktop = useIsDesktop()
+  const [notice, setNotice] = useState<string | null>(null)
   const [typed, setTyped] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
@@ -29,6 +39,10 @@ export function Component() {
       return
     }
     setError(null)
+    if (admin) {
+      setNotice(t("login.adminNotYet"))
+      return
+    }
     setSending(true)
     try {
       const sent = await requestCode(phone, role)
@@ -44,6 +58,34 @@ export function Component() {
     } finally {
       setSending(false)
     }
+  }
+
+  if (admin && !desktop) {
+    return (
+      <ScreenShell
+        footer={
+          <Link
+            to="/who"
+            className={cn(buttonVariants({ size: "xl" }), "w-full")}
+          >
+            {t("login.adminPhoneBack")}
+          </Link>
+        }
+      >
+        <BackButton to="/who" />
+        <div className="space-y-2">
+          <h1 className="text-2xl leading-9 font-medium text-foreground">
+            {t("login.adminPhoneTitle")}
+          </h1>
+          <p className="text-base text-muted-foreground">
+            {t("login.adminPhoneText")}
+          </p>
+        </div>
+        <p className="rounded-2xl bg-cream px-4 py-3 text-sm font-medium text-foreground">
+          {t("login.adminPhoneNote")}
+        </p>
+      </ScreenShell>
+    )
   }
 
   return (
@@ -64,7 +106,13 @@ export function Component() {
       <div className="flex items-center justify-between">
         <BackButton to="/who" />
         <span className="text-sm font-medium text-muted-foreground">
-          {t(role === "farmer" ? "login.farmerTag" : "login.officerTag")}
+          {t(
+            admin
+              ? "login.adminTag"
+              : role === "farmer"
+                ? "login.farmerTag"
+                : "login.officerTag"
+          )}
         </span>
       </div>
       <IllustrationCard name="phone-login" className="h-52.5 py-2 md:hidden" />
@@ -85,10 +133,22 @@ export function Component() {
         {/* Computer (Figma D02) */}
         <div className="hidden space-y-4.5 md:block">
           <h1 className="text-2xl leading-9 font-semibold text-foreground">
-            {t("login.desktopTitle")}
+            {t(
+              admin
+                ? "login.adminTitle"
+                : role === "farmer"
+                  ? "login.desktopTitle"
+                  : "login.officerTitle"
+            )}
           </h1>
           <p className="text-base text-muted-foreground">
-            {t("login.desktopSms")}
+            {t(
+              admin
+                ? "login.adminSms"
+                : role === "farmer"
+                  ? "login.desktopSms"
+                  : "login.officerSms"
+            )}
           </p>
         </div>
         <div className="space-y-3">
@@ -116,7 +176,14 @@ export function Component() {
               id="phone-hint"
               className="px-3 text-sm font-medium text-muted-foreground"
             >
-              {t("login.shared")}
+              {notice ??
+                t(
+                  admin
+                    ? "login.adminHint"
+                    : role === "farmer"
+                      ? "login.shared"
+                      : "login.officerHint"
+                )}
             </p>
           )}
         </div>

@@ -18,6 +18,10 @@ export const routes: RouteObject[] = [
       },
       { path: "/who", lazy: () => import("@/features/start/WhoPage") },
       {
+        path: "/farmer-on-computer",
+        lazy: () => import("@/features/start/FarmerOnComputerPage"),
+      },
+      {
         path: "/login/:role",
         lazy: () => import("@/features/start/LoginPage"),
       },

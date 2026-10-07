@@ -397,7 +397,10 @@
     "officerHint": "I work for MoFA and visit farmers",
     "farmer": "Farmer",
     "farmerHint": "I want to see my details, prices and help",
-    "office": "Office or MoFA staff? Use AgroConnect on a computer for reports and admin."
+    "office": "MoFA admin? Open AgroConnect on a computer and choose MoFA admin.",
+    "admin": "MoFA admin",
+    "adminHint": "I manage extension officers and see reports for my region",
+    "farmerOnComputer": "Farmer? The farmer app works on your phone →"
   },
   "login": {
     "officerTag": "Officer log in",
@@ -421,7 +424,19 @@
     "verifying": "Checking…",
     "codeIncomplete": "Enter all 6 digits.",
     "desktopTitle": "Log in",
-    "desktopSms": "Enter your phone number. We will send you a 6-digit code by SMS."
+    "desktopSms": "Enter your phone number. We will send you a 6-digit code by SMS.",
+    "officerTitle": "Extension officer log in",
+    "officerSms": "Enter the phone number your MoFA admin registered for you. We will send you a 6-digit code by SMS.",
+    "officerHint": "New officer? Your MoFA admin adds you first, then you can log in.",
+    "adminTag": "Admin log in",
+    "adminTitle": "Admin sign in",
+    "adminSms": "Use the phone number MoFA registered for you. We will send a 6-digit code by SMS.",
+    "adminHint": "Not an admin? Go back and choose Extension officer.",
+    "adminNotYet": "Admin accounts are not switched on yet. The AgroConnect team is setting them up.",
+    "adminPhoneTitle": "Admin works on a computer",
+    "adminPhoneText": "The MoFA admin pages need a big screen. Open AgroConnect on a computer and choose MoFA admin.",
+    "adminPhoneNote": "Extension officer or farmer? Go back and choose who you are.",
+    "adminPhoneBack": "Go back"
   },
   "farmerHome": {
     "hello": "Hello, {{name}}",
@@ -727,5 +742,13 @@
         }
       }
     }
+  },
+  "farmerOnComputer": {
+    "title": "Farmers use AgroConnect on the phone",
+    "subtitle": "The farmer app is made for phones. Open this link on your phone, or point your phone camera at the code.",
+    "qrAlt": "QR code that opens AgroConnect",
+    "linkLabel": "Your phone link",
+    "howTo": "Open it in Chrome on your phone, then sign in with the number your extension officer registered.",
+    "basicPhone": "Basic phone with no internet? Your extension officer can help you by SMS or USSD."
   }
 }
