@@ -18,6 +18,16 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // Lazy route modules export `Component` plus React Router's own names (loader, handle…).
+      "react-refresh/only-export-components": [
+        "error",
+        {
+          allowConstantExport: true,
+          allowExportNames: ["loader", "action", "handle", "shouldRevalidate"],
+        },
+      ],
+    },
   },
   {
     // shadcn files export a component plus its cva variants (e.g. buttonVariants).

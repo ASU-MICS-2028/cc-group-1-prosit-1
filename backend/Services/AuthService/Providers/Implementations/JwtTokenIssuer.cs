@@ -19,7 +19,7 @@ public sealed class JwtTokenIssuer(IOptions<AuthOptions> options, IClock clock) 
     {
         var settings = options.Value;
         var now = clock.UtcNow;
-        var expires = now.AddDays(settings.TokenLifetimeDays);
+        var expires = now.Add(settings.TokenLifetime);
 
         var claims = new List<Claim>
         {

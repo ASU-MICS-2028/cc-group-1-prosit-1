@@ -8,14 +8,19 @@
     "search": "Search",
     "listen": "Listen to {{language}}",
     "back": "Back",
-    "logOut": "Log out"
+    "logOut": "Log out",
+    "listenShort": "Listen"
   },
   "nav": {
     "home": "Home",
     "farmers": "Farmers",
     "sync": "Sync",
     "profile": "Profile",
-    "main": "Main"
+    "main": "Main",
+    "visits": "Visits",
+    "help": "Help",
+    "account": "Account menu for {{name}}",
+    "market": "Market"
   },
   "welcome": {
     "hello": "Hello,",
@@ -30,45 +35,346 @@
     "desktopHint": "Tap the speaker to hear each one."
   },
   "home": {
-    "title": "AgroConnect",
-    "subtitle": "Register farmers and connect them with extension services, even without internet.",
-    "bannerTitle": "Register a farmer",
-    "bannerText": "Works without internet. Everything is saved on this phone and sent later.",
     "register": "Register a farmer",
-    "status": "Records on this phone",
     "recent": "Recent farmers",
     "viewAll": "View all",
-    "noRecent": "No farmers registered on this phone yet."
+    "noRecent": "Farmers you register will appear here, even when you have no network.",
+    "greeting": {
+      "morning": "Good morning,",
+      "afternoon": "Good afternoon,",
+      "evening": "Good evening,"
+    },
+    "search": "Search farmers",
+    "offline": "No network. You can keep registering. We’ll send everything when you’re back online.",
+    "readyTo": "Ready to",
+    "registerWord": "Register",
+    "aNewFarmer": "a new farmer",
+    "registerANewFarmer": "register a new farmer?",
+    "startRegistration": "Start registration",
+    "today": "Today",
+    "registered": "Registered",
+    "waiting": "Waiting",
+    "toFix": "To fix",
+    "waitingToSync": "Waiting to sync",
+    "needFixing": "Need fixing",
+    "continue": "Continue where you stopped",
+    "newFarmer": "New farmer",
+    "noFarmersTitle": "No farmers yet",
+    "registerFirst": "Register your first farmer"
   },
   "register": {
     "title": "Register a farmer",
-    "placeholder": "The registration form is coming soon."
+    "draftSaved": "Draft saved",
+    "saveAndExit": "Save and exit",
+    "stepOf": "Step {{step}} of {{total}}",
+    "guide": "Ask the farmer each question. Tap the speaker to play it in their language.",
+    "guideReview": "Read the answers back to the farmer. Tap Edit to change one.",
+    "back": "Back",
+    "next": "Next",
+    "backToReview": "Done",
+    "no": "No",
+    "agree": "Yes, I agree",
+    "smaller": "Smaller",
+    "bigger": "Bigger",
+    "optional": "You can skip any question the farmer does not want to answer.",
+    "steps": {
+      "consent": "Consent",
+      "personal": "About the farmer",
+      "farm": "The farm",
+      "location": "Location and photo",
+      "contact": "Contact",
+      "money": "Money",
+      "help": "Help needed"
+    },
+    "consent": {
+      "title": "May we save your details?",
+      "body": "We will save your name, phone number and farm details on this phone and send them to the Ministry of Food and Agriculture (MoFA). They are used to send you advice, prices and help. You can ask us to change or delete them at any time."
+    },
+    "personal": {
+      "fullName": "Full name",
+      "fullNamePlaceholder": "For example, Ama Boateng",
+      "phone": "Phone number",
+      "noPhone": "The farmer has no phone",
+      "gender": "Gender",
+      "age": "Age",
+      "community": "Community",
+      "communityPlaceholder": "For example, Tolon",
+      "region": "Region and district",
+      "regionPlaceholder": "For example, Northern, Tolon"
+    },
+    "genders": {
+      "female": "Female",
+      "male": "Male",
+      "other": "Other",
+      "prefer_not_to_say": "Rather not say"
+    },
+    "ages": {
+      "18-25": "18–25",
+      "26-35": "26–35",
+      "36-50": "36–50",
+      "over_50": "Over 50"
+    },
+    "farm": {
+      "crops": "What do they grow?",
+      "size": "How big is the farm?",
+      "unit": "Unit",
+      "soil": "What is the soil like?",
+      "seasons": "When do they plant?"
+    },
+    "crops": {
+      "maize": "Maize",
+      "sorghum": "Sorghum",
+      "rice": "Rice",
+      "groundnut": "Groundnut",
+      "yam": "Yam",
+      "cassava": "Cassava"
+    },
+    "units": {
+      "acres": "Acres",
+      "hectares": "Hectares"
+    },
+    "soils": {
+      "sandy": "Sandy",
+      "clay": "Clay",
+      "loamy": "Loamy",
+      "not_sure": "Not sure"
+    },
+    "seasons": {
+      "rainy": "Rainy season",
+      "dry": "Dry season"
+    },
+    "location": {
+      "title": "Farm location",
+      "hint": "Stand on the farm and tap the button.",
+      "find": "Find farm location",
+      "finding": "Finding the farm…",
+      "found": "Location found",
+      "accuracy": "Accurate to about {{metres}} m",
+      "failed": "Could not find the location. Stand in the open and try again, or go on without it.",
+      "denied": "Location is turned off for this app. Turn it on in the settings, or go on without it.",
+      "retry": "Try again",
+      "photo": "Photo of the farm",
+      "takePhoto": "Take a photo",
+      "retake": "Take another photo",
+      "photoAlt": "Photo of the farm",
+      "photoNote": "The photo is made small to save data and kept on this phone until it is sent.",
+      "photoNoteComputer": "The photo is made small to save data and kept on this computer until it is sent.",
+      "photoFailed": "Could not use this photo. Try another one."
+    },
+    "contact": {
+      "phoneType": "What phone does the farmer use?",
+      "dataPurchase": "How often do they buy data?",
+      "reach": "How should we reach them?"
+    },
+    "phoneTypes": {
+      "smartphone": "Smartphone",
+      "basic_phone": "Basic phone",
+      "no_phone": "No phone"
+    },
+    "dataPurchases": {
+      "daily": "Every day",
+      "weekly": "Every week",
+      "monthly": "Every month",
+      "none": "Never"
+    },
+    "channels": {
+      "sms": "SMS",
+      "ussd": "USSD",
+      "call": "Phone call",
+      "app": "This app"
+    },
+    "money": {
+      "income": "Where does their money come from?",
+      "bank": "Do they have a bank account?",
+      "mobileMoney": "Do they use mobile money?"
+    },
+    "incomeSources": {
+      "crops": "Crops",
+      "animals": "Animals",
+      "trading": "Trading",
+      "other": "Other"
+    },
+    "bankAnswers": {
+      "yes": "Yes",
+      "no": "No"
+    },
+    "mobileMoneyAnswers": {
+      "yes": "Yes",
+      "no": "No",
+      "skip": "Rather not say"
+    },
+    "help": {
+      "lastVisit": "When did an extension officer last visit?",
+      "needs": "What help do they need most?"
+    },
+    "lastVisits": {
+      "never": "Never",
+      "this_year": "This year",
+      "last_year": "Last year",
+      "longer_ago": "Longer ago"
+    },
+    "helpNeeds": {
+      "seeds": "Seeds",
+      "fertiliser": "Fertiliser",
+      "pests": "Pests",
+      "market_prices": "Market prices",
+      "weather": "Weather",
+      "loans": "Loans"
+    },
+    "review": {
+      "title": "Check and save",
+      "allDone": "All 7 steps done",
+      "edit": "Edit {{section}}",
+      "editShort": "Edit",
+      "save": "Save farmer",
+      "saving": "Saving…",
+      "about": "About the farmer",
+      "farm": "The farm",
+      "locationPhoto": "Location and photo",
+      "contact": "Contact",
+      "moneyHelp": "Money and help",
+      "helpNeeded": "Help needed",
+      "notGiven": "Not given",
+      "noPhone": "No phone",
+      "located": "GPS saved",
+      "noLocation": "No location",
+      "photoTaken": "Photo taken",
+      "noPhoto": "No photo",
+      "saveFailed": "Could not save on this phone. Check that it has free space and try again.",
+      "acres_one": "{{count}} acre",
+      "acres_other": "{{count}} acres",
+      "hectares_one": "{{count}} hectare",
+      "hectares_other": "{{count}} hectares",
+      "incomeFrom": "Money from: {{list}}"
+    },
+    "duplicate": {
+      "title": "Check before saving",
+      "warningTitle": "This phone number is already used",
+      "warningText": "A farmer on this phone already has this number. Families often share one phone. Is this the same person?",
+      "existing": "Already registered",
+      "registering": "You are registering",
+      "registeredOn": "registered {{date}}",
+      "different": "Different person, shares the phone",
+      "same": "Same person, open {{name}}’s profile"
+    },
+    "saved": {
+      "titlePhone": "Saved on this phone",
+      "titleComputer": "Saved on this computer",
+      "text": "{{name}} is registered. We will send their details to MoFA automatically when you have network. You can keep working.",
+      "text_female": "{{name}} is registered. We will send her details to MoFA automatically when you have network. You can keep working.",
+      "text_male": "{{name}} is registered. We will send his details to MoFA automatically when you have network. You can keep working.",
+      "another": "Register another farmer",
+      "home": "Go to home",
+      "someone": "The farmer"
+    },
+    "errors": {
+      "name": "Enter the farmer’s full name.",
+      "crops": "Choose at least one crop.",
+      "farmSize": "Enter a farm size bigger than 0.",
+      "phoneMissing": "Enter the farmer’s phone number, or tick “The farmer has no phone”.",
+      "phoneShort": "This number is too short. Enter 9 digits after +233.",
+      "phoneInvalid": "This is not a Ghana number. Enter 9 digits after +233, like 24 000 0000.",
+      "visitEmpty": "Choose at least one thing you talked about or saw."
+    }
   },
   "farmers": {
-    "title": "Farmers",
-    "search": "Search by name or phone",
+    "title": "My farmers",
+    "search": "Name or phone number",
     "filterLabel": "Show",
-    "all": "All",
     "empty": "No farmers registered on this phone yet.",
     "noMatch": "No farmer matches your search.",
     "register": "Register a farmer",
-    "detailTitle": "Farmer details"
+    "detailTitle": "Farmer",
+    "offline": "No network. Your farmers are safe on this device and will sync later.",
+    "checkDetails": "Check the details",
+    "addedToday": "added today",
+    "filters": {
+      "all": "All",
+      "waiting": "Waiting",
+      "failed": "To fix",
+      "synced": "Synced"
+    },
+    "columns": {
+      "farmer": "Farmer",
+      "community": "Community",
+      "phone": "Phone",
+      "status": "Status"
+    },
+    "listen": "Listen",
+    "listenProfile": "Listen to this profile",
+    "openProfile": "Open profile",
+    "notFound": "This farmer is not on this device.",
+    "anotherOfficer": "another officer",
+    "edit": "Edit farmer",
+    "editFarmer": "Edit farmer",
+    "registeredOn": "registered {{date}}",
+    "contactMoney": "Contact and money",
+    "consentGiven": "Consent given",
+    "consentLine": "{{date}}, in {{language}}, recorded by {{officer}}",
+    "facts": {
+      "phone": "Phone",
+      "genderAge": "Gender, age",
+      "language": "Language",
+      "community": "Community",
+      "phoneType": "Phone type",
+      "reachBy": "Reach by",
+      "mobileMoney": "Mobile money",
+      "needs": "Needs",
+      "crops": "Crops",
+      "size": "Size",
+      "location": "Location",
+      "consent": "Consent"
+    },
+    "editTitle": "Edit: {{section}}",
+    "cancel": "Cancel",
+    "saveChanges": "Save changes"
   },
   "sync": {
     "title": "Sync",
     "waiting": "{{count}} waiting",
     "synced": "{{count}} synced",
-    "failed": "{{count}} failed",
+    "failed": "{{count}} to fix",
     "waitingStatus": "Waiting to sync",
     "syncedStatus": "Synced",
-    "failedStatus": "Sync failed",
-    "allDone": "Everything on this phone is saved and synced.",
-    "explain": "Records are saved on this phone first. They are sent to the server whenever there is a connection."
+    "failedStatus": "Needs fixing",
+    "allSynced": "All synced",
+    "notSentYet": "{{count}} not sent yet",
+    "open": "Open Sync",
+    "today": "today",
+    "lastSent": "Last sent {{when}}",
+    "neverSent": "Nothing sent from this device yet",
+    "automatic": "We also send automatically whenever the network comes back.",
+    "now": "Sync now",
+    "sending": "Sending…",
+    "noNetwork": "No network. Your farmers are safe on this device and will be sent later.",
+    "couldNotSend": "Could not send right now. Your farmers are safe on this device; try again later.",
+    "allSentTitle": "Everything is sent",
+    "notSentTitle_one": "{{count}} farmer not sent yet",
+    "notSentTitle_other": "{{count}} farmers not sent yet",
+    "waitingToSend": "Waiting to send",
+    "savedAt": "Saved {{when}}",
+    "needsFixing": "Needs fixing"
   },
   "profile": {
     "title": "Profile",
     "languageHelp": "Choose the language you want to use.",
-    "languageTitle": "Language"
+    "languageTitle": "Language",
+    "app": "App",
+    "helpAccount": "Help and account",
+    "stored": "Stored on this device",
+    "mbUsed": "{{count}} MB used",
+    "about": "About AgroConnect",
+    "version": "Version {{version}} · Illustrations by Storyset",
+    "officerRole": "Extension officer",
+    "farmerRole": "Farmer",
+    "save": "Save",
+    "logOutTitle": "Log out?",
+    "notSentWarning_one": "{{count}} farmer is not sent yet. Sync first so their details are not lost.",
+    "notSentWarning_other": "{{count}} farmers are not sent yet. Sync first so their details are not lost.",
+    "syncFailed": "Could not send right now. If you log out, unsent farmers stay on this device until the next sign-in.",
+    "syncThenLogOut": "Sync, then log out",
+    "logOutAnyway": "Log out anyway",
+    "stayLoggedIn": "Stay logged in"
   },
   "notFound": {
     "title": "Page not found",
@@ -118,6 +424,308 @@
     "desktopSms": "Enter your phone number. We will send you a 6-digit code by SMS."
   },
   "farmerHome": {
-    "hello": "Hello, {{name}}"
+    "hello": "Hello, {{name}}",
+    "akwaaba": "Akwaaba,",
+    "listen": "Listen",
+    "youAre": "You are",
+    "registered": "Registered",
+    "withMofa": "with MoFA",
+    "saved": "Saved with MoFA",
+    "languageHint": "Choose the language you understand best"
+  },
+  "pwa": {
+    "updateTitle": "A new version is ready",
+    "updateText": "Reload to get the latest improvements. Your saved farmers stay on this device.",
+    "reload": "Reload now",
+    "later": "Later",
+    "offlineTitle": "AgroConnect now works offline",
+    "offlineText": "You can open it and register farmers without internet.",
+    "ok": "OK",
+    "installTitle": "Install AgroConnect",
+    "installText": "Add it to your home screen. It opens faster and works without internet.",
+    "install": "Install",
+    "notNow": "Not now"
+  },
+  "visits": {
+    "title": "Visits",
+    "today": "Today",
+    "week": "This week",
+    "noneTitle": "No visits yet",
+    "noneText": "To log a visit, open the farmer and tap “Log a visit”. Planned visits will also appear here.",
+    "chooseFarmer": "Choose a farmer",
+    "summaryToday_one": "{{count}} visit today",
+    "summaryToday_other": "{{count}} visits today",
+    "summaryWeek_one": "{{count}} visit this week",
+    "summaryWeek_other": "{{count}} visits this week",
+    "unknownFarmer": "A farmer",
+    "doneAt": "Done {{time}}",
+    "log": "Log a visit",
+    "visitWith": "Visit · {{name}}",
+    "todayAt": "today {{time}}",
+    "talkedAbout": "What did you talk about?",
+    "saw": "What did you see on the farm?",
+    "addPhoto": "Add a photo",
+    "photoAdded_one": "Add a photo ({{count}} added)",
+    "photoAdded_other": "Add a photo ({{count}} added)",
+    "notes": "Notes",
+    "notesHint": "What advice did you give?",
+    "next": "Next visit",
+    "save": "Save visit",
+    "topics": {
+      "seeds": "Seeds",
+      "fertiliser": "Fertiliser",
+      "pests": "Pests",
+      "weather": "Weather",
+      "selling": "Selling",
+      "loans": "Loans",
+      "storage": "Storage"
+    },
+    "observations": {
+      "all_good": "All good",
+      "pests": "Pests",
+      "disease": "Disease",
+      "dry_soil": "Dry soil",
+      "flooding": "Flooding"
+    },
+    "nextVisits": {
+      "one_week": "In 1 week",
+      "two_weeks": "In 2 weeks",
+      "one_month": "In 1 month",
+      "none": "No need"
+    }
+  },
+  "help": {
+    "title": "Help",
+    "row": "Get help",
+    "short": "Answers to common questions",
+    "question": "How can we help?",
+    "oneMinute": "Short answer · tap the speaker to listen",
+    "call": "Call the MoFA help line",
+    "callHours": "Free · 8am to 5pm",
+    "sms": "Send us an SMS",
+    "smsReply": "Reply within one day",
+    "topics": {
+      "register": {
+        "title": "How to register a farmer",
+        "text": "Tap “Register a farmer”, read the consent to the farmer, then ask each question. Tap the speaker to play a question in their language. Everything is saved on this device as you go."
+      },
+      "noNetwork": {
+        "title": "What to do with no network",
+        "text": "Keep working. Farmers and visits are saved on this device and sent automatically when the network comes back. You can also open Sync and tap “Sync now”."
+      },
+      "fixRed": {
+        "title": "How to fix a farmer marked red",
+        "text": "Red means the server could not accept the details. Open the farmer, read the red message, tap Edit and correct it. It is sent again automatically."
+      },
+      "myDetails": {
+        "title": "How to check my details",
+        "text": "Your extension officer registered you with MoFA. To change your phone number, farm or crops, ask your officer at the next visit."
+      },
+      "whoToCall": {
+        "title": "Who to call",
+        "text": "Your extension officer is your first contact for advice and changes to your details."
+      }
+    }
+  },
+  "install": {
+    "title": "Install the app",
+    "short": "Opens faster and works without network",
+    "heading": "Put AgroConnect on your home screen",
+    "why": "It opens like an app, works without network, and uses less data.",
+    "phoneType": "Phone type",
+    "android": "Android",
+    "iphone": "iPhone",
+    "android1": "Tap Install below.",
+    "android2": "Tap Install again when your phone asks.",
+    "open": "Open AgroConnect from your home screen.",
+    "iphone1": "In Safari, tap the Share button.",
+    "iphone2": "Tap “Add to Home Screen”, then Add.",
+    "button": "Install AgroConnect",
+    "notOffered": "Your browser has not offered installing yet. Open the browser menu and choose “Install app” or “Add to Home screen”.",
+    "notNow": "Not now",
+    "done": "AgroConnect is installed on this device."
+  },
+  "farmerApp": {
+    "sample": "Sample data",
+    "sampleHint": "Live figures are coming. These show how this screen will work.",
+    "savedCopy": "No network · saved {{when}}",
+    "offlineNothingSaved": "No network, and nothing is saved on this device yet. Try again when you have network.",
+    "tryAgain": "Try again",
+    "home": {
+      "registeredBy": "Registered {{date}} by {{officer}}",
+      "services": "Farm services",
+      "mine": "My details and help",
+      "todayWeather": "Today in {{place}}"
+    },
+    "tiles": {
+      "prices": "Prices",
+      "weather": "Weather",
+      "cropCheck": "Check my crop",
+      "harvest": "Harvest forecast",
+      "cooperative": "My cooperative",
+      "lessons": "Lessons"
+    },
+    "rows": {
+      "listen": "Listen to my details",
+      "listenHint": "Hear what is saved about you",
+      "details": "My details",
+      "detailsHint": "My farm, my officer, my visits",
+      "change": "Change my details",
+      "changeHint": "Phone, farm, crops",
+      "call": "Call my officer"
+    },
+    "details": {
+      "title": "My details",
+      "farm": "My farm",
+      "about": "About me",
+      "officer": "My officer",
+      "visits": "My visits",
+      "noVisits": "No visits recorded yet.",
+      "call": "Call",
+      "consent": "Consent given {{date}}",
+      "listen": "Listen"
+    },
+    "change": {
+      "title": "Change my details",
+      "intro": "You cannot change your record yourself. Tell us what is wrong and your officer will update it.",
+      "what": "What should change?",
+      "areas": {
+        "phone": "Phone number",
+        "farm": "Farm size or place",
+        "crops": "Crops",
+        "other": "Something else"
+      },
+      "details": "Tell us in a few words",
+      "placeholder": "For example: my new number is 024 555 1234",
+      "send": "Send to my officer",
+      "sending": "Sending…",
+      "sent": "Sent. Your officer will update your details. Reference {{reference}}.",
+      "another": "Send another",
+      "empty": "Write what should change."
+    },
+    "prices": {
+      "title": "Market prices",
+      "updated": "Updated {{when}}",
+      "crop": "Crop (per kg)",
+      "thisWeek": "This week",
+      "trend": "{{crop}} · {{market}} · 30 days",
+      "perKg": "{{price}} per kg",
+      "yourCrop": "Your crop"
+    },
+    "weather": {
+      "title": "Weather",
+      "forPlace": "Weather · {{place}}",
+      "rain": "Rain {{percent}}%",
+      "next": "Next 7 days",
+      "conditions": {
+        "sunny": "Sunny",
+        "partly_cloudy": "Partly cloudy",
+        "cloudy": "Cloudy",
+        "rain": "Rain",
+        "storm": "Storm"
+      },
+      "advice": {
+        "good_to_spray": "A good day to weed or spray: no heavy rain expected.",
+        "rain_soon_dont_spray": "Rain is coming. Don't spray today or tomorrow, the rain will wash it off.",
+        "dry_spell_water": "A dry week. Water young plants early in the morning and cover the soil.",
+        "storm_protect_harvest": "A storm is coming. Bring in or cover any harvest drying outside."
+      }
+    },
+    "cropCheck": {
+      "title": "Check my crop",
+      "which": "Which crop?",
+      "see": "What do you see?",
+      "check": "Check",
+      "checking": "Checking…",
+      "likely": "Likely problem",
+      "urgent": "Act today",
+      "whatToDo": "What to do",
+      "again": "Check again",
+      "guide": "This is a first guide. Show your officer if you are not sure.",
+      "chooseCrop": "Choose the crop.",
+      "chooseSymptom": "Choose at least one thing you see.",
+      "symptoms": {
+        "yellow_leaves": "Yellow leaves",
+        "holes_in_leaves": "Holes in leaves",
+        "spots_on_leaves": "Spots on leaves",
+        "wilting": "Wilting",
+        "insects_seen": "Insects or caterpillars",
+        "stunted": "Small, slow plants",
+        "rotting": "Rotting roots or stem"
+      },
+      "problems": {
+        "fall_armyworm": "Possible fall armyworm",
+        "leaf_spot": "Possible leaf spot",
+        "nutrient_shortage": "The soil may lack food (nutrients)",
+        "drought_stress": "The plants need water",
+        "root_rot": "Possible root rot",
+        "unclear": "Not clear from these signs"
+      },
+      "advice": {
+        "check_under_leaves": "Look under the leaves and inside the funnel for caterpillars, early in the morning.",
+        "pick_and_crush": "Pick and crush the caterpillars and egg groups you find.",
+        "ask_officer_spray": "Ask your officer which spray to use and how much.",
+        "remove_sick_leaves": "Remove the sick leaves or plants and burn or bury them away from the farm.",
+        "add_fertiliser": "Add fertiliser or compost around the plants.",
+        "water_early": "Water early in the morning or late in the evening.",
+        "mulch_soil": "Cover the soil with dry grass to keep it wet.",
+        "improve_drainage": "Make channels so water does not stand around the plants.",
+        "show_officer": "Show the plant to your officer at the next visit, or call them."
+      }
+    },
+    "harvest": {
+      "title": "Harvest forecast",
+      "intro": "What your farm could give this season, from its size and crops.",
+      "bags": "{{low}} to {{high}} bags of 100 kg",
+      "ready": "Usually ready in {{month}}",
+      "none": "Your officer has not recorded your crops yet."
+    },
+    "cooperative": {
+      "title": "My cooperative",
+      "members": "{{count}} members",
+      "chair": "Chair",
+      "nextMeeting": "Next meeting",
+      "where": "Where",
+      "call": "Call the chair"
+    },
+    "lessons": {
+      "title": "Lessons",
+      "intro": "Short lessons you can listen to, even without network once heard.",
+      "minutes": "{{count}} min",
+      "topics": {
+        "storage": "Storage",
+        "pests": "Pests",
+        "planting": "Planting",
+        "soil": "Soil",
+        "selling": "Selling",
+        "money": "Money"
+      },
+      "items": {
+        "dry-grain-storage": {
+          "title": "Keep your grain dry",
+          "summary": "Dry grain well before storing, use clean bags on pallets, and check every week for insects."
+        },
+        "fall-armyworm-signs": {
+          "title": "Spot fall armyworm early",
+          "summary": "Look for ragged holes and sawdust-like droppings in young maize leaves. Act in the first week."
+        },
+        "maize-spacing": {
+          "title": "Plant maize at the right spacing",
+          "summary": "75 cm between rows and 25 cm between plants gives more cobs from the same land."
+        },
+        "compost-at-home": {
+          "title": "Make compost at home",
+          "summary": "Mix crop waste, animal dung and ash in a heap, keep it damp, and turn it every two weeks."
+        },
+        "selling-together": {
+          "title": "Sell together, earn more",
+          "summary": "Farmers who sell through their cooperative get better prices and pay less to transport."
+        },
+        "mobile-money-safety": {
+          "title": "Keep your mobile money safe",
+          "summary": "Never share your PIN, and check the name before you confirm a payment."
+        }
+      }
+    }
   }
 }

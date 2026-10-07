@@ -2,7 +2,7 @@
 
 Living file: where the project stands right now. Update it at the end of every working session (what was done, what's next). Decisions themselves go in `adr/` and `decision-log.md`; this file only tracks progress.
 
-_Last updated: 2026-10-07 (private network live: staging and production behind the load balancer; see infrastructure.md)_
+_Last updated: 2026-10-07 (private network live: staging and production behind the load balancer, see infrastructure.md; offline registration reaches the server through sync, on branch feature/registration-form)_
 
 ## The assignment (Prosit 1, AgroConnect Ghana)
 Ashesi ICS 534 Cloud Computing. A four-week build; we are building all four weeks into one product.
@@ -58,25 +58,41 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
   - The sign-in is kept on the phone for 7 days.
   - Frontend tests: 72, 98.3% lines.
   - Checked live in headless Chrome against the API and database.
-- Roles, accounts and devices decided (ADR 0024): three roles; admins add officers, officers register farmers; farmers phone only, officers phone and computer, admins computer only. *Who are you?* shows Extension officer / Farmer on a phone and Extension officer / MoFA admin on a computer (amended 2026-10-06). Designed in Figma (desktop *Who are you?*, farmer-on-a-computer, admin sign-in and code, *Add a person*, admin-on-a-phone), not built yet.
-- Infrastructure live (ADR 0026, 2026-10-06/07): own VPC with private app and database subnets, fck-nat, one load balancer, Auto Scaling (production 2 to 4 servers, staging 1), images from ECR, RDS `agroconnect-prod` in private subnets, CloudWatch alarms by email, budget $100. Production runs `sha-1355e3e`, staging `sha-75c52f7`. Old servers and the old database are deleted. Details and runbook: `infrastructure.md`.
+- Roles, accounts and devices decided (ADR 0024): three roles; admins add officers, officers register farmers; officers and farmers on phone and computer (farmers added 2026-10-07), admins computer only. *Who are you?* keeps Farmer at every width and adds MoFA admin on a computer. Designed in Figma (desktop *Who are you?*, admin sign-in and code, *Add a person*, admin-on-a-phone), not built yet.
+- Infrastructure live (ADR 0026, 2026-10-06/07): own VPC with private app and database subnets, fck-nat, one load balancer, Auto Scaling (production 2 to 4 servers, staging 1), images from ECR, RDS `agroconnect-prod` in private subnets, CloudWatch alarms by email, budget - Roles, accounts and devices decided (ADR 0024): three roles; admins add officers, officers register farmers; officers and farmers on phone and computer (farmers added 2026-10-07), admins computer only. *Who are you?* keeps Farmer at every width and adds MoFA admin on a computer. Designed in Figma (desktop *Who are you?*, admin sign-in and code, *Add a person*, admin-on-a-phone), not built yet.
+00. Production runs `sha-1355e3e`, staging `sha-75c52f7`. Old servers and the old database are deleted. Details and runbook: `infrastructure.md`.
+- Desktop layout from 768 px for the start screens (team rule "Phone vs Desktop"; branch `fix/desktop-breakpoint`).
+- Registration form from Figma (branch `feature/registration-form`, ADR 0027): phone screens 04 to 12, 19 and 28, computer screens D07 to D15.
+  - **Steps:** consent, about the farmer, the farm, location and photo, contact, money, help needed; then Check and save (Edit on each card), Saved, and "Check before saving" when the phone number is already used on this phone.
+  - **Offline:** Dexie database on the phone (`frontend/src/db/local.ts`: farmers, photos, outbox, drafts; data dictionary 4.7). Saving writes the farmer and its outbox row in one transaction. Drafts are kept only after consent.
+  - **GPS and photo:** optional; the photo is shrunk to about 150 KB.
+  - **Lists:** Home, Farmers and Sync now read the farmers saved on the phone, live.
+  - **Tests:** frontend 93, 97.6% lines (an in-memory IndexedDB, `fake-indexeddb`). Screens checked in headless Chrome at 390, 768 and 1440 px.
+- Installable app (ADR 0028): manifest, icons, service worker (whole app offline), install and update messages. Verified in Chrome: no installability errors, opens offline.
+- All Phase 1 app screens from Figma for phones and computers (ADR 0029): officer Home, My farmers, farmer page, Edit, Sync, Visits, Log a visit, Profile, Log out, Change language, Help, Install; the farmer's Home, Help and Profile. The app sends its queue to `POST /api/sync` by itself; the server side is next. Frontend 120 tests, 93.9% lines.
+- The farmer's app in full (ADR 0031): My details, Change my details, Call my officer, Market prices, Weather, Check my crop, Harvest forecast, My cooperative, Lessons, for phones and computers. Backend FarmerService: the farmer's record, officer and visits are live; the outside sources are sample providers labelled "Sample data". Backend 145 tests (FarmerService 100% lines), frontend 131 tests.
+- Offline registration reaches the server (ADR 0032): backend SyncService answers `POST /api/sync`. The signed-in officer owns what they send; another officer's record is refused; the newest change wins; each record is checked and answered on its own ("To fix" with the reason); a visit waits for its farmer; one transaction per batch. The app sends 100 records per request. End-to-end test: an officer syncs a new farmer, who then signs in and sees their farm. Backend 190 tests (SyncService 99% lines), frontend 133 tests (94.7% lines).
+- Computers get a top bar and an account menu (ADR 0030): Profile and Log out at the top right, the sidebar keeps the work sections. The Figma desktop frames need the same change.
+- Farmers get the computer layout too (ADR 0024 amended 7 Oct): sidebar from 768 px, two-column Home and Profile. To share with the team.
+- Sign-in length is now a setting (`Auth:TokenLifetime`): 1 hour on laptops for testing, 7 days on the servers (unchanged).
 - Docs: `phase-1-overview.md` (replaces the concise PDF), `data-dictionary.md` (who is who, every table, column and code), `tech-choices.md` (the whole stack), `local-development.md` (every command, health checks, laptop vs servers), and `project-structure.md` (backend file guide).
 
 ## Bernard's to-do right now
-1. Try the start screens yourself: `npm run dev` in `frontend/` with the API running (see `local-development.md` 5.5).
-2. With the DevOps lead: HTTPS for staging and production, and the `Auth__SigningKey` secret on each server.
-3. Share `docs/` with the team (Liza: `data-dictionary.md`; slides: `phase-1-overview.md`).
+1. Try the registration form yourself: sign in as the demo officer, tap "Register a farmer" (see `local-development.md` 5.8). Compare with Figma at phone and computer widths.
+2. Push `feature/registration-form` (the one working branch: registration form plus the study manual) and open its PR.
+3. With the DevOps lead: HTTPS for staging and production, and the `Auth__SigningKey` secret on each server.
+4. Share `docs/` with the team (Liza: `data-dictionary.md`; slides: `phase-1-overview.md`).
 
 ## Next steps (in order)
-1. **Farmer service (backend):** `POST /api/sync` (farmers and visits, safe to resend), `GET /api/sync/changes`, farmer details, the duplicate phone check, photo upload links. Tests and a live check.
-2. **Connect the app to the backend:** Vite dev proxy, API client typed from the OpenAPI contract, saved sign-in token.
-3. **Offline engine:** Dexie (farmers, visits, photos, outbox), sync on open, on reconnect and with "Sync now".
-4. **Screens from Figma:** sign-in, the 7-step registration, review and saved, farmer list and detail, edit, visits, the farmer's own view, help, sign-out, error, empty and offline states.
-5. **Installable app:** manifest, icons, Workbox caching, update and install prompts.
+1. **Sync, second half (Bernard and Liza):** `GET /api/sync/changes` so a laptop or second phone receives the officer's farmers and visits; the duplicate phone check across phones; photo upload with its link check (ADR 0023).
+2. **Planned visits and photo upload:** visit plans from the server; send kept photos after their farmer syncs.
+3. **MoFA side (ADR 0024):** admin role and screens, the reports page (D20).
+4. **Sidebar tab** (open/close, remembered) from the team rule.
+5. **Installable app on real phones:** test over USB with port forwarding; install from staging after HTTPS.
 6. **USSD and SMS** with the Africa's Talking sandbox.
 7. **Infra (DevOps lead):** HTTPS (domain + ACM certificate on the load balancer), a staging host name. The private network, Auto Scaling, ECR, alarms and the photo buckets are live (`infrastructure.md`).
 8. **Write-up and slides:** from `phase-1-overview.md` and the ADRs.
-9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend: *Who are you?* choices by screen width, admin sign-in, farmer-on-a-computer and admin-on-a-phone screens, the *Add a person* form.
+9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend: *Who are you?* choices by screen width, admin sign-in, the admin-on-a-phone screen, the *Add a person* form.
 10. **Pictures (ADR 0025):** export tile pictures as 160 px WebP outside the bundle, a Workbox cache-first rule for them, and the icon fallback when offline.
 
 ## Open questions

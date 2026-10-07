@@ -83,6 +83,19 @@ public sealed class AuthProviderTests
     }
 
     [Fact]
+    public void Token_expires_after_the_configured_lifetime()
+    {
+        var clock = new TestClock();
+        var settings = new AuthOptions { SigningKey = Key, TokenLifetime = TimeSpan.FromHours(1) };
+
+        var token = new JwtTokenIssuer(Options.Create(settings), clock)
+            .Issue(new AppUser { Role = UserRole.Officer, PhoneE164 = "+233240000001", FullName = "Officer" });
+
+        Assert.Equal(clock.UtcNow.AddHours(1), token.ExpiresAt);
+        Assert.Equal(clock.UtcNow.AddHours(1).UtcDateTime, new JsonWebToken(token.Value).ValidTo);
+    }
+
+    [Fact]
     public void Officer_token_has_no_farmer_claim()
     {
         var issuer = new JwtTokenIssuer(Options.Create(new AuthOptions { SigningKey = Key }), new TestClock());

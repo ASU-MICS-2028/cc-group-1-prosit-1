@@ -27,7 +27,7 @@ ADR 0007 chose phone number + one-time SMS code. Building it needed concrete num
 | "Send code" answer | Always `202`, whether or not the number has an account | Nobody can test numbers to find out who is registered |
 | Per network address | **30** sign-in requests per 5 minutes | Slows scripted attacks while a shared office connection still works |
 | Token | Signed JWT (HS256) with the user ID, role (`officer`, `farmer`) and, for farmers, their farmer ID | The server checks it without a database lookup, and it works while the phone is offline |
-| Token lifetime | **7 days** | Covers a week of field work between trips to signal; limits the damage of a lost phone to a week |
+| Token lifetime | **7 days** on the servers (setting `Auth:TokenLifetime`, default `7.00:00:00`); **1 hour** on laptops (`appsettings.Development.json`) so the sign-in screens are tested often | Covers a week of field work between trips to signal; limits the damage of a lost phone to a week |
 | Farmer accounts | Created on first sign-in from the farmer record an officer registered; on a shared family phone, the first farmer registered on it | Farmers need no separate sign-up |
 | Signing key | At least 32 bytes, from `Auth__SigningKey` on the server; the API refuses to start without it | Secrets never in the code (ADR 0015) |
 | Laptop and tests | Fixed code `123456`; the SMS text is written to the log | Development without an SMS account |

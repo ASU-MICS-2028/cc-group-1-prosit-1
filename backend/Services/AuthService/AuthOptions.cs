@@ -12,8 +12,12 @@ public sealed class AuthOptions
 
     public string Audience { get; set; } = "agroconnect-app";
 
-    /// <summary>A week: long enough for officers to work offline between trips to signal, short enough to limit a lost phone (ADR 0022).</summary>
-    public int TokenLifetimeDays { get; set; } = 7;
+    /// <summary>
+    /// How long a sign-in lasts. A week on the servers: long enough for officers to work offline between
+    /// trips to signal, short enough to limit a lost phone (ADR 0022). Written as days.hours:minutes:seconds,
+    /// e.g. "7.00:00:00"; laptops use "01:00:00" so the sign-in screens are seen often while testing.
+    /// </summary>
+    public TimeSpan TokenLifetime { get; set; } = TimeSpan.FromDays(7);
 
     public int CodeLifetimeMinutes { get; set; } = 10;
 

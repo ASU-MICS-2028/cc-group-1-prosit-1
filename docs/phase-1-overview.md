@@ -9,7 +9,7 @@ _Last updated: Monday 5 October 2026, midday._
 ## 0. Where we are now
 
 ### Done
-- **Decisions:** 23 ADRs (short decision notes), including one repository (0017), the backend structure (0020), the UI from Figma (0021), sign-in rules (0022) and database naming and links (0023).
+- **Decisions:** 32 ADRs (short decision notes), including one repository (0017), the backend structure (0020), the UI from Figma (0021), sign-in rules (0022), database naming and links (0023), roles and devices (0024), pictures online and icons offline (0025), the private network (0026, proposed) how the registration form works (0027) and the installable app (0028) the app screens with the sync contract (0029), the computer top bar with the account menu (0030), the farmer's app with sample providers (0031), and the sync service (0032).
 - **Repository and checks:** branch rules, pre-commit hooks, secret scanning, the CI pipeline (frontend, backend, Docker) with the 70% coverage gate, and the deploy pipeline (not tried on a server yet).
 - **Backend base:** a thin API host plus services, shared tools, structured logs, standard error answers in the caller's language, and the OpenAPI contract written on every build.
 - **Database:** five tables (users, login_codes, farmers, visits, photos) and the first migration, with PostgreSQL-style names (`full_name`) and six enforced links (foreign keys), so the database itself refuses, for example, a visit for a farmer that does not exist. The API creates the tables when it starts and adds a demo officer and a sample farmer on a laptop.
@@ -19,17 +19,25 @@ _Last updated: Monday 5 October 2026, midday._
   - Tried live in a browser against the real API and database.
 - **App base:** design tokens from Figma, a responsive layout (bottom bar on phones, sidebar on wider screens), Home, Farmers, Sync and Profile pages, and audio buttons (recordings pending).
 - **Phone and desktop layouts for the start screens:** one app; the screen width picks the layout. The phone design under 768 px; from 768 px the desktop design from Figma (D01 to D03): a brand panel with the illustration on the left, the form on the right.
+- **Registration of a farmer, built from Figma for phones and computers (7 Oct):** the 7 steps (consent, about the farmer, the farm, location and photo, contact, money, help needed), Check and save, Saved, the pink error boxes and the "Check before saving" screen for a shared phone number.
+  - Saved on the phone first: the farmer and its "to send" note in one step (IndexedDB). The Home, Farmers and Sync pages now list these farmers and their "waiting" state.
+  - Nothing is kept before the farmer agrees. After that every answer is kept as a draft, so a closed app or a flat battery loses nothing.
+  - GPS and a photo are optional. The photo is shrunk to about 150 KB on the phone.
+  - Phones under 768 px get the phone design (04 to 12). From 768 px the computer design (D07 to D15), with the guide panel from 1024 px.
 - **Developer tools:** Swagger UI on laptops (`/swagger`) to try every endpoint, and one-click VS Code tasks that start the database, API and app in visible terminals.
-- **Tests:** backend 109 tests (sign-in 99% covered; every project above 70%; includes a test that the database refuses broken links); frontend 72 tests, 98.3% of lines covered. Lint, format and build pass. First screen about 127 KB gzipped (budget 200 KB); each screen loads separately at 1 to 3 KB.
+- **Installable app (PWA), 7 Oct:** app icon and manifest, a service worker that saves the whole app for offline use, "Install AgroConnect" and "A new version is ready" messages (ADR 0028). Checked in Chrome: installable with no errors, and the app opens with the network switched off.
+- **All Phase 1 app screens from Figma, phones and computers (7 Oct, ADR 0029):** officer Home (with "No farmers yet" and "No network"), My farmers (a table with a preview on computers), the farmer's page, Edit farmer, Sync with "Sync now", Visits and Log a visit, Profile, Log out?, Change language, Help, Install the app, and the farmer's own Home, Help and Profile. One look everywhere (same sizes, colours and cards), menus by role, and Market and Money left for Phase 2.
+  - The app sends its waiting farmers and visits by itself (on opening and when the network returns) to `POST /api/sync`.
+- **The farmer's app in full (7 Oct, ADR 0031):** the farmer sees their farm, their officer (with a Call button) and their visits, can ask their officer to change their details, and has Market prices, Weather, Check my crop, Harvest forecast, My cooperative and Lessons. Their own data is real; prices, weather and the other outside sources come from sample providers, clearly labelled "Sample data", until each live source is connected. Every farmer screen opens offline with the last saved answer.
+- **Offline registration reaches the server (7 Oct, ADR 0032):** `POST /api/sync` stores the farmers and visits officers saved offline. A farmer registered in the field can sign in with their own number as soon as the officer's phone has synced. Sending twice never copies a record; the newest change wins; an officer can only change their own records; a record that breaks a rule comes back as "To fix" with the reason, and the rest are still stored. The app sends 100 records per request so a weak 2G signal can carry it.
+- **Tests:** backend 190 tests (sign-in 99%, farmer service 100% and sync 99% of lines covered; every project above 70%; includes a test that the database refuses broken links and an end-to-end test from offline registration to the farmer signing in); frontend 133 tests, 94.7% of lines covered (every registration step, drafts, duplicates, GPS and photo, editing, visits, sync in batches, log out, language, install, the farmer's app). Lint, format and build pass. First screen about 102 KB gzipped (budget 200 KB); every other screen loads separately.
 
 ### Next steps, in order
-1. **Officer home and navigation from Figma:** Home, Farmers, Visits, Profile, the "waiting / all synced" badge, and the no-farmers and no-network states.
-2. **Registration from Figma:** the 7-step form, review, saved, the error state and the duplicate warning, saved on the phone first (Dexie and the "to send" queue).
-3. **Farmer service (backend):** sync (safe to send twice), "what changed since my last sync", the duplicate phone check, farmer details, photo upload links; then the app's sync on open, on reconnect and with "Sync now".
-4. **The other screens from Figma:** farmer list, detail and edit, sync, profile, change language, log out, visits, the farmer's own view and help.
-5. **Installable app:** manifest, icons, offline caching, "update available" and "install" prompts.
-6. **USSD and SMS** with the Africa's Talking sandbox.
-7. **Docs:** ADRs for sign-in and sync, this file, `status.md`.
+1. **Sync, second half (backend and app, Bernard and Liza):** `GET /api/sync/changes`, so a phone or laptop also receives what the officer saved on another device; then the duplicate phone check across phones and the photo upload with its link check.
+2. **Planned visits and the MoFA side (ADR 0024):** visit plans from the server ("Tomorrow", "Start visit"), the admin role, sign-in and *Add a person*, and the MoFA reports page (D20).
+3. **Install on a real phone:** try the installed app on a cheap Android phone over USB (port forwarding), then from staging once it has HTTPS (DevOps lead).
+4. **USSD and SMS** with the Africa's Talking sandbox.
+5. **Translations and recordings (Germain and the community):** Twi, Ewe and Dagbani texts and the voice prompts.
 
 ### What we test on a laptop (automatic, on every change)
 - Build, style checks, unit tests and database tests (real PostgreSQL in Docker).
@@ -39,7 +47,7 @@ _Last updated: Monday 5 October 2026, midday._
 
 ### What needs a real phone, accounts or servers
 - **Real SMS:** an Africa's Talking account and key. Until then the code is written to the API log, and on a laptop it is always `123456`.
-- **A real phone:** install the app, airplane mode then sync, GPS, the camera, speed on a cheap Android.
+- **A real phone:** install the app, airplane mode then sync, GPS and the camera in the registration form (they need HTTPS on a server, or the laptop's address), speed on a cheap Android.
 - **Design review:** compare the screens with Figma on a phone.
 - **CI on GitHub:** every pull request runs the full checks.
 - **Servers (Mubarak and the DevOps lead):** HTTPS, the two EC2 servers, the database, the photo bucket, and the `Auth__SigningKey` secret.
@@ -209,8 +217,8 @@ Left out on purpose:
 
 Every farmer and visit row has two times: `client_updated_at` (when it changed on the phone) and `server_updated_at` (when the server stored it). Phones ask for "changes since" the server time.
 
-**How saving will work** (being built now):
-1. The app saves the farmer and a "to send" note on the phone in one step, and shows "Saved on this phone, N waiting".
+**How saving works** (step 1 is built; steps 2 to 5 come with the farmer service):
+1. The app saves the farmer and a "to send" note on the phone in one step, and shows "Saved on this phone, waiting to sync". The tables on the phone are in [`data-dictionary.md`](data-dictionary.md) section 4.7.
 2. It sends when the network comes back, when the app opens, or on "Sync now".
 3. It calls `POST /api/sync` with a batch of farmers and visits. The server answers for each item: created, updated, unchanged, not allowed, or invalid.
 4. If sending fails it waits 1, 2, 4, 8 seconds and retries. Sending twice does no harm, because the IDs are made on the phone. Real data mistakes are not retried; the user fixes them.

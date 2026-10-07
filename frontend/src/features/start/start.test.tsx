@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { renderRoute, testFarmer, testOfficer } from "@/test/renderRoute"
@@ -247,11 +247,20 @@ describe("start screens", () => {
     await userEvent.click(screen.getByRole("button", { name: "Verify" }))
 
     expect(
-      await screen.findByRole("heading", { name: "Hello, Ama Boateng" })
+      await screen.findByRole("heading", { name: "Ama" })
     ).toBeInTheDocument()
+    expect(screen.getByText("Saved with MoFA")).toBeInTheDocument()
     expect(router.state.location.pathname).toBe("/farmer")
 
-    await userEvent.click(screen.getByRole("button", { name: "Log out" }))
+    // Log out lives on Profile, behind "Log out?"
+    await userEvent.click(screen.getAllByRole("link", { name: "Profile" })[0])
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Log out" })
+    )
+    const sheet = await screen.findByRole("dialog", { name: "Log out?" })
+    await userEvent.click(
+      within(sheet).getByRole("button", { name: "Log out" })
+    )
     await waitFor(() => expect(router.state.location.pathname).toBe("/who"))
     expect(localStorage.getItem("agroconnect.session")).toBeNull()
   })

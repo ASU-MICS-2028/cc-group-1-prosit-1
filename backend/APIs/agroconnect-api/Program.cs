@@ -2,9 +2,11 @@ using System.Text.Json.Serialization;
 using AgroConnect.Api.OpenApi;
 using AgroConnect.AuthService;
 using AgroConnect.Data;
+using AgroConnect.FarmerService;
 using AgroConnect.PlatformService;
 using AgroConnect.SharedLibrary;
 using AgroConnect.SharedLibrary.Features;
+using AgroConnect.SyncService;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -56,7 +58,9 @@ builder.Services
     .AddSharedLibrary()
     .AddData(builder.Configuration)
     .AddPlatformService()
-    .AddAuthService(builder.Configuration);
+    .AddAuthService(builder.Configuration)
+    .AddFarmerService()
+    .AddSyncService();
 
 var app = builder.Build();
 

@@ -75,7 +75,7 @@ Dashed lines are planned, not yet built.
 | Role | Signs in with | Can do | Cannot do | Stored as |
 |---|---|---|---|---|
 | **Extension officer** (account added by a MoFA admin; phone and computer) | Phone + SMS code | Register farmers, edit the farmers they registered, plan and record visits, sync | See or change other officers' farmers | `users` row with `role = 0` |
-| **Farmer** (registered by an officer; phone only) | Phone + SMS code (the phone the officer registered) | See their own profile and visits, change their language | See other farmers, register anyone | `users` row with `role = 1`, and `farmer_id` = their `farmers` row (created at first sign-in) |
+| **Farmer** (registered by an officer; phone or computer, ADR 0024 amendment of 2026-10-07) | Phone + SMS code (the phone the officer registered) | See their own profile and visits, change their language | See other farmers, register anyone | `users` row with `role = 1`, and `farmer_id` = their `farmers` row (created at first sign-in) |
 | **Farmer with a simple phone** | Nothing to install: USSD menu and SMS | Register or confirm details by USSD, receive SMS | Use the app | A `farmers` row; contact preferences in `reach_channels` |
 | **Farmer with no phone** | Not applicable | Is registered and visited by the officer | Be contacted directly | A `farmers` row with `has_no_phone = true` |
 | **MoFA administrator** (planned; first one created by a script, then added by other admins; computer only; chooses *MoFA admin* on the desktop *Who are you?*) | Phone + SMS code | Read-only summaries for their region or district; add and remove extension officers and admins; turn off a lost phone | Change farmer records | A new `admin` role |
@@ -166,7 +166,7 @@ Only the main columns are shown; section 4 lists them all. `login_codes` has no 
 | Farmer groups and cooperatives | Partners such as the Ashaiman association register members together | Week 2 |
 | `consents` table | A history of consent (given, withdrawn), not only the latest | Before real farmer data |
 | `ussd_sessions` table | Remember where a simple-phone user is in the USSD menu | With USSD |
-| `conflict_log` table | Record when a newer edit replaced another, so it can be explained | With sync |
+| `conflict_log` table | Record when a newer edit replaced another, so it can be explained | When officers use several devices a lot (sync keeps the newest change today, ADR 0032) |
 | Agro-dealers, prices, payments | Weeks 2 and 3 scope | Weeks 2 and 3 |
 
 ---
@@ -194,8 +194,8 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 | `visits.officer_id` → `users.id` | Which officer made the visit | Yes: `fk_visits_users_officer_id` |
 | `photos.farmer_id` → `farmers.id` | Whose farm the photo shows | Yes: `fk_photos_farmers_farmer_id` |
 | `photos.uploaded_by_id` → `users.id` | Who took and uploaded it | Yes: `fk_photos_users_uploaded_by_id` |
-| `farmers.photo_id` → `photos.id` | The farm photo from registration step 4 | No, on purpose: offline, the farmer record syncs **before** its photo is uploaded, so the photo row does not exist yet. The API checks it instead. |
-| `visits.photo_ids` → `photos.id` | Photos taken during the visit | No: a list cannot have a foreign key, and photos upload after the visit syncs. The API checks it instead. |
+| `farmers.photo_id` → `photos.id` | The farm photo from registration step 4 | No, on purpose: offline, the farmer record syncs **before** its photo is uploaded, so the photo row does not exist yet. The API checks it instead, from the photo upload on. |
+| `visits.photo_ids` → `photos.id` | Photos taken during the visit | No: a list cannot have a foreign key, and photos upload after the visit syncs. The API checks it instead, from the photo upload on. |
 
 **Foreign key** = a rule in the database itself that a link must point at a row that exists. Saving a visit for a farmer that does not exist fails with `fk_visits_farmers_farmer_id`, whatever program tries it. Deleting an officer or farmer that other rows point at is refused too (`RESTRICT`), so no history is lost by accident. A test proves it (`tests/Api.Tests/DatabaseSchemaTests.cs`).
 
@@ -251,7 +251,7 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 | Column | Type | Required | Meaning | Example |
 |---|---|---|---|---|
 | `id` | uuid | yes | The farmer's ID, made on the phone | `0192f0a0-0000-7000-8000-000000000001` |
-| `registered_by_id` | uuid | yes | The officer (`users.id`) who registered the farmer | |
+| `registered_by_id` | uuid | yes | The officer (`users.id`) who registered the farmer. Set by the server from the officer's sign-in when the record is synced, never from the phone (ADR 0032) | |
 | `consent_given` | boolean | yes | The farmer agreed (recorded consent) to their data being kept. Registration cannot continue without it | `true` |
 | `consent_at` | timestamptz | yes | When consent was given | |
 | `language` | integer (`Language`) | yes | The language consent was given in, which is also the farmer's preferred language | `1` (Twi) |
@@ -363,6 +363,41 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 ### 4.6 `__EFMigrationsHistory`: which database changes are applied
 
 Written by the migration tool, never by hand. One row per applied migration (`MigrationId` such as `20261005010519_InitialSchema`, and `ProductVersion`, the EF Core version). On start-up the API compares it with the migrations in the code and applies any that are missing.
+
+### 4.7 Tables on the phone (IndexedDB, database `agroconnect`)
+
+The app keeps its own small database in the browser, so an officer can register farmers with no network (ADR 0005, ADR 0027). It is defined in `frontend/src/db/local.ts` with Dexie. Names here are camelCase, because they are JavaScript objects, not SQL columns. Choices are stored as the **words** (`"maize"`), exactly as the API sends them.
+
+| Table | Key | Indexed by | What it holds |
+|---|---|---|---|
+| `farmers` | `id` (UUID made on the phone) | `phoneE164`, `syncStatus`, `clientUpdatedAt` | Farmers registered on this phone. The same fields as the server's `farmers` table (4.3), plus `syncStatus`. |
+| `photos` | `id` (UUID) | `farmerId` | The shrunk farm photo (about 150 KB) waiting to be uploaded. `farmerId` is empty while the form is still a draft. |
+| `outbox` | `seq` (counts up: 1, 2, 3) | `kind`, `recordId` | The "to send" queue: one row per farmer or visit waiting for sync (`kind` is `farmer` or `visit`). Sent to `POST /api/sync` in batches of 100, oldest first (ADR 0029, 0032). A row the server does not answer (a visit whose farmer is not on the server yet) stays for the next sync. |
+| `drafts` | `id` (always `registration`) | | The half-filled registration form, kept after consent so nothing is lost if the app closes. |
+| `visits` | `id` (UUID made on the phone) | `farmerId`, `scheduledFor`, `syncStatus` | Visits logged on this phone (added in version 2 of the phone database). The same fields as the server's `visits` table (4.4), plus `nextVisit` and `syncStatus`. |
+
+**`farmers` on the phone, the columns that differ from the server:**
+
+| Column | Example | Meaning |
+|---|---|---|
+| `phoneE164` | `+233240001234` | The phone in international form; empty when the farmer has no phone. Indexed for the duplicate check. |
+| `language` | `tw` | The app language when consent was given. |
+| `consentAt` | `2026-10-07T10:15:00Z` | When the farmer said "Yes, I agree". |
+| `registeredById` | user ID | The officer who registered the farmer. |
+| `clientUpdatedAt` | ISO time | When it last changed on this phone; the newest change wins on sync. |
+| `syncStatus` | `waiting` | `waiting` (not sent yet) · `synced` (on the server) · `failed` (the server refused it; shown as "To fix"). |
+| `syncProblem` | `Phone number is too short` | Why the server refused it, in the officer's language. Cleared when the farmer is edited. |
+| `photoId`, `photoSizeBytes` | UUID, `148213` | The photo in the `photos` table, and its size after shrinking. |
+
+**`outbox` columns:** `kind` (`farmer` today; `visit` later), `recordId` (the farmer's ID), `createdAt`, `attempts` (how many times sending failed; used for the 1, 2, 4, 8 second waits).
+
+**`drafts` columns:** `data` (every answer so far), `step` (1 to 7, where to reopen), `updatedAt`.
+
+| `cache` | `key` ("<user id>:<what>") | | The last answer of each farmer-app call (my farm, prices, weather...), so the farmer's screens open offline. Added in version 3. |
+
+**`visits` columns:** `farmerId`, `officerId`, `status` (`done` for visits logged on the phone; `planned` comes from the server later), `scheduledFor` (the day, `2026-10-07`), `completedAt`, `topics` (VisitTopic words), `observations` (FarmObservation words), `notes`, `photoIds`, `nextVisit` (`one_week`, `two_weeks`, `one_month`, `none`: phone only, to plan the next visit), `createdAt`, `clientUpdatedAt`, `syncStatus`.
+
+**How a registration is saved:** one transaction adds the farmer, adds its `outbox` row, links the photo (`farmerId`) and deletes the draft. Either all four happen or none, so a farmer is never saved without being queued for sync.
 
 ---
 
