@@ -1,4 +1,4 @@
-import { Clock } from "lucide-react"
+import { Check, ChevronLeft, ChevronRight, Clock } from "lucide-react"
 import type { ReactNode } from "react"
 import { Link, NavLink } from "react-router-dom"
 import { useTranslation } from "react-i18next"
@@ -46,21 +46,38 @@ export function BottomNav({
 }
 
 /**
- * Computers and tablets (768 px and up): the officer's work sections down the left (Figma D04),
- * under the top bar that holds the logo and the account menu (ADR 0030). `footer` holds what sits
- * at the bottom (the officer's sync card and Register button).
+ * Computers and tablets (768 px and up): the officer's sidebar (Figma "Desktop Sidebar · Office"):
+ * the logo, every place, then the sync card and Register a farmer at the bottom. The small tab on
+ * its right edge closes it; when closed only the tab stays, at the left edge of the window.
  */
 export function SideNav({
   items = sideNavItems,
   footer = <OfficerSideFooter />,
+  open,
+  onToggle,
 }: {
   items?: readonly NavItem[]
   footer?: ReactNode
+  open: boolean
+  onToggle: () => void
 }) {
   const { t } = useTranslation()
 
+  if (!open) {
+    return (
+      <div className="sticky top-0 hidden h-svh w-0 md:block">
+        <SidebarTab open={false} onToggle={onToggle} />
+      </div>
+    )
+  }
   return (
-    <aside className="sticky top-16 hidden h-[calc(100svh-4rem)] w-62 shrink-0 flex-col gap-10 border-r bg-card px-5 pt-6 pb-6 md:flex">
+    <aside className="sticky top-0 hidden h-svh w-62 shrink-0 flex-col gap-8 border-r bg-card px-5 pt-7 pb-6 md:flex">
+      <Link
+        to="/"
+        className="px-1 text-2xl leading-9 font-semibold text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        {t("app.name")}
+      </Link>
       <nav aria-label={t("nav.main")}>
         <ul className="space-y-2">
           {items.map(({ to, key, icon: Icon, end }) => (
@@ -85,7 +102,34 @@ export function SideNav({
         </ul>
       </nav>
       {footer ? <div className="mt-auto space-y-3">{footer}</div> : null}
+      <SidebarTab open onToggle={onToggle} />
     </aside>
+  )
+}
+
+/** The small rectangle on the sidebar's edge (Figma "Sidebar Tab"): ‹ closes, › opens. */
+function SidebarTab({
+  open,
+  onToggle,
+}: {
+  open: boolean
+  onToggle: () => void
+}) {
+  const { t } = useTranslation()
+  const Chevron = open ? ChevronLeft : ChevronRight
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={t(open ? "nav.collapse" : "nav.expand")}
+      aria-expanded={open}
+      className={cn(
+        "absolute top-1/2 z-30 flex h-14 w-5 -translate-y-1/2 items-center justify-center rounded-r-[10px] border border-l-0 bg-card text-muted-foreground shadow-sm outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50",
+        open ? "-right-5" : "left-0"
+      )}
+    >
+      <Chevron aria-hidden className="size-4" />
+    </button>
   )
 }
 
@@ -109,7 +153,15 @@ function OfficerSideFooter() {
             {t("sync.open")}
           </Link>
         </div>
-      ) : null}
+      ) : (
+        <Link
+          to="/sync"
+          className="flex items-center gap-2 rounded-[20px] bg-secondary px-4 py-3 text-sm font-medium text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <Check aria-hidden className="size-4.5" />
+          {t("sync.allSent")}
+        </Link>
+      )}
       <Link
         to="/register"
         className={cn(buttonVariants({ size: "xl" }), "w-full")}

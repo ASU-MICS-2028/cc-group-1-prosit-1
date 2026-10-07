@@ -20,7 +20,11 @@
     "visits": "Visits",
     "help": "Help",
     "account": "Account menu for {{name}}",
-    "market": "Market"
+    "market": "Market",
+    "requests": "Requests",
+    "money": "Money",
+    "collapse": "Close the menu",
+    "expand": "Open the menu"
   },
   "welcome": {
     "hello": "Hello,",
@@ -353,7 +357,8 @@
     "notSentTitle_other": "{{count}} farmers not sent yet",
     "waitingToSend": "Waiting to send",
     "savedAt": "Saved {{when}}",
-    "needsFixing": "Needs fixing"
+    "needsFixing": "Needs fixing",
+    "allSent": "All sent"
   },
   "profile": {
     "title": "Profile",

@@ -37,12 +37,11 @@ export function Component() {
             {firstName}
           </h1>
         </div>
-        {/* Computers: the search and the badge are in the top bar */}
-        <SyncBadge
-          waiting={counts.waiting}
-          failed={counts.failed}
-          className="md:hidden"
-        />
+        {/* Figma D04: on computers the search sits next to the badge in the page header */}
+        <div className="flex items-center gap-3">
+          <FarmerSearch className="hidden h-11 w-72 md:flex lg:w-80" />
+          <SyncBadge waiting={counts.waiting} failed={counts.failed} />
+        </div>
       </header>
 
       <FarmerSearch className="md:hidden" />
