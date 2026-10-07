@@ -58,7 +58,7 @@ export function HelpStep({ showTitle = true }: StepProps = {}) {
               tiles={HELP_NEEDS.map((h) => ({
                 value: h.code,
                 label: t(`register.helpNeeds.${h.code}`),
-                icon: h.icon,
+                picture: h.picture,
               }))}
               value={field.value}
               onChange={field.onChange}

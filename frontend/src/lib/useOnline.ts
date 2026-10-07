@@ -1,22 +1,17 @@
-import { useSyncExternalStore } from "react"
+import { useEffect, useState } from "react"
 
-function subscribe(notify: () => void) {
-  window.addEventListener("online", notify)
-  window.addEventListener("offline", notify)
-  return () => {
-    window.removeEventListener("online", notify)
-    window.removeEventListener("offline", notify)
-  }
-}
-
-/**
- * False when the phone says it has no network (airplane mode, no signal). True can still mean
- * a connection too weak to reach the server, so a failed request is handled on its own.
- */
-export function useOnline(): boolean {
-  return useSyncExternalStore(
-    subscribe,
-    () => navigator.onLine,
-    () => true
-  )
+/** Whether the browser thinks it is online, kept up to date. */
+export function useOnline() {
+  const [online, setOnline] = useState(() => navigator.onLine)
+  useEffect(() => {
+    const on = () => setOnline(true)
+    const off = () => setOnline(false)
+    window.addEventListener("online", on)
+    window.addEventListener("offline", off)
+    return () => {
+      window.removeEventListener("online", on)
+      window.removeEventListener("offline", off)
+    }
+  }, [])
+  return online
 }

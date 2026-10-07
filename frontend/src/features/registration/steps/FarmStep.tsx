@@ -38,11 +38,12 @@ export function FarmStep({ showTitle = true }: StepProps = {}) {
           render={({ field }) => (
             <PictureTiles
               multiple
+              look="photo"
               labelledBy="crops-label"
               tiles={CROPS.map((c) => ({
                 value: c.code,
                 label: t(`register.crops.${c.code}`),
-                icon: c.icon,
+                picture: c.picture,
               }))}
               value={field.value}
               onChange={field.onChange}
@@ -128,7 +129,7 @@ export function FarmStep({ showTitle = true }: StepProps = {}) {
               tiles={SEASONS.map((s) => ({
                 value: s.code,
                 label: t(`register.seasons.${s.code}`),
-                icon: s.icon,
+                picture: s.picture,
               }))}
               value={field.value}
               onChange={field.onChange}

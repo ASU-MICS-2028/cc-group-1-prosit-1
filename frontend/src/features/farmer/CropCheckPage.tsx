@@ -135,11 +135,12 @@ export function Component() {
             audioKey="farmerApp.cropCheck.which"
           >
             <PictureTiles
+              look="photo"
               labelledBy="crop-label"
               tiles={crops.map((c) => ({
                 value: c.code,
                 label: t(`register.crops.${c.code}`),
-                icon: c.icon,
+                picture: c.picture,
               }))}
               value={crop}
               onChange={(c) => {

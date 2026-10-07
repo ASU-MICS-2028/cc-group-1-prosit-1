@@ -39,7 +39,7 @@ export function MoneyStep({ showTitle = true }: StepProps = {}) {
               tiles={INCOME_SOURCES.map((s) => ({
                 value: s.code,
                 label: t(`register.incomeSources.${s.code}`),
-                icon: s.icon,
+                picture: s.picture,
               }))}
               value={field.value}
               onChange={field.onChange}
@@ -63,7 +63,7 @@ export function MoneyStep({ showTitle = true }: StepProps = {}) {
                 tiles={BANK_ANSWERS.map((b) => ({
                   value: b.code,
                   label: t(`register.bankAnswers.${b.code}`),
-                  icon: b.icon,
+                  picture: b.picture,
                 }))}
                 value={field.value === null ? null : field.value ? "yes" : "no"}
                 onChange={(answer) => field.onChange(answer === "yes")}
