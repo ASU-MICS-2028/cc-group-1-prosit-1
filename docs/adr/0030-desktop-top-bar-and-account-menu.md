@@ -1,6 +1,6 @@
 # ADR 0030: A top bar and an account menu on computers
 
-- **Status:** Accepted
+- **Status:** Superseded on 2026-10-07 by the amendment below (Figma sidebar, no top bar)
 - **Date:** 2026-10-07
 
 ## Context
@@ -31,3 +31,16 @@ From 768 px (the team's breakpoint, still a width check, never device detection)
 - The Figma desktop frames should be updated with the top bar and the account menu, so the design and the app agree.
 - Tests check both navigations (jsdom draws the phone and computer versions together) and the account menu.
 - The Figma is the main design guide, but where a frame departs from common practice we follow the standard pattern and record it here, so the team can update Figma.
+
+## Amendment (2026-10-07, later): the Figma sidebar instead
+
+The DevOps lead asked for the desktop layout to follow Figma after all. The top bar and the account menu are removed:
+
+- **Officer, from 768 px:** the Figma sidebar on every page: AgroConnect logo, Home, Farmers, Visits, Requests, Market, Money, Profile; at the bottom a sync card ("N not sent yet" with a link to Sync, or "All sent") and Register a farmer.
+- **Collapse tab:** a small tab on the sidebar's edge closes it to give the page the full width and opens it again (Figma "Sidebar Tab"). The choice is remembered on that device.
+- **Search and sync badge** go back into the Home page header on computers (Figma D04).
+- **Profile** is in the sidebar; Log out stays on the Profile page with its "Log out?" question.
+- **Farmers** have no computer layout (ADR 0024, later amendment), so they need neither a top bar nor a sidebar.
+- **Phones** are unchanged: the bottom bar (officer: Home, Farmers, Visits, Market, Profile; farmer: Home, Market, Money, Help, Profile). Requests and Money are cards on the officer's phone Home.
+
+**Why:** the team's design is the Figma file, and the sidebar there already holds the Phase 2 places. Keeping the app and Figma the same saves updating every desktop frame.

@@ -64,7 +64,11 @@
     "continue": "Continue where you stopped",
     "newFarmer": "New farmer",
     "noFarmersTitle": "No farmers yet",
-    "registerFirst": "Register your first farmer"
+    "registerFirst": "Register your first farmer",
+    "requestsOpen_one": "{{count}} waiting for advice",
+    "requestsOpen_other": "{{count}} waiting for advice",
+    "loansToReview_one": "{{count}} loan to review",
+    "loansToReview_other": "{{count}} loans to review"
   },
   "register": {
     "title": "Register a farmer",
@@ -583,7 +587,15 @@
       "cropCheck": "Check my crop",
       "harvest": "Harvest forecast",
       "cooperative": "My cooperative",
-      "lessons": "Lessons"
+      "lessons": "Lessons",
+      "pricesHint": "What crops sell for today",
+      "weatherHint": "Rain and sun this week",
+      "cropCheckHint": "Something wrong with a plant?",
+      "harvestHint": "How much you may get",
+      "cooperativeHint": "Save, buy and sell together",
+      "lessonsHint": "Short videos and audio",
+      "money": "Money",
+      "moneyHint": "Pay for inputs, loans, insurance and get paid"
     },
     "rows": {
       "listen": "Listen to my details",
@@ -660,7 +672,7 @@
       "likely": "Likely problem",
       "urgent": "Act today",
       "whatToDo": "What to do",
-      "again": "Check again",
+      "again": "Check another leaf",
       "guide": "This is a first guide. Show your officer if you are not sure.",
       "chooseCrop": "Choose the crop.",
       "chooseSymptom": "Choose at least one thing you see.",
@@ -691,7 +703,13 @@
         "mulch_soil": "Cover the soil with dry grass to keep it wet.",
         "improve_drainage": "Make channels so water does not stand around the plants.",
         "show_officer": "Show the plant to your officer at the next visit, or call them."
-      }
+      },
+      "photo": "Photo of the leaf (if you can)",
+      "photoHint": "Hold the sick leaf in good light. The photo stays on your phone.",
+      "takePhoto": "Take a photo",
+      "removePhoto": "Remove the photo",
+      "yourPhoto": "Your leaf photo",
+      "askOfficer": "Ask my officer to confirm"
     },
     "harvest": {
       "title": "Harvest forecast",
