@@ -8,6 +8,7 @@ Everything we decided, and why. Start with the decision records; each one answer
 - [`local-development.md`](local-development.md): hands-on guide: every Docker, dotnet and database command we use, what it does, health checks, and how the laptop maps to the cloud servers.
 - [`status.md`](status.md): where the project stands now: done, next steps, open questions.
 - [`decision-log.md`](decision-log.md): every decision in date order, one line each.
+- [`infrastructure.md`](infrastructure.md): what runs in AWS right now (addresses, servers, database, alarms, cost), how to deploy and scale, and the migration log.
 - [`adr/`](adr/): Architecture Decision Records (Context / Decision / Alternatives / Consequences). Copy `adr/template.md` for new ones.
 - [`tech-choices.md`](tech-choices.md): the whole stack: every framework, library, package, container image and tool (frontend, backend, data, servers, checks), what it does, why we chose it and what we rejected.
 - [`project-structure.md`](project-structure.md): the folder layout of the repository (`frontend/`, `backend/`, `deploy/`, docs) and what each file is for.

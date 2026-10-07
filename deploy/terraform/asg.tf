@@ -89,7 +89,7 @@ resource "aws_autoscaling_group" "app" {
 
   # Replace a server the load balancer reports unhealthy, not only one that is down.
   health_check_type         = "ELB"
-  health_check_grace_period = 420 # first boot installs Docker and pulls the images
+  health_check_grace_period = 900 # first boot installs Docker and pulls the images; mirrors can be slow
 
   launch_template {
     id      = aws_launch_template.app[each.key].id
@@ -101,7 +101,7 @@ resource "aws_autoscaling_group" "app" {
     strategy = "Rolling"
     preferences {
       min_healthy_percentage = 50
-      instance_warmup        = 420
+      instance_warmup        = 900
     }
   }
 

@@ -1,6 +1,6 @@
 # ADR 0024: Roles, how accounts are made, and which device each role uses
 
-- **Status:** Accepted
+- **Status:** Accepted, amended 2026-10-06 (desktop sign-in choice; see *Amendment*)
 - **Date:** 2026-10-05
 
 ## Context
@@ -25,21 +25,21 @@ Farmers with a basic phone use USSD and SMS; farmers with no phone are handled b
 
 **Where each role signs in.** Everyone uses phone number + 6-digit SMS code (ADR 0007, 0022). No passwords.
 
-| Who | Entry | Screens |
+| Who | Device | Screens |
 |---|---|---|
-| Extension officer, farmer | The main link | Phone: Welcome → Language → *Who are you?* (Extension officer / Farmer) → phone → code. Computer: Language → *Who are you?* (same two choices) → phone → code |
-| Farmer on a computer | The main link | Picking *Farmer* on a computer shows *Farmers use AgroConnect on the phone*, with a QR code and the link, and goes no further |
-| MoFA admin | **A separate page, `/admin`** | Admin sign-in → code → admin overview. Not offered on the main *Who are you?* screen |
-| MoFA admin on a phone | `/admin` on a phone | *Admin works on a computer*, with the admin link and a button back to the main page |
+| Extension officer, farmer | Phone (under 768 px) | Welcome → Language → *Who are you?* (**Extension officer / Farmer**) → phone → code. A small line tells MoFA admins to use a computer |
+| Extension officer, MoFA admin | Computer (768 px and up) | Language → *Who are you?* (**Extension officer / MoFA admin**) → phone → code. The admin choice leads to the admin sign-in, then the admin overview |
+| Farmer on a computer | Computer | Not offered on the desktop *Who are you?*. A small line, "Farmer? The farmer app works on your phone", opens *Farmers use AgroConnect on the phone* with a QR code and the link, and goes no further |
+| MoFA admin on a phone | Phone | *Admin works on a computer*, with a button back to the main page |
 
 **The device rule uses screen width, not the user agent:** under 768 px counts as a phone, the same breakpoint as ADR 0021.
 
 **Unknown numbers:** as ADR 0022 requires, the server answers "send code" the same way whether or not the number has an account, and sends no SMS if it has none. The screen says: "If this number is registered, a code is on its way. No code? Ask your extension officer" (farmer) or "Ask your MoFA admin" (officer, admin).
 
-**Design:** Figma file *AgroConnect*. Desktop page: P1 · D02a Who Are You, D02 Extension officer log in, D02f Farmer on a Computer; P4 · D0 Admin Sign In, D0b Admin Enter Code, D2b Add a Person. Phone page: P1 · 01b Who Are You, P4 · 00 Admin on a Phone. All linked in the prototype.
+**Design:** Figma file *AgroConnect*. Desktop page: P1 · D02a Who Are You (Extension officer / MoFA admin), D02 Extension officer log in, D02f Farmer on a Computer; P4 · D0 Admin Sign In, D0b Admin Enter Code, D2b Add a Person. Phone page: P1 · 01b Who Are You, P4 · 00 Admin on a Phone. All linked in the prototype.
 
 ## Alternatives considered
-- **One sign-in page with a "MoFA admin" choice:** simpler to build, but farmers and officers would see an option that is not for them, and some would pick it by mistake.
+- **A separate `/admin` page, not offered on *Who are you?*** (the first version of this ADR): keeps the admin option away from everyone else, but MoFA staff would need a second address. Replaced on 2026-10-06 (see *Amendment*).
 - **No device restrictions, only a "this page is easier on a computer" notice:** keeps everyone in, but the farmer screens are built for phones only, and a farmer on a computer would get a broken experience.
 - **Officers on the phone only:** officers also work from district-office laptops, so blocking the computer would lock them out of their own records.
 - **A fourth "district office" role:** adds a role with no clear difference from a district-scoped admin.
@@ -47,6 +47,15 @@ Farmers with a basic phone use USSD and SMS; farmers with no phone are handled b
 
 ## Consequences
 - **Backend:** needs an `admin` role (today only `officer` and `farmer` exist), an endpoint for admins to add officers and admins that sends the SMS invite, and a script to create the first admin.
-- **Frontend:** needs the `/admin` sign-in, the farmer-on-a-computer screen, the admin-on-a-phone screen and the *Add a person* form. Routes still follow the role (guards), and the device check is a width check on top.
+- **Frontend:** the *Who are you?* screen shows different choices by screen width (phone: Extension officer / Farmer; computer: Extension officer / MoFA admin); plus the admin sign-in, the farmer-on-a-computer screen, the admin-on-a-phone screen and the *Add a person* form. Routes still follow the role (guards), and the device check is a width check on top.
 - **Farmers without a smartphone** cannot use a cyber-café computer instead. They keep USSD, SMS and their officer.
 - **Admins** get a separate address to share with MoFA staff; it should not be linked from the farmer and officer screens beyond one small line.
+
+## Amendment (2026-10-06): the desktop sign-in choice
+
+The DevOps lead changed where MoFA admins choose their role. *Who are you?* now offers different choices by screen width:
+
+- **Phone:** Extension officer or Farmer (unchanged).
+- **Computer:** Extension officer or MoFA admin. Farmers are phone only, so a farmer choice on a computer would only lead to a dead end; they get one small line pointing to the phone instead.
+
+The separate `/admin` page is dropped: admins use the same address as everyone else and pick *MoFA admin* on a computer. The device rule is still the 768 px width check, never the user agent. Everything else in this ADR (three roles, who creates each account, devices per role, unknown-number handling) is unchanged.
