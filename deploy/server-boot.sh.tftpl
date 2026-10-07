@@ -21,9 +21,30 @@ fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /
 echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
 echo "==> Docker and AWS CLI"
-command -v docker >/dev/null || curl -fsSL https://get.docker.com | sh
+# Ubuntu's own first-boot updates hold the apt lock and can stall our install, and a
+# hung mirror connection has no timeout by default: pause them and give apt timeouts.
+systemctl stop unattended-upgrades apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true
+cat > /etc/apt/apt.conf.d/80agroconnect <<'APT'
+Acquire::http::Timeout "20";
+Acquire::https::Timeout "20";
+Acquire::Retries "5";
+DPkg::Lock::Timeout "300";
+APT
+# security.ubuntu.com is not reachable from this region's NAT; the regional EC2 mirror
+# serves the same security pocket and answers in milliseconds.
+sed -i 's#http://security.ubuntu.com/ubuntu#http://${region}.ec2.archive.ubuntu.com/ubuntu#g' \
+  /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list 2>/dev/null || true
+export DEBIAN_FRONTEND=noninteractive
+for attempt in 1 2 3; do
+  command -v docker >/dev/null && break
+  echo "Docker install, attempt $attempt"
+  curl -fsSL --max-time 60 https://get.docker.com | timeout 600 sh && break
+  sleep 15
+done
+command -v docker >/dev/null || { echo "Docker install failed"; exit 1; }
 systemctl enable --now docker
-[ -x /snap/bin/aws ] || snap install aws-cli --classic
+for attempt in 1 2 3; do [ -x /snap/bin/aws ] && break; timeout 300 snap install aws-cli --classic && break; sleep 15; done
+systemctl start apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true
 
 # The deploy workflow runs as root through SSM and hands files to this user.
 id deploy >/dev/null 2>&1 || useradd --create-home --shell /bin/bash deploy

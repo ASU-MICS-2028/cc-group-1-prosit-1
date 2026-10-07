@@ -64,9 +64,9 @@ Servers have no public IP and port 22 is closed. Use Session Manager (needs `bre
 terraform output shell_access   # how to list the servers and open a session
 ```
 
-## Moving from the default VPC (one time)
+## Moving from the default VPC (one time, done 2026-10-06/07)
 
-The first apply of this version replaces the old setup. Plan a short downtime window.
+Already done; kept as a record. Log: `docs/infrastructure.md`. The first apply of this version replaced the old setup.
 
 1. **Snapshot the current database:**
    ```sh
