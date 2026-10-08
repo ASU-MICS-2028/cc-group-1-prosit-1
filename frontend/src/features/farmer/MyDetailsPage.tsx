@@ -9,7 +9,7 @@ import { Avatar } from "@/features/farmers/FarmerRow"
 import { LANGUAGES } from "@/i18n"
 import { formatLongDate } from "@/lib/dates"
 import { maskPhone } from "@/lib/phone"
-import { speak } from "@/lib/speech"
+import { listen } from "@/lib/speech"
 import { cn } from "@/lib/utils"
 import { NoDataYet } from "./DataStatus"
 import { FarmerPage } from "./FarmerPage"
@@ -61,7 +61,7 @@ function Details({ farm }: { farm: MyFarm }) {
               size="xl"
               variant="secondary"
               className="flex-1 text-primary md:flex-none"
-              onClick={() => speak(farmerSpeech(facts, t))}
+              onClick={() => listen(farmerSpeech(facts, t))}
             >
               <Volume2 aria-hidden />
               {t("farmerApp.details.listen")}

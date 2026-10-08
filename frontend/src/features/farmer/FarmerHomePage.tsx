@@ -30,7 +30,7 @@ import { farmerSpeech } from "@/features/farmers/describe"
 import { Avatar } from "@/features/farmers/FarmerRow"
 import { promptAudio } from "@/lib/audio"
 import { maskPhone } from "@/lib/phone"
-import { speak } from "@/lib/speech"
+import { listen } from "@/lib/speech"
 import { cn } from "@/lib/utils"
 import { toFacts } from "./profile"
 import { useServerData } from "./useServerData"
@@ -315,7 +315,7 @@ export function Component() {
           <button
             type="button"
             disabled={!facts}
-            onClick={() => facts && speak(farmerSpeech(facts, t))}
+            onClick={() => facts && listen(farmerSpeech(facts, t))}
             className={cn(rowClass, "disabled:opacity-60")}
           >
             <ActionRow

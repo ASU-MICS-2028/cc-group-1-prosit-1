@@ -1,5 +1,25 @@
 import { useSyncExternalStore } from "react"
+import { BASE } from "@/api/client"
 import i18n from "@/i18n"
+
+/** Languages the server can speak through GhanaNLP Khaya (ADR 0036); English uses the phone's voice. */
+const SERVER_SPOKEN = ["tw", "ee", "dag"]
+
+/**
+ * Where to get a sentence spoken in the current language: the speech endpoint for Twi, Ewe and Dagbani,
+ * nothing for English (the phone's voice reads it). The server says 404 until the Khaya key is set, and
+ * the players then fall back to the phone's voice.
+ */
+export function speechUrl(text: string): string | undefined {
+  const language = i18n.language
+  if (
+    !SERVER_SPOKEN.includes(language) ||
+    text.length === 0 ||
+    text.length > 500
+  )
+    return undefined
+  return `${BASE}/api/speech?lang=${language}&text=${encodeURIComponent(text)}`
+}
 
 /** What the device is reading aloud right now, shown by the Playing overlay (Figma "Overlay · Playing Audio"). */
 export interface Speaking {
@@ -124,9 +144,10 @@ function stopRecording() {
 export function listen(text: string, src?: string): boolean {
   stopQuiet()
   stopSpeech()
-  if (!src || typeof Audio === "undefined") return speak(text)
-  const audio = new Audio(src)
-  player = audio
+  const sources = [src, speechUrl(text)].filter(
+    (s, i, all): s is string => !!s && all.indexOf(s) === i
+  )
+  if (sources.length === 0 || typeof Audio === "undefined") return speak(text)
   set({
     language: i18n.language,
     progress: 0,
@@ -134,21 +155,29 @@ export function listen(text: string, src?: string): boolean {
     elapsedBefore: 0,
     since: Date.now(),
   })
-  audio.ontimeupdate = () => {
-    if (player === audio && current && audio.duration > 0)
-      set({ ...current, progress: audio.currentTime / audio.duration })
+  const next = (i: number) => {
+    if (i >= sources.length) {
+      player = null
+      speak(text)
+      return
+    }
+    const audio = new Audio(sources[i])
+    player = audio
+    audio.ontimeupdate = () => {
+      if (player === audio && current && audio.duration > 0)
+        set({ ...current, progress: audio.currentTime / audio.duration })
+    }
+    audio.onended = () => {
+      if (player !== audio) return
+      player = null
+      set(null)
+    }
+    audio.play().catch(() => {
+      // not there (no recording, no key for this language yet): try the next voice
+      if (player === audio) next(i + 1)
+    })
   }
-  audio.onended = () => {
-    if (player !== audio) return
-    player = null
-    set(null)
-  }
-  audio.play().catch(() => {
-    // no recording for this language yet: the device voice reads the text instead
-    if (player !== audio) return
-    player = null
-    speak(text)
-  })
+  next(0)
   return true
 }
 
@@ -200,18 +229,25 @@ function speakQuietly(key: string, text: string) {
   window.speechSynthesis.speak(utterance)
 }
 
-/** Plays (or, when it is already playing, stops) one speaker button. */
+/** Plays (or, when it is already playing, stops) one speaker button: recording, server voice, then the phone's. */
 export function toggleQuiet(key: string, text: string, src?: string) {
   if (quiet?.key === key) return stopQuiet()
   stopQuiet()
   stopSpeech()
-  if (!src || typeof Audio === "undefined") return speakQuietly(key, text)
-  const audio = new Audio(src)
-  setQuiet({ key, stop: () => audio.pause() })
-  audio.onended = () => {
-    if (quiet?.key === key) setQuiet(null)
+  const sources = [src, speechUrl(text)].filter(
+    (s, i, all): s is string => !!s && all.indexOf(s) === i
+  )
+  const next = (i: number) => {
+    if (i >= sources.length || typeof Audio === "undefined")
+      return speakQuietly(key, text)
+    const audio = new Audio(sources[i])
+    setQuiet({ key, stop: () => audio.pause() })
+    audio.onended = () => {
+      if (quiet?.key === key) setQuiet(null)
+    }
+    audio.play().catch(() => {
+      if (quiet?.key === key) next(i + 1)
+    })
   }
-  audio.play().catch(() => {
-    if (quiet?.key === key) speakQuietly(key, text)
-  })
+  next(0)
 }
