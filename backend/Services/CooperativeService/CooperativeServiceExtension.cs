@@ -7,7 +7,7 @@ namespace AgroConnect.CooperativeService;
 
 public static class CooperativeServiceExtension
 {
-    /// <summary>Cooperatives: savings, group orders, selling together and meetings (ADR 0037).</summary>
+    /// <summary>Cooperatives: savings, group orders, selling together and meetings (ADR 0040).</summary>
     public static IServiceCollection AddCooperativeService(this IServiceCollection services) =>
         services
             .AddMessages(typeof(CooperativeServiceExtension).Assembly)

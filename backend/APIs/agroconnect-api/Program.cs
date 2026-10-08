@@ -10,8 +10,10 @@ using AgroConnect.MoneyService;
 using AgroConnect.PlatformService;
 using AgroConnect.SharedLibrary;
 using AgroConnect.SharedLibrary.Features;
+using AgroConnect.SharedLibrary.Sms;
 using AgroConnect.SpeechService;
 using AgroConnect.SyncService;
+using AgroConnect.UssdService;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -61,6 +63,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 // Each service adds itself here. A new service is one line.
 builder.Services
     .AddSharedLibrary()
+    .AddSms(builder.Configuration)
     .AddData(builder.Configuration)
     .AddPlatformService()
     .AddAuthService(builder.Configuration)
@@ -70,7 +73,8 @@ builder.Services
     .AddCooperativeService()
     .AddMoneyService(builder.Configuration)
     .AddHelpService()
-    .AddSpeechService(builder.Configuration);
+    .AddSpeechService(builder.Configuration)
+    .AddUssdService(builder.Configuration);
 
 var app = builder.Build();
 

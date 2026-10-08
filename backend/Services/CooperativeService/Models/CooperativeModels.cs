@@ -2,7 +2,7 @@ using AgroConnect.SharedLibrary.Enums;
 
 namespace AgroConnect.CooperativeService.Models;
 
-// What the cooperative screens show (ADR 0037). Money in GH₵ here; stored in pesewas.
+// What the cooperative screens show (ADR 0040). Money in GH₵ here; stored in pesewas.
 
 public sealed record CooperativeMemberInfo(Guid FarmerId, string FullName, bool IsLeader);
 

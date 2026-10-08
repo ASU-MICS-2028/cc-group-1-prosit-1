@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AgroConnect.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261008081708_AddCooperatives")]
+    [Migration("20261008085649_AddCooperatives")]
     partial class AddCooperatives
     {
         /// <inheritdoc />
@@ -919,6 +919,51 @@ namespace AgroConnect.Data.Migrations
                         .HasDatabaseName("ix_speech_clips_language_text_hash");
 
                     b.ToTable("speech_clips", (string)null);
+                });
+
+            modelBuilder.Entity("AgroConnect.Data.Entities.UssdSession", b =>
+                {
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("session_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Data")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("data");
+
+                    b.Property<Guid?>("FarmerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("farmer_id");
+
+                    b.Property<string>("PhoneE164")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("phone_e164");
+
+                    b.Property<string>("Screen")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("screen");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("SessionId")
+                        .HasName("pk_ussd_sessions");
+
+                    b.HasIndex("UpdatedAt")
+                        .HasDatabaseName("ix_ussd_sessions_updated_at");
+
+                    b.ToTable("ussd_sessions", (string)null);
                 });
 
             modelBuilder.Entity("AgroConnect.Data.Entities.Visit", b =>

@@ -1,18 +1,18 @@
-using AgroConnect.AuthService.Providers.Interfaces;
 using AgroConnect.SharedLibrary.Helpers;
+using AgroConnect.SharedLibrary.Providers.Interfaces;
 using AgroConnect.SharedLibrary.ValueObjects;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace AgroConnect.AuthService.Providers.Implementations;
+namespace AgroConnect.SharedLibrary.Sms;
 
 /// <summary>
-/// Until Africa's Talking is connected: on a developer machine the message (with the code) goes to the log
-/// so sign-in can be tried; anywhere else nothing personal is logged, only that SMS is not set up.
+/// Used when no SMS key is set, and for numbers not on the allowed list: on a developer machine the message
+/// (with the code) goes to the log so sign-in can be tried; anywhere else nothing personal is logged.
 /// </summary>
 public sealed partial class LogOnlySmsSender(IHostEnvironment environment, ILogger<LogOnlySmsSender> logger) : ISmsSender
 {
-    public Task SendAsync(PhoneNumber to, string message, CancellationToken cancellationToken)
+    public Task<SmsResult> SendAsync(PhoneNumber to, string message, CancellationToken cancellationToken)
     {
         if (environment.IsDevelopment())
         {
@@ -23,7 +23,7 @@ public sealed partial class LogOnlySmsSender(IHostEnvironment environment, ILogg
             LogNotConfigured(logger);
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(new SmsResult(SmsOutcome.Logged));
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "SMS to {Phone}: {Message}")]

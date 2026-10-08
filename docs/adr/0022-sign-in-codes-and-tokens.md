@@ -21,7 +21,7 @@ ADR 0007 chose phone number + one-time SMS code. Building it needed concrete num
 |---|---|---|
 | Code | 6 digits, random | One in a million per guess |
 | Code lifetime | **10 minutes** | SMS can be slow on 2G |
-| Resend | Once every **45 seconds**, at most **5 codes an hour** per phone and role | Stops SMS flooding and cost abuse; matches "Resend code in 0:45" on the screen |
+| Resend | Once every **45 seconds**, at most **20 codes an hour** per phone and role, laptops and servers alike (raised from 5 on 2026-10-08: 5 blocked people who mistyped or lost signal a few times, and blocked team testing) | Stops SMS flooding and cost abuse; matches "Resend code in 0:45" on the screen |
 | Wrong tries | **5** per code, then a new code is needed | Guessing a 6-digit code in 5 tries is about 1 in 200,000 |
 | Storage | Only an HMAC-SHA256 hash of phone + code, keyed with the server secret | A leaked table reveals no codes; a hash cannot be reused for another phone |
 | "Send code" answer | Always `202`, whether or not the number has an account | Nobody can test numbers to find out who is registered |
@@ -30,7 +30,7 @@ ADR 0007 chose phone number + one-time SMS code. Building it needed concrete num
 | Token lifetime | **7 days** on the servers (setting `Auth:TokenLifetime`, default `7.00:00:00`); **1 hour** on laptops (`appsettings.Development.json`) so the sign-in screens are tested often | Covers a week of field work between trips to signal; limits the damage of a lost phone to a week |
 | Farmer accounts | Created on first sign-in from the farmer record an officer registered; on a shared family phone, the first farmer registered on it | Farmers need no separate sign-up |
 | Signing key | At least 32 bytes, from `Auth__SigningKey` on the server; the API refuses to start without it | Secrets never in the code (ADR 0015) |
-| Laptop and tests | Fixed code `123456`; the SMS text is written to the log | Development without an SMS account |
+| Laptop and tests | Random texted code, plus the backup code `123456` (ADR 0039, which replaced the fixed code) | Development, and a way in when SMS fails |
 
 All values are settings (`Auth` section) and can be tuned per environment without code changes.
 
@@ -44,5 +44,5 @@ All values are settings (`Auth` section) and can be tuned per environment withou
 ## Consequences
 - Officers sign in about once a week, when they have signal.
 - **A token cannot be cancelled from the server before it expires.** Signing out removes it from the phone. A "sign out everywhere" switch (a per-user token version checked on sync) is a planned improvement.
-- The SMS sender is a swappable provider: Africa's Talking replaces the log-only sender without changing the sign-in code.
+- The SMS sender is a swappable provider: Africa's Talking replaces the log-only sender without changing the sign-in code. (Update 2026-10-08: Arkesel is the provider, ADR 0037.)
 - The sign-in limits are tested in `tests/AuthService.Tests` (expiry, lockout, resend, hourly cap, unknown numbers, shared phones).

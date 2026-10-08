@@ -1,4 +1,4 @@
-# ADR 0037: Cooperatives with real savings, group orders, sales and meetings
+# ADR 0040: Cooperatives with real savings, group orders, sales and meetings
 
 - **Status:** Accepted
 - **Date:** 2026-10-08

@@ -95,7 +95,7 @@ function More() {
 }
 
 /**
- * P4 · 01 My cooperative (CooperativeService, ADR 0037): the group, then savings, the group order, the next
+ * P4 · 01 My cooperative (CooperativeService, ADR 0040): the group, then savings, the group order, the next
  * meeting and selling together, each opening its own steps.
  */
 export function CooperativeHome() {

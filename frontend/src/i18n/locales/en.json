@@ -448,6 +448,7 @@
     "resendPrompt": "Didn't get it?",
     "resend": "Resend code",
     "resent": "A new code is on its way.",
+    "notRegistered": "Still no SMS? Codes only go to numbers registered with AgroConnect. Ask your extension officer or MoFA admin.",
     "verify": "Verify",
     "verifying": "Checking…",
     "codeIncomplete": "Enter all 6 digits.",

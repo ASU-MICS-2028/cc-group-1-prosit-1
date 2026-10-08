@@ -17,7 +17,7 @@ public sealed class DatabaseCollection : ICollectionFixture<PostgresFixture>
     public const string Name = "database";
 }
 
-/// <summary>A cooperative from the officer starting it to farmers saving, ordering, selling and meeting (ADR 0037).</summary>
+/// <summary>A cooperative from the officer starting it to farmers saving, ordering, selling and meeting (ADR 0040).</summary>
 [IntegrationTest]
 [Collection(DatabaseCollection.Name)]
 public sealed class CooperativeEndpointTests(PostgresFixture database) : IAsyncLifetime

@@ -57,7 +57,7 @@ function future(value: string): Problem | "validate.future" | null {
 }
 
 /**
- * The officer's cooperatives (CooperativeService, ADR 0037): start one with a farmer as leader, add the
+ * The officer's cooperatives (CooperativeService, ADR 0040): start one with a farmer as leader, add the
  * officer's own farmers, and open a group order, a sale together or a meeting. No Figma frame yet: built
  * from the flow components; to be drawn by the design team.
  */

@@ -1,3 +1,4 @@
 [
-  { "Lang": "en", "Key": "NOT_AN_ADMIN_ACCOUNT", "Text": "This account is not a MoFA admin account." }
+  { "Lang": "en", "Key": "NOT_AN_ADMIN_ACCOUNT", "Text": "This account is not a MoFA admin account." },
+  { "Lang": "en", "Key": "INVALID_PHONE", "Text": "That is not a Ghana phone number. Check it and try again." }
 ]

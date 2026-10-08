@@ -24,7 +24,7 @@ public sealed class FarmerFlowTests(SeededApiFixture api)
             Assert.Equal("sample", answer.GetProperty("source").GetString());
         }
 
-        // The cooperative is live (ADR 0037): the seed puts the sample farmer in one with an open order.
+        // The cooperative is live (ADR 0040): the seed puts the sample farmer in one with an open order.
         var coop = await client.GetFromJsonAsync<JsonElement>("/api/farmer/cooperative", SeededApiFixture.Json);
         Assert.Equal("live", coop.GetProperty("source").GetString());
         Assert.Equal("Tolon Farmers Cooperative", coop.GetProperty("name").GetString());

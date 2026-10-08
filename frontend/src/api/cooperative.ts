@@ -6,7 +6,7 @@ export type CooperativeDetails = S["CooperativeDetails"]
 export type AdminCooperative = S["AdminCooperative"]
 export type PaymentInfo = S["PaymentInfo"]
 
-// Cooperatives (CooperativeService, ADR 0037): the farmer's group, savings by mobile money, group orders,
+// Cooperatives (CooperativeService, ADR 0040): the farmer's group, savings by mobile money, group orders,
 // selling together and meetings; officers run them, admins see their area.
 
 export const getMyCooperative = () =>

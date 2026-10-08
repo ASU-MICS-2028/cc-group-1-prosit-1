@@ -206,7 +206,7 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 ### 4.1 `users`: people who can sign in
 
 **What a row is:** one person who can sign in, as an officer or as a farmer.
-- **Officers** are added by MoFA (for now they are seeded from settings).
+- **Officers** are added by MoFA (for now they are seeded from settings: the demo accounts from `appsettings.Development.json`, real team phones from user-secrets or server secrets only, ADR 0039). `Seed:Farmers` can add farmers the same way, each registered by a named officer.
 - **A farmer account** is created automatically the first time a registered farmer signs in.
 
 | Column | Type | Required | Meaning | Example |
@@ -233,7 +233,7 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 | `phone_e164` 🔒 | varchar(16) | yes | The phone the code was sent to | `+233240000001` |
 | `role` | integer (`UserRole`) | yes | Whether it was asked for on the officer or the farmer sign-in screen | `0` |
 | `code_hash` | varchar(64) | yes | HMAC-SHA256 of phone + code with the server's secret key, as 64 hex characters. Cannot be turned back into the code | `9F2C41...` |
-| `created_at` | timestamptz | yes | When it was sent. Used for "Resend in 0:45" (one per 45 seconds) and "at most 5 an hour" | |
+| `created_at` | timestamptz | yes | When it was sent. Used for "Resend in 0:45" (one per 45 seconds) and "at most 20 an hour" | |
 | `expires_at` | timestamptz | yes | 10 minutes after `created_at`; after that the code no longer works | |
 | `attempts` | integer | yes | Wrong codes typed so far. At 5 the code is locked and a new one is needed | `0` |
 | `used_at` | timestamptz | no | When it was used to sign in. A used code never works again | `NULL` until used |
@@ -394,6 +394,21 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 **Rules and indexes:**
 - **Unique `reference`.**
 - **Index (`farmer_id`, `created_at`):** a farmer's latest payments.
+
+### 4.5c `ussd_sessions`: where each USSD dial is in the menu (ADR 0038)
+
+**What a row is:** one USSD session while it is open. The gateway sends only the last key pressed and the next key can reach another server, so the place in the menu is kept here. The row is deleted when the session ends; rows older than 10 minutes are cleared when someone dials.
+
+| Column | Type | Required | Meaning | Example |
+|---|---|---|---|---|
+| `session_id` | varchar(64) | yes | The gateway's session id (the key) | `2005506191900168` |
+| `phone_e164` 🔒 | varchar(16) | yes | The caller | `+233241000001` |
+| `farmer_id` | uuid | no | The farmer on that phone (no foreign key: a session is short-lived) | |
+| `screen` | varchar(30) | yes | The screen on show: `main`, `prices` or `ask` | `prices` |
+| `data` | varchar(200) | no | What the screen listed, e.g. the crops in order | `Groundnut,Maize` |
+| `created_at`, `updated_at` | timestamptz | yes | When the dial started, and the last key | |
+
+**Rules and indexes:** index on `updated_at` to clear old sessions.
 
 ### 4.6 `__EFMigrationsHistory`: which database changes are applied
 

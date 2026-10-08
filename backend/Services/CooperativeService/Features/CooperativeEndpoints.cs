@@ -19,7 +19,7 @@ using Microsoft.Extensions.Options;
 
 namespace AgroConnect.CooperativeService.Features;
 
-/// <summary>Who may do what with a cooperative, and the shared reads (ADR 0037).</summary>
+/// <summary>Who may do what with a cooperative, and the shared reads (ADR 0040).</summary>
 internal static class Coop
 {
     public const int MaxBags = 500;

@@ -23,6 +23,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<HelpRequest> HelpRequests => Set<HelpRequest>();
 
+    public DbSet<UssdSession> UssdSessions => Set<UssdSession>();
+
     public DbSet<HelpVoiceNote> HelpVoiceNotes => Set<HelpVoiceNote>();
 
     public DbSet<AlertSetting> AlertSettings => Set<AlertSetting>();
@@ -223,6 +225,18 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             rsvp.ToTable("meeting_rsvps"); rsvp.HasKey(r => new { r.MeetingId, r.FarmerId });
             rsvp.HasOne<Meeting>().WithMany().HasForeignKey(r => r.MeetingId).OnDelete(DeleteBehavior.Cascade);
             rsvp.HasOne<Farmer>().WithMany().HasForeignKey(r => r.FarmerId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<UssdSession>(session =>
+        {
+            session.ToTable("ussd_sessions");
+            session.HasKey(u => u.SessionId);
+            session.Property(u => u.SessionId).HasMaxLength(64);
+            session.Property(u => u.PhoneE164).HasMaxLength(16);
+            session.Property(u => u.Screen).HasMaxLength(30);
+            session.Property(u => u.Data).HasMaxLength(200);
+            // Finished sessions are cleared by age.
+            session.HasIndex(u => u.UpdatedAt);
         });
 
         UseSnakeCaseNames(modelBuilder);

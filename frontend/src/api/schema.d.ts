@@ -260,6 +260,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/sms/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SendTestSms"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cooperative": {
         parameters: {
             query?: never;
@@ -676,6 +692,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ussd/arkesel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ArkeselUssd"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -747,6 +779,21 @@ export interface components {
         };
         /** @enum {unknown} */
         AreaUnit: "acres" | "hectares";
+        ArkeselUssdRequest: {
+            sessionID: string;
+            userID: null | string;
+            newSession: boolean;
+            msisdn: string;
+            userData: null | string;
+            network: null | string;
+        };
+        ArkeselUssdResponse: {
+            sessionID: string;
+            userID: null | string;
+            msisdn: string;
+            message: string;
+            continueSession: boolean;
+        };
         AskRequest: {
             category: components["schemas"]["HelpCategory"];
             text: null | string;
@@ -1208,6 +1255,8 @@ export interface components {
             mine: number;
         };
         /** @enum {unknown} */
+        SmsOutcome: "sent" | "logged" | "failed";
+        /** @enum {unknown} */
         SoilType: "sandy" | "clay" | "loamy" | "not_sure" | null;
         SyncFarmer: {
             /** Format: uuid */
@@ -1279,6 +1328,13 @@ export interface components {
             photoIds: null | string[];
             /** Format: date-time */
             clientUpdatedAt: string;
+        };
+        TestSmsRequest: {
+            phone: null | string;
+        };
+        TestSmsResponse: {
+            outcome: components["schemas"]["SmsOutcome"];
+            detail: null | string;
         };
         UpdateBagsRequest: {
             /** Format: int32 */
@@ -2075,6 +2131,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminOverview"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    SendTestSms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestSmsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestSmsResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Unauthorized */
@@ -3690,6 +3797,48 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ArkeselUssd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArkeselUssdRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArkeselUssdResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

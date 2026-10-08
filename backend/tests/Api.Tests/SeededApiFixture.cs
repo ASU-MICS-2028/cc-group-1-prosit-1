@@ -16,13 +16,14 @@ public sealed class SeededApiCollection : ICollectionFixture<SeededApiFixture>
 
 /// <summary>
 /// The API as it runs on a laptop: it migrates an empty PostgreSQL on start-up and seeds the demo
-/// officer and sample farmer from configuration.
+/// officer, admin, sample farmer and listed farmers from configuration.
 /// </summary>
 public sealed class SeededApiFixture : IAsyncLifetime
 {
     public const string OfficerPhone = "+233240000001";
     public const string FarmerPhone = "+233240001234";
     public const string AdminPhone = "+233240000009";
+    public const string SeededFarmerPhone = "+233240001235";
     public static readonly Guid SampleFarmerId = Guid.Parse("0192f0a0-0000-7000-8000-000000000001");
 
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -49,6 +50,18 @@ public sealed class SeededApiFixture : IAsyncLifetime
             ["Seed:Admins:0:Phone"] = AdminPhone,
             ["Seed:Admins:0:Region"] = "Northern",
             ["Seed:SampleFarmer"] = "true",
+            ["Seed:Farmers:0:FullName"] = "Yaw Darko",
+            ["Seed:Farmers:0:Phone"] = SeededFarmerPhone,
+            ["Seed:Farmers:0:OfficerPhone"] = "024 000 0002",
+            ["Seed:Farmers:0:Community"] = "Diare",
+            ["Seed:Farmers:0:Crops:0"] = "Rice",
+            ["Seed:Farmers:1:FullName"] = "No such officer",
+            ["Seed:Farmers:1:Phone"] = "024 000 1236",
+            ["Seed:Farmers:1:OfficerPhone"] = "024 000 0099",
+            ["Seed:Farmers:2:FullName"] = "Not a phone number",
+            ["Seed:Farmers:2:Phone"] = "12345",
+            ["Seed:Farmers:3:FullName"] = "Ama Boateng again",
+            ["Seed:Farmers:3:Phone"] = FarmerPhone,
             // Tests sign in many times from one address and phone; the limits themselves are tested elsewhere.
             ["Auth:RateLimitPerWindow"] = "1000",
             ["Auth:ResendCooldownSeconds"] = "0",
@@ -96,7 +109,7 @@ public sealed class SeededApiFixture : IAsyncLifetime
         var requested = await client.PostAsJsonAsync("/api/auth/code", new { phone, role }, Json);
         requested.EnsureSuccessStatusCode();
 
-        var verified = await client.PostAsJsonAsync("/api/auth/verify", new { phone, role, code = ApiFactory.FixedCode }, Json);
+        var verified = await client.PostAsJsonAsync("/api/auth/verify", new { phone, role, code = ApiFactory.BackupCode }, Json);
         verified.EnsureSuccessStatusCode();
         using var body = JsonDocument.Parse(await verified.Content.ReadAsStringAsync());
         var token = body.RootElement.GetProperty("token").GetString();

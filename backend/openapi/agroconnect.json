@@ -901,6 +901,71 @@
         ]
       }
     },
+    "/api/admin/sms/test": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "SendTestSms",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestSmsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestSmsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/cooperative": {
       "get": {
         "tags": [
@@ -2948,6 +3013,56 @@
           }
         }
       }
+    },
+    "/api/ussd/arkesel": {
+      "post": {
+        "tags": [
+          "USSD"
+        ],
+        "operationId": "ArkeselUssd",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArkeselUssdRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArkeselUssdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3185,6 +3300,76 @@
           "acres",
           "hectares"
         ]
+      },
+      "ArkeselUssdRequest": {
+        "required": [
+          "sessionID",
+          "userID",
+          "newSession",
+          "msisdn",
+          "userData",
+          "network"
+        ],
+        "type": "object",
+        "properties": {
+          "sessionID": {
+            "type": "string"
+          },
+          "userID": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newSession": {
+            "type": "boolean"
+          },
+          "msisdn": {
+            "type": "string"
+          },
+          "userData": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "network": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ArkeselUssdResponse": {
+        "required": [
+          "sessionID",
+          "userID",
+          "msisdn",
+          "message",
+          "continueSession"
+        ],
+        "type": "object",
+        "properties": {
+          "sessionID": {
+            "type": "string"
+          },
+          "userID": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "msisdn": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "continueSession": {
+            "type": "boolean"
+          }
+        }
       },
       "AskRequest": {
         "required": [
@@ -5020,6 +5205,13 @@
           }
         }
       },
+      "SmsOutcome": {
+        "enum": [
+          "sent",
+          "logged",
+          "failed"
+        ]
+      },
       "SoilType": {
         "enum": [
           "sandy",
@@ -5406,6 +5598,38 @@
           }
         }
       },
+      "TestSmsRequest": {
+        "required": [
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "TestSmsResponse": {
+        "required": [
+          "outcome",
+          "detail"
+        ],
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/SmsOutcome"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "UpdateBagsRequest": {
         "required": [
           "bags"
@@ -5654,6 +5878,9 @@
     },
     {
       "name": "Speech"
+    },
+    {
+      "name": "USSD"
     }
   ]
 }

@@ -5,5 +5,6 @@
   { "Lang": "en", "Key": "TOO_MANY_ATTEMPTS", "Text": "Too many wrong codes. Ask for a new code." },
   { "Lang": "en", "Key": "RESEND_TOO_SOON", "Text": "Please wait a moment before asking for another code." },
   { "Lang": "en", "Key": "TOO_MANY_CODES", "Text": "Too many codes asked for. Try again in an hour." },
-  { "Lang": "en", "Key": "LOGIN_CODE_SMS", "Text": "Your AgroConnect code is {0}. It works for 10 minutes. Do not share it." }
+  { "Lang": "en", "Key": "LOGIN_CODE_SMS", "Text": "Your AgroConnect code is {0}. It works for 10 minutes. Do not share it." },
+  { "Lang": "en", "Key": "SMS_UNAVAILABLE", "Text": "We could not send the code right now. Try again in a minute." }
 ]

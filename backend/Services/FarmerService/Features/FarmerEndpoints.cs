@@ -147,7 +147,7 @@ public sealed class GetHarvestForecast : IFeature
 
 /// <summary>
 /// The farmer's cooperative for the Home tile: its name, members, leader and next meeting, from the
-/// cooperatives tables (ADR 0037). 404 when the farmer is not in one yet.
+/// cooperatives tables (ADR 0040). 404 when the farmer is not in one yet.
 /// </summary>
 public sealed class GetCooperative : IFeature
 {

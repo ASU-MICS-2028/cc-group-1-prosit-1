@@ -2,9 +2,11 @@
 
 A hands-on guide: every command we use, what it does, and why. Your laptop runs the same pieces as the servers, in the same way (in containers), so each command here teaches a cloud idea you will meet again on EC2.
 
-_Last updated: 7 October 2026. Commands are for Windows (PowerShell or Git Bash). Run backend commands from `backend/` and frontend commands from `frontend/`._
+_Last updated: 8 October 2026. Commands are for Windows (PowerShell or Git Bash). Run backend commands from `backend/` and frontend commands from `frontend/`._
 
 > **Test sign-ins (laptop only)**
+>
+> Codes are real: a random 6-digit code is texted to every registered number (ADR 0039). The demo accounts below have made-up numbers that cannot get an SMS, so use the **backup code `123456`** for them, or read their code in the API log.
 >
 > | Who are you? | Phone | Code | Opens |
 > |---|---|---|---|
@@ -14,9 +16,23 @@ _Last updated: 7 October 2026. Commands are for Windows (PowerShell or Git Bash)
 >
 > - These accounts are created by the API when it starts on a laptop (`Seed` in `backend/APIs/agroconnect-api/appsettings.Development.json`).
 > - **Mobile money (ADR 0034):** with the Paystack test key in user-secrets (5.11), the farmer's Money pages use Paystack test mode; without it they show "Sample data" and a payment is approved by itself after a few seconds.
-> - The code is always `123456` on a laptop (`Auth:FixedCode`). It never works on the servers, which send real SMS.
+> - **Limits:** one number can ask for 20 codes an hour, on a laptop and on the servers; codes are 15 seconds apart on a laptop and 45 seconds on the servers (`Auth:MaxCodesPerHour`, `Auth:ResendCooldownSeconds`). Over the limit the answer is `429 TOO_MANY_CODES` or `RESEND_TOO_SOON`.
+> - **Backup code:** `123456` (`Auth:BackupCode`) also works on a laptop and the staging demo, for any registered number, after **Send code**. Use it only when the SMS does not arrive. Production refuses to start if it is set.
+> - **Real team accounts** (your own officer, admin or farmer phone) go in user-secrets, never in a committed file:
+>
+>   ```
+>   dotnet user-secrets set "Seed:Admins:1:FullName" "<name>" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Admins:1:Phone" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Farmers:0:FullName" "<name>" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Farmers:0:Phone" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Farmers:0:OfficerPhone" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Sms:OnlyTo:1" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   ```
+>
+>   Index 0 of `Officers` and `Admins` is the demo account in `appsettings.Development.json`, so real ones start at 1. Restart the API; it adds anyone missing. Each number must also be on `Sms:OnlyTo` to get the SMS on a laptop.
+> - **Not registered?** The app answers "code sent" anyway (so nobody can find out who is registered), no SMS arrives, and any code is refused. After the resend wait the code screen says to ask their extension officer or MoFA admin.
 > - The phone number must match the role: the officer's number does not open the farmer app.
-> - A farmer you register in the app can sign in once their record reaches the server: as the officer, open **Sync** and tap **Sync now** (it also sends by itself when the app opens). Then sign in as a farmer with the number you registered, code `123456` (section 5.8).
+> - A farmer you register in the app can sign in once their record reaches the server: as the officer, open **Sync** and tap **Sync now** (it also sends by itself when the app opens). Then sign in as a farmer with the number you registered: the code is texted if the number is on `Sms:OnlyTo`; otherwise use the backup code `123456` (section 5.8).
 > - A sign-in lasts 1 hour on a laptop (`Auth:TokenLifetime`). To see the sign-in screens again sooner, use Profile → Log out, or open a private window (`Ctrl+Shift+N`).
 > - The farmer app (Home, My details, Market, Weather, Check my crop, Harvest, Cooperative, Lessons) reads `/api/farmer/...`. Restart the API after pulling so it has the farmer endpoints. Answers marked "Sample data" come from sample providers (ADR 0031); all of them can be tried in Swagger (`/swagger`, section *Farmer*) after signing in as the farmer.
 
@@ -308,6 +324,63 @@ dotnet user-secrets list --project APIs/agroconnect-api
 - In test mode no real prompt reaches a phone. Use the test mobile money numbers from Paystack's *Test payments* page; payments then appear in the Paystack dashboard under Transactions (test mode).
 - Remove the key (`dotnet user-secrets remove "Paystack:SecretKey" --project APIs/agroconnect-api`) to go back to the sample provider.
 
+### 5.12 Real SMS with Arkesel
+
+Sign-in codes are sent by SMS through Arkesel (ADR 0037). Keep the key out of the repository (from `backend/`):
+
+```
+dotnet user-secrets set "Sms:ApiKey" "<your Arkesel API key>" --project APIs/agroconnect-api
+dotnet user-secrets set "Sms:OnlyTo:0" "+233XXXXXXXXX" --project APIs/agroconnect-api
+```
+
+- **Safe by default:** only the numbers in `Sms:OnlyTo` get a real SMS. Add more team phones as `Sms:OnlyTo:1`, `Sms:OnlyTo:2`. Every other number, including the demo accounts (made-up numbers that belong to real people), goes to the API log. Only production sets `Sms:TextEveryone` to true.
+- **Check it works:** sign in as the MoFA admin and send `POST /api/admin/sms/test` with `{ "phone": "+233XXXXXXXXX" }` (Postman: *MoFA admin → Send a test SMS*). The answer says `sent`, `logged` (not on the list) or `failed` with Arkesel's reason (no credit, sender ID not approved).
+- Every SMS costs credit; the balance is in the Arkesel dashboard.
+- **"I got 202 but no SMS":** `202` is always the answer to *Send code*, on purpose (it never reveals which numbers have accounts). No SMS is sent when the number has no account for that role, or when it is not in `Sms:OnlyTo`.
+- **Did it arrive?** The API log says `SMS sent to ***9339, Arkesel message <id>`. Find that id in the Arkesel dashboard (SMS reports) for its delivery status: Delivered, Failed (with the reason) or Pending.
+- **Why the first code is slow:** the first request after the API starts takes 5 to 10 seconds (.NET warms up once). After that a code with SMS takes about 3 seconds: 1.5 s to connect to Arkesel and 1.5 s for Arkesel to accept it. MTN then delivers it in seconds.
+
+### 5.13 Test the API with Postman
+
+A ready-made collection of every endpoint is in `backend/postman/AgroConnect.postman_collection.json`.
+
+1. In Postman: **Import**, then choose that file. A collection *AgroConnect API* appears.
+2. Start the API (port 8000). The collection's `baseUrl` variable is `http://localhost:8000`; change it (collection, *Variables* tab) to try another server.
+3. Open a folder **Sign in as …** (officer, farmer or MoFA admin) and run **1. Ask for a code**, then **2. Enter the code** (always `123456` on a laptop). The token is saved in the collection's `token` variable and sent with every other request.
+4. Run any request in that person's folder. A farmer token does not open officer or admin requests (the answer is 403), on purpose.
+5. Mobile money: **Pay** saves the payment reference, so **How is my payment?** checks that payment.
+
+Postman can also build a collection straight from the API contract: **Import** → `backend/openapi/agroconnect.json`. That lists every endpoint but without the sign-in steps and examples.
+
+### 5.14 Test the API with Swagger
+
+Swagger UI is a web page made from the API contract, built into the API on laptops (Development only, never on the servers).
+
+1. Start the API and open `http://localhost:8000/swagger`. Every endpoint is listed by section (Auth, Farmer, Money, Sync, Admin…); a lock icon means it needs a sign-in token.
+2. **Get a token:** open **POST /api/auth/code** → **Try it out** → body `{ "phone": "024 000 0001", "role": "officer" }` → **Execute**. Then **POST /api/auth/verify** → **Try it out** → `{ "phone": "024 000 0001", "role": "officer", "code": "123456" }` → **Execute**. Copy the `token` value from the answer (without the quotes).
+3. Click **Authorize** (top right), paste the token, **Authorize**, **Close**. The locks close: every request now carries the token.
+4. Open any endpoint → **Try it out** → change the example body if there is one → **Execute**. Below you see the exact request (as a `curl` command), the status code and the answer.
+5. To switch person (farmer `024 000 1234`, MoFA admin `024 000 0009`), repeat step 2 and paste the new token in **Authorize**.
+
+**Swagger or Postman?** Swagger needs nothing installed and always shows the latest endpoints, which suits a quick check. Postman keeps saved requests, the sign-in steps and examples, and can run a whole folder, which suits repeating a flow.
+
+### 5.15 Test the USSD menu
+
+The USSD menu answers at `POST /api/ussd/arkesel` (ADR 0038). Arkesel calls it for every key a person presses.
+
+**On the laptop, with Postman:** folder *USSD (as Arkesel calls it)*. Run *1. Dial the code*, then any *Press* request. Each answer's `message` is what the phone shows; `continueSession: false` ends the session. The sample farmer's number is `233240001234`.
+
+**In Arkesel's emulator:** Arkesel needs a public HTTPS address for the callback.
+- **A deployed server:** `https://<server address>/api/ussd/arkesel` (staging's CloudFront address works once this code is deployed).
+- **Your laptop, for a test session only:** a temporary tunnel gives the local API a public address.
+  ```
+  winget install Cloudflare.cloudflared
+  cloudflared tunnel --url http://localhost:8000
+  ```
+  It prints an address like `https://random-words.trycloudflare.com`. In the Arkesel USSD settings, set the callback URL to that address plus `/api/ussd/arkesel`. Stop the tunnel (`Ctrl+C`) when you finish: while it runs, anyone with the address can reach your local API.
+- **Only our USSD app:** put the app id Arkesel shows in the secret store, `dotnet user-secrets set "Ussd:UserId" "<id>" --project APIs/agroconnect-api`. Requests with another id are then refused. Left empty, any request is answered.
+- The number you dial from must belong to a registered farmer, otherwise the menu says the number is not registered.
+
 ### 5.9 Stop things
 
 | Command | Effect | Data |
@@ -473,7 +546,7 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | `port is already allocated` | Something else uses 5433 or 8000 | Stop it, or set `DB_PORT=5434` in `backend/.env` (copy from `.env.example`) and change the connection string to match |
 | `Auth:SigningKey must be at least 32 bytes` on start | No signing key (not running as Development?) | Use `dotnet run`, which sets Development, or set `Auth__SigningKey` |
 | Tests hang or fail with Docker errors | Testcontainers needs Docker | Start Docker Desktop, or run `dotnet test --filter Category=Unit` |
-| `429` when asking for a code | The 45-second resend wait, or 5 codes an hour | Wait, or use another number |
+| `429` when asking for a code | The resend wait (45 s, 15 s on a laptop), or 20 codes an hour | Wait, or use another number |
 | On the very first start against an empty database, one `ERR Failed executing DbCommand ... FROM "__EFMigrationsHistory"` line, then `Database is up to date` | The migration tool first asks "which migrations have run?" before its history table exists; the query fails, it creates the table and carries on | Nothing: expected once per new database. Any other `ERR` line is a real problem |
 | `git commit` says `error: pathspec '<your message>' did not match any file(s)` | In PowerShell, `git commit -F - @'...'@` passes the message as a file name instead of feeding it in | Save the message to a file (e.g. inside `.git/`, which is never committed) and run `git commit -F <that file>`, or pipe it: `@'...'@ \| git commit -F -` |
 | "Sync now" says it could not send | The server's farmer service (`POST /api/sync`) is not built yet, or there is no network | Nothing is lost: farmers and visits stay queued and are sent when the service is live (ADR 0029) |
@@ -537,3 +610,9 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | `dotnet user-secrets init --project APIs/agroconnect-api`, then `dotnet user-secrets set "Paystack:SecretKey" ...` | Gave the API project its own secret store (it had none) and put the Paystack test key there, outside the repository |
 | `dotnet ef migrations add AddMobileMoney --project Services/Libs/Data --startup-project APIs/agroconnect-api` | The `wallets` and `payments` tables for mobile money (ADR 0034); applied by the API on start-up |
 | `dotnet test tests/MoneyService.Tests` | 32 tests: the Paystack client against a fake Paystack (requests, network codes, statuses, errors), the sample provider, and every money endpoint on a real database; 99% of lines |
+| `dotnet user-secrets set "Sms:ApiKey" ...` and `"Sms:OnlyTo:0" ...` | The Arkesel key and the one number allowed to get real SMS on this laptop, outside the repository |
+| `POST /api/admin/sms/test` as the MoFA admin (port 8001 copy of the new API) | First live SMS through Arkesel, sender ID AgroConnect: answer `sent`, message received; the demo admin's own sign-in code went to the log (not on the list) |
+| `node` script writing `backend/postman/AgroConnect.postman_collection.json` | A Postman collection of every endpoint (26 requests), with sign-in steps that save the token |
+| `Auth:MaxCodesPerHour` 20 for laptops and servers, `Auth:ResendCooldownSeconds` 15 on laptops | The team tests sign-in many times an hour; the servers keep a 45 s wait against SMS abuse |
+| `dotnet ef migrations add AddUssdSessions ...` | The `ussd_sessions` table: where each USSD dial is in the menu (ADR 0038) |
+| `dotnet test tests/UssdService.Tests`, `dotnet test tests/Api.Tests` | 16 USSD tests (every menu path, wrong keys, back and exit, old sessions, the app id check) and 2 end-to-end; 289 backend tests in all |

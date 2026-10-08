@@ -31,6 +31,6 @@ public sealed class PostgresFixture : IAsyncLifetime
     public async Task ResetAsync()
     {
         await using var db = CreateContext();
-        await db.Database.ExecuteSqlRawAsync("TRUNCATE meeting_rsvps, meetings, sale_pledges, group_sales, group_order_lines, group_orders, savings_contributions, cooperative_members, cooperatives, users, login_codes, farmers, visits, photos, wallets, payments, help_requests, help_voice_notes, alert_settings, speech_clips CASCADE");
+        await db.Database.ExecuteSqlRawAsync("TRUNCATE meeting_rsvps, meetings, sale_pledges, group_sales, group_order_lines, group_orders, savings_contributions, cooperative_members, cooperatives, users, login_codes, farmers, visits, photos, wallets, payments, help_requests, help_voice_notes, alert_settings, speech_clips, ussd_sessions");
     }
 }

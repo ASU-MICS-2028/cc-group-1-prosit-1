@@ -28,21 +28,9 @@ public sealed class AuthProviderTests
     }
 
     [Fact]
-    public void Generator_uses_the_fixed_code_when_set()
+    public void Generator_always_makes_random_six_digit_codes()
     {
-        var generator = new LoginCodeGenerator(Options.Create(new AuthOptions { FixedCode = "654321" }));
-
-        Assert.Equal("654321", generator.NewCode());
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("12345")]
-    [InlineData("abcdef")]
-    public void Generator_makes_random_six_digit_codes_otherwise(string? fixedCode)
-    {
-        var generator = new LoginCodeGenerator(Options.Create(new AuthOptions { FixedCode = fixedCode }));
+        var generator = new LoginCodeGenerator();
 
         var codes = Enumerable.Range(0, 20).Select(_ => generator.NewCode()).ToList();
 
@@ -105,17 +93,5 @@ public sealed class AuthProviderTests
         var jwt = new JsonWebToken(token.Value);
         Assert.Equal("officer", jwt.GetClaim("role").Value);
         Assert.False(jwt.TryGetClaim("farmer_id", out _));
-    }
-
-    [Theory]
-    [InlineData("Development")]
-    [InlineData("Production")]
-    public async Task Log_only_sender_never_fails(string environmentName)
-    {
-        var environment = Substitute.For<IHostEnvironment>();
-        environment.EnvironmentName.Returns(environmentName);
-        var sender = new LogOnlySmsSender(environment, NullLogger<LogOnlySmsSender>.Instance);
-
-        await sender.SendAsync(PhoneNumber.Parse("0240000001"), "Your code is 123456", CancellationToken.None);
     }
 }

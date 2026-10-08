@@ -7,6 +7,7 @@ using AgroConnect.SharedLibrary.Enums;
 using AgroConnect.SharedLibrary.Errors;
 using AgroConnect.SharedLibrary.Features;
 using AgroConnect.SharedLibrary.Providers.Interfaces;
+using AgroConnect.SharedLibrary.Sms;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -166,7 +167,7 @@ public sealed class GetOverviewTests(PostgresFixture database) : IAsyncLifetime
     {
         var builder = WebApplication.CreateSlimBuilder();
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Default"] = "Host=localhost" });
-        builder.Services.AddSharedLibrary().AddData(builder.Configuration).AddAdminService();
+        builder.Services.AddSharedLibrary().AddSms(builder.Configuration).AddData(builder.Configuration).AddAdminService();
         var app = builder.Build();
 
         app.MapFeatures();
@@ -174,5 +175,6 @@ public sealed class GetOverviewTests(PostgresFixture database) : IAsyncLifetime
         var routes = ((IEndpointRouteBuilder)app).DataSources.SelectMany(s => s.Endpoints).OfType<RouteEndpoint>()
             .Select(e => e.RoutePattern.RawText);
         Assert.Contains("/api/admin/overview", routes);
+        Assert.Contains("/api/admin/sms/test", routes);
     }
 }

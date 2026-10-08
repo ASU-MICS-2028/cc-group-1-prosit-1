@@ -14,7 +14,7 @@ _Last updated: 5 October 2026. Versions are the ones installed today (`npm ls`, 
 |---|---|
 | **Design** | Figma (mobile first, responsive), system font, our own design tokens |
 | **App on the phone** | React 19 PWA, TypeScript 6, Vite 8, Tailwind 4, shadcn/ui on Base UI, react-router 7, react-hook-form + zod, i18next, Dexie (IndexedDB), Workbox via vite-plugin-pwa |
-| **Simple phones** | USSD and SMS through Africa's Talking (planned) |
+| **Simple phones** | SMS (ADR 0037) and USSD (ADR 0038) through Arkesel |
 | **Backend** | C# on .NET 10 (ASP.NET Core Minimal APIs), EF Core 10 + Npgsql, JWT tokens, Serilog, built-in OpenAPI |
 | **Database** | PostgreSQL 17 (container on laptop and staging; RDS planned for production) |
 | **Photos** | Private S3 bucket with short-lived upload links (planned; disk on a laptop) |
@@ -337,7 +337,8 @@ Rejected: Kubernetes (about $73 a month for the control plane), ECS/Fargate (mor
 
 | Service | Use | Status |
 |---|---|---|
-| **Africa's Talking** | SMS sign-in codes, USSD menus, confirmation texts | Planned; on a laptop the SMS goes to the log |
+| **Arkesel** | SMS: sign-in codes now, advice and confirmations next. Sender ID "AgroConnect" approved (ADR 0037) | In use; texts only allowed numbers unless `Sms:TextEveryone` |
+| **Arkesel USSD** | The USSD menu for simple phones: Arkesel calls `POST /api/ussd/arkesel` for each key (ADR 0038) | Sandbox and emulator; live needs a USSD code from Arkesel |
 | **Paystack** | Mobile money payments for farmers (MTN, Telecel, AirtelTigo in GHS) and payouts to their wallets (ADR 0034). Chosen over the MTN MoMo API: one integration for all three networks | Test mode; live needs business verification |
 | **Figma** | The UI design: the source for every screen, icon and illustration | In use |
 | **GitHub** | Code, pull requests, CI, images (GHCR) | In use |
