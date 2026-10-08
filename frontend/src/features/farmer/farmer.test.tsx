@@ -9,6 +9,7 @@ import type {
   Prices,
   Weather,
 } from "@/api/farmer"
+import type { CooperativeDetails } from "@/api/cooperative"
 import { db } from "@/db/local"
 import { fakeServer, json } from "@/test/fakes"
 import { renderRoute, testFarmer } from "@/test/renderRoute"
@@ -129,7 +130,7 @@ const harvest: HarvestForecast = {
 }
 
 const cooperative: Cooperative = {
-  source: "sample",
+  source: "live",
   name: "Tolon Farmers Cooperative",
   community: "Tolon",
   members: 42,
@@ -137,6 +138,55 @@ const cooperative: Cooperative = {
   chairPhoneE164: "+233200000000",
   nextMeeting: "2026-10-10",
   meetingPlace: "Tolon community centre",
+}
+
+/** The cooperative page's answer (CooperativeService). */
+const myCooperative: CooperativeDetails = {
+  id: "c1",
+  name: "Tolon Farmers Cooperative",
+  community: "Tolon",
+  district: "Tolon",
+  leaderName: "Alhassan Mahama",
+  leaderPhoneE164: "+233200000000",
+  members: [
+    { farmerId: "f0", fullName: "Alhassan Mahama", isLeader: true },
+    { farmerId: "f1", fullName: "Ama Boateng", isLeader: false },
+  ],
+  savings: { group: 12400, mine: 240 },
+  openOrder: {
+    id: "o1",
+    product: "NPK fertiliser",
+    dealer: "Tolon Agro Inputs",
+    unitPrice: 150,
+    alonePrice: 170,
+    targetBags: 120,
+    orderedBags: 64,
+    closesOn: "2099-10-18",
+    status: "open",
+    myBags: 0,
+  },
+  openSale: {
+    id: "s1",
+    crop: "Maize",
+    buyer: "Savelugu Grain Traders",
+    pricePerKg: 6.8,
+    marketPricePerKg: 6.5,
+    targetKg: 20000,
+    pledgedKg: 18000,
+    status: "open",
+    myBags: 0,
+    kgPerBag: 100,
+    pledgers: 41,
+  },
+  nextMeeting: {
+    id: "m1",
+    startsAt: "2099-10-10T10:00:00Z",
+    place: "Tolon community centre",
+    topic: "Selling maize together",
+    bring: "How many bags you can sell",
+    coming: null,
+    comingCount: 12,
+  },
 }
 
 const lessons: Lessons = {
@@ -152,6 +202,7 @@ function farmerServer(extra: Record<string, (body: unknown) => Response> = {}) {
     "GET /api/farmer/prices": () => json(200, prices),
     "GET /api/farmer/harvest-forecast": () => json(200, harvest),
     "GET /api/farmer/cooperative": () => json(200, cooperative),
+    "GET /api/cooperative": () => json(200, myCooperative),
     "GET /api/farmer/lessons": () => json(200, lessons),
     ...extra,
   })
@@ -502,7 +553,7 @@ describe("farm services", () => {
     expect(
       await screen.findByText("Tolon Farmers Cooperative")
     ).toBeInTheDocument()
-    expect(screen.getByText(/42 members/)).toBeInTheDocument()
+    expect(screen.getByText(/2 members/)).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /^Call / })).toHaveAttribute(
       "href",
       "tel:+233200000000"

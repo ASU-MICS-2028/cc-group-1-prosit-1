@@ -105,7 +105,6 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 - weather;
 - Check my crop's answer;
 - harvest forecast;
-- My cooperative's name, leader and meeting (`SampleCooperativeDirectory`);
 - lessons.
 
 **Backend runs, but nothing reaches anyone yet:**
@@ -118,9 +117,8 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 
 **Frontend only, no backend yet** (labelled "Coming in a later phase"):
 - Money: seed loan, insurance, get paid, delivery tracking;
-- cooperative savings, meeting attendance, group order, selling together;
 - officer Money and farm health, loan review, officer Market;
-- admin Regions, Agents (invites, access, phone reports), Cooperatives, Impact, System, and the Overview map, trend, channels and money tiles;
+- admin Regions, Agents (invites, access, phone reports), Impact, System, and the Overview map, trend, channels and money tiles;
 - lost or stolen phone reports from Profile;
 - Nigeria and Kenya, Yorùbá and Kiswahili;
 - Download report (PDF), Call the driver.
@@ -131,6 +129,11 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 - admin Help desk;
 - SMS alert settings (saved; sending waits for the SMS provider);
 - speech in Twi, Ewe and Dagbani (waits for the Khaya key).
+
+**Made real on 2026-10-08 (ADR 0040):**
+- cooperatives: savings by mobile money, group orders, selling together, meetings;
+- the officer's Cooperatives page;
+- admin Cooperatives.
 
 **No recordings yet:**
 - speaker buttons and lessons use the phone's own voice until the recorded prompts (ADR 0014) exist.

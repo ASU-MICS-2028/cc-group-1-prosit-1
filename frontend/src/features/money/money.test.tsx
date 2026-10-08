@@ -247,45 +247,196 @@ describe("farmer money", () => {
   })
 })
 
-describe("cooperative (sample data)", () => {
-  it("shows savings, order, meeting and sale", async () => {
+const coop = {
+  id: "c1",
+  name: "Tolon Farmers Cooperative",
+  community: "Tolon",
+  district: "Tolon",
+  leaderName: "Mariama Alhassan",
+  leaderPhoneE164: "+233241000001",
+  members: [
+    { farmerId: "f0", fullName: "Mariama Alhassan", isLeader: true },
+    { farmerId: "f1", fullName: "Ama Boateng", isLeader: false },
+  ],
+  savings: { group: 12400, mine: 240 },
+  openOrder: {
+    id: "o1",
+    product: "NPK fertiliser",
+    dealer: "Tolon Agro Inputs",
+    unitPrice: 150,
+    alonePrice: 170,
+    targetBags: 120,
+    orderedBags: 64,
+    closesOn: "2099-10-18",
+    status: "open",
+    myBags: 0,
+  },
+  openSale: {
+    id: "s1",
+    crop: "Maize",
+    buyer: "Savelugu Grain Traders",
+    pricePerKg: 6.8,
+    marketPricePerKg: 6.5,
+    targetKg: 20000,
+    pledgedKg: 18000,
+    status: "open",
+    myBags: 0,
+    kgPerBag: 100,
+    pledgers: 41,
+  },
+  nextMeeting: {
+    id: "m1",
+    startsAt: "2099-10-10T10:00:00Z",
+    place: "Tolon community centre",
+    topic: "Selling maize together",
+    bring: "How many bags you can sell",
+    coming: null,
+    comingCount: 12,
+  },
+}
+
+describe("cooperative (CooperativeService)", () => {
+  it("shows the group, savings, order, meeting and sale", async () => {
+    fakeServer({ "GET /api/cooperative": () => json(200, coop) })
     renderRoute("/farmer/cooperative", { as: "farmer" })
     for (const row of [
-      /Group savings/,
-      /Group order/,
+      /Group savings: GH₵ 12,400/,
+      /Group order: NPK fertiliser/,
       /Next meeting/,
       /Sell Maize together/,
     ])
       expect(await screen.findByRole("link", { name: row })).toBeInTheDocument()
+    expect(screen.getByText(/2 members/)).toBeInTheDocument()
   })
 
-  it("adds savings", async () => {
+  it("says plainly when the farmer is not in a cooperative", async () => {
+    fakeServer({
+      "GET /api/cooperative": () =>
+        json(404, { title: "NOT_IN_A_COOPERATIVE", detail: "Not in one" }),
+    })
+    renderRoute("/farmer/cooperative", { as: "farmer" })
+    expect(
+      await screen.findByText(/You are not in a cooperative yet/)
+    ).toBeInTheDocument()
+  })
+
+  it("saves with mobile money, approved on the phone", async () => {
+    const asked: unknown[] = []
+    fakeServer({
+      "GET /api/cooperative": () => json(200, coop),
+      "POST /api/cooperative/savings": (body) => {
+        asked.push(body)
+        return json(200, {
+          reference: "agc_1",
+          purpose: "savings",
+          description: "Savings",
+          amount: 50,
+          network: "mtn",
+          status: "paid",
+          message: null,
+          createdAt: "2026-10-08T09:00:00Z",
+        })
+      },
+      "GET /api/money/payments/agc_1": () =>
+        json(200, {
+          reference: "agc_1",
+          purpose: "savings",
+          description: "Savings",
+          amount: 50,
+          network: "mtn",
+          status: "paid",
+          message: null,
+          createdAt: "2026-10-08T09:00:00Z",
+        }),
+      "GET /api/money": () =>
+        json(200, { sample: true, wallet: null, payments: [] }),
+    })
+    const { router } = renderRoute("/farmer/cooperative/savings", {
+      as: "farmer",
+    })
+    await userEvent.click(await screen.findByRole("radio", { name: "GH₵ 50" }))
+    await userEvent.click(screen.getByRole("button", { name: "Add GH₵ 50" }))
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(
+        "/farmer/cooperative/savings/done"
+      )
+    )
+    expect(asked).toEqual([{ amount: 50 }])
+    expect(await screen.findByText("GH₵ 50 added")).toBeInTheDocument()
+  })
+
+  it("says to link a wallet when there is none", async () => {
+    fakeServer({
+      "GET /api/cooperative": () => json(200, coop),
+      "POST /api/cooperative/savings": () =>
+        json(400, {
+          title: "NO_WALLET",
+          detail: "Link your mobile money wallet first.",
+        }),
+    })
     renderRoute("/farmer/cooperative/savings", { as: "farmer" })
-    await go("Add GH₵ 20")
-    expect(await screen.findByText("GH₵ 20 added")).toBeInTheDocument()
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Add GH₵ 20" })
+    )
+    expect(
+      await screen.findByRole("link", { name: "Link your mobile money first" })
+    ).toHaveAttribute("href", "/farmer/money/link")
   })
 
-  it("confirms the meeting", async () => {
+  it("answers the meeting", async () => {
+    const answers: unknown[] = []
+    fakeServer({
+      "GET /api/cooperative": () => json(200, coop),
+      "PUT /api/cooperative/meetings/m1/rsvp": (body) => {
+        answers.push(body)
+        return new Response(null, { status: 204 })
+      },
+    })
     renderRoute("/farmer/cooperative/meeting", { as: "farmer" })
-    await go("I will come")
-    expect(await screen.findByText("See you there")).toBeInTheDocument()
+    await userEvent.click(
+      await screen.findByRole("button", { name: "I cannot come" })
+    )
+    expect(
+      await screen.findByText("Thank you for telling us")
+    ).toBeInTheDocument()
+    expect(answers).toEqual([{ coming: false }])
   })
 
   it("joins the group order with more bags", async () => {
+    const orders: unknown[] = []
+    fakeServer({
+      "GET /api/cooperative": () => json(200, coop),
+      "PUT /api/cooperative/orders/o1": (body) => {
+        orders.push(body)
+        return new Response(null, { status: 204 })
+      },
+    })
     renderRoute("/farmer/cooperative/order", { as: "farmer" })
     await userEvent.click(
       await screen.findByRole("button", { name: "More Bags" })
     )
-    await go("Join with 3 bags")
-    expect(await screen.findByText("You ordered 3 bags")).toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole("button", { name: "Join with 2 bags" })
+    )
+    expect(await screen.findByText("You ordered 2 bags")).toBeInTheDocument()
+    expect(orders).toEqual([{ bags: 2 }])
   })
 
   it("adds bags to the group sale", async () => {
+    const pledges: unknown[] = []
+    fakeServer({
+      "GET /api/cooperative": () => json(200, coop),
+      "PUT /api/cooperative/sales/s1": (body) => {
+        pledges.push(body)
+        return new Response(null, { status: 204 })
+      },
+    })
     renderRoute("/farmer/cooperative/sell", { as: "farmer" })
     await userEvent.click(
       await screen.findByRole("button", { name: "Fewer Bags" })
     )
-    await go(/^Add \d+ bags?$/)
-    expect(await screen.findByText(/bags? added$/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole("button", { name: "Add 4 bags" }))
+    expect(await screen.findByText("4 bags added")).toBeInTheDocument()
+    expect(pledges).toEqual([{ bags: 4 }])
   })
 })

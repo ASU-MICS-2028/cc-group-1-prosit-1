@@ -90,6 +90,68 @@ public sealed partial class DatabaseMigrator(
         }
 
         await db.SaveChangesAsync(cancellationToken);
+
+        // The sample farmer's cooperative (ADR 0040), so its screens have something real to show.
+        if (seed.Value.SampleFarmer && firstOfficer is not null
+            && await db.Farmers.AnyAsync(f => f.Id == SampleFarmerId, cancellationToken)
+            && !await db.Cooperatives.AnyAsync(cancellationToken))
+        {
+            SeedCooperative(db, firstOfficer, now);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    private static readonly Guid SampleFarmerId = Guid.Parse("0192f0a0-0000-7000-8000-000000000001");
+
+    // Sample data only: a cooperative for the sample farmer with an open order, a sale and a meeting.
+    private static void SeedCooperative(AppDbContext db, AppUser officer, DateTimeOffset now)
+    {
+        var cooperativeId = Guid.CreateVersion7(now);
+        db.Cooperatives.Add(new Cooperative
+        {
+            Id = cooperativeId,
+            Name = "Tolon Farmers Cooperative",
+            Community = "Tolon",
+            Region = officer.Region ?? "Northern",
+            District = officer.District ?? "Tolon",
+            LeaderFarmerId = SampleFarmerId,
+            CreatedById = officer.Id,
+            CreatedAt = now,
+        });
+        db.CooperativeMembers.Add(new CooperativeMember { CooperativeId = cooperativeId, FarmerId = SampleFarmerId, JoinedAt = now });
+        db.GroupOrders.Add(new GroupOrder
+        {
+            Id = Guid.CreateVersion7(now),
+            CooperativeId = cooperativeId,
+            Product = "NPK fertiliser 15-15-15",
+            Dealer = "Tolon Agro Inputs",
+            UnitPricePesewas = 15_000,
+            AlonePricePesewas = 17_000,
+            TargetBags = 120,
+            ClosesOn = DateOnly.FromDateTime(now.UtcDateTime).AddDays(10),
+            Status = GroupOrderStatus.Open,
+        });
+        db.GroupSales.Add(new GroupSale
+        {
+            Id = Guid.CreateVersion7(now),
+            CooperativeId = cooperativeId,
+            Crop = "Maize",
+            Buyer = "Savelugu Grain Traders",
+            PricePerKgPesewas = 680,
+            MarketPricePerKgPesewas = 645,
+            TargetKg = 20_000,
+            Status = GroupSaleStatus.Open,
+        });
+        var daysToSaturday = ((int)DayOfWeek.Saturday - (int)now.DayOfWeek + 7) % 7;
+        db.Meetings.Add(new Meeting
+        {
+            Id = Guid.CreateVersion7(now),
+            CooperativeId = cooperativeId,
+            StartsAt = new DateTimeOffset(now.UtcDateTime.Date.AddDays(daysToSaturday == 0 ? 7 : daysToSaturday).AddHours(10), TimeSpan.Zero),
+            Place = "Tolon community centre",
+            Topic = "Selling maize together",
+            Bring = "How many bags you can sell",
+        });
     }
 
     /// <summary>Adds the farmer unless one with this phone is there. Skipped without a valid phone or a registering officer.</summary>
@@ -161,7 +223,7 @@ public sealed partial class DatabaseMigrator(
 
     private static Farmer SampleFarmer(Guid officerId, DateTimeOffset now) => new()
     {
-        Id = Guid.Parse("0192f0a0-0000-7000-8000-000000000001"),
+        Id = SampleFarmerId,
         RegisteredById = officerId,
         ConsentGiven = true,
         ConsentAt = now,
