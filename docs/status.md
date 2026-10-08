@@ -87,6 +87,44 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 - Sign-in length is now a setting (`Auth:TokenLifetime`): 1 hour on laptops for testing, 7 days on the servers (unchanged).
 - Docs: `phase-1-overview.md` (replaces the concise PDF), `data-dictionary.md` (who is who, every table, column and code), `tech-choices.md` (the whole stack), `local-development.md` (every command, health checks, laptop vs servers), and `project-structure.md` (backend file guide).
 
+## What is still sample (dummy) data, 2026-10-08
+
+**Real today:**
+- sign-in and roles;
+- registration and offline sync;
+- farmers, visits and the officer's Home;
+- the admin Overview numbers;
+- the farmer's own record, officer and visits;
+- Paystack payments, once a key is set.
+
+**Backend runs, but the data comes from a sample provider** (labelled "Sample data" in the app):
+- market prices;
+- weather;
+- Check my crop's answer;
+- harvest forecast;
+- My cooperative's name, leader and meeting (`SampleCooperativeDirectory`);
+- lessons.
+
+**Backend runs, but nothing reaches anyone yet:**
+- SMS sign-in codes are written to the log, not sent (`LogOnlySmsSender`; the fixed code 123456 works on laptops);
+- change-detail requests are written to the log (`LogOnlyChangeRequestInbox`).
+
+**Mobile money (MoneyService):**
+- real through Paystack test mode when `Paystack__SecretKey` is set; otherwise the sample gateway approves after a few seconds;
+- *Buy inputs*: the products and shops are sample data, the payment is real.
+
+**Frontend only, no backend yet** (labelled "Coming in a later phase"):
+- Money: seed loan, insurance, get paid, delivery tracking;
+- cooperative savings, meeting attendance, group order, selling together;
+- officer Requests (advice to farmers), Money and farm health, loan review, officer Market;
+- admin Regions, Agents (invites, access, phone reports), Cooperatives, Help desk, Impact, System, and the Overview map, trend, channels and money tiles;
+- lost or stolen phone reports from Profile;
+- Nigeria and Kenya, Yorùbá and Kiswahili;
+- the help desk voice note (read by the device voice), Download report (PDF), Call the driver.
+
+**No recordings yet:**
+- speaker buttons and lessons use the phone's own voice until the recorded prompts (ADR 0014) exist.
+
 ## Bernard's to-do right now
 1. Try the registration form yourself: sign in as the demo officer, tap "Register a farmer" (see `local-development.md` 5.8). Compare with Figma at phone and computer widths.
 2. Push `feature/registration-form` (the one working branch: registration form plus the study manual) and open its PR.
