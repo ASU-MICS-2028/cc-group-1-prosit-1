@@ -18,6 +18,8 @@
     <ProjectReference Include="..\..\Services\SyncService\SyncService.csproj" />
     <ProjectReference Include="..\..\Services\AdminService\AdminService.csproj" />
     <ProjectReference Include="..\..\Services\MoneyService\MoneyService.csproj" />
+    <ProjectReference Include="..\..\Services\HelpService\HelpService.csproj" />
+    <ProjectReference Include="..\..\Services\SpeechService\SpeechService.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />

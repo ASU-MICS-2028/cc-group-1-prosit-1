@@ -4,10 +4,12 @@ using AgroConnect.Api.OpenApi;
 using AgroConnect.AuthService;
 using AgroConnect.Data;
 using AgroConnect.FarmerService;
+using AgroConnect.HelpService;
 using AgroConnect.MoneyService;
 using AgroConnect.PlatformService;
 using AgroConnect.SharedLibrary;
 using AgroConnect.SharedLibrary.Features;
+using AgroConnect.SpeechService;
 using AgroConnect.SyncService;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
@@ -64,7 +66,9 @@ builder.Services
     .AddFarmerService()
     .AddSyncService()
     .AddAdminService()
-    .AddMoneyService(builder.Configuration);
+    .AddMoneyService(builder.Configuration)
+    .AddHelpService()
+    .AddSpeechService(builder.Configuration);
 
 var app = builder.Build();
 
