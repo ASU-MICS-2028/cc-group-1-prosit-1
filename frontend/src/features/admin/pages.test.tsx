@@ -63,12 +63,17 @@ describe("admin pages on sample data", () => {
 
   it("Agents turns off a lost phone's access and invites a person", async () => {
     renderRoute("/admin/agents", admin)
-    expect(await screen.findByText("Phone lost")).toBeInTheDocument()
+    expect(await screen.findByText("Phone reported")).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        /Reported by phone call · Today 07:40 · 4 farmers not sent yet/
+      )
+    ).toBeInTheDocument()
     await userEvent.click(
       screen.getByRole("button", { name: "Turn off Ibrahim's access" })
     )
-    expect(screen.queryByText("Phone lost")).not.toBeInTheDocument()
-    expect(screen.getByText("Access off")).toBeInTheDocument()
+    expect(screen.queryByText("Phone reported")).not.toBeInTheDocument()
+    expect(screen.getAllByText("Access off").length).toBeGreaterThan(0)
 
     await userEvent.click(screen.getByRole("button", { name: "Add an agent" }))
     const panel = await screen.findByRole("dialog", { name: "Add a person" })
@@ -145,5 +150,29 @@ describe("admin pages on sample data", () => {
     expect(
       screen.getByText("SMS delivery slower than usual")
     ).toBeInTheDocument()
+  })
+
+  it("Agents: the admin reports a phone for an agent who called in", async () => {
+    renderRoute("/admin/agents", admin)
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: "Report a lost or stolen phone for Kofi Asante",
+      })
+    )
+    const sheet = await screen.findByRole("dialog", {
+      name: "Report Kofi Asante's phone",
+    })
+    await userEvent.click(within(sheet).getByRole("radio", { name: "Stolen" }))
+    await userEvent.click(within(sheet).getByRole("radio", { name: "SMS" }))
+    await userEvent.click(
+      within(sheet).getByRole("button", { name: "Report and turn off access" })
+    )
+    expect(screen.getByText("Kofi Asante: phone stolen")).toBeInTheDocument()
+    expect(screen.getByText(/Reported by SMS · just now/)).toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", {
+        name: "Report a lost or stolen phone for Kofi Asante",
+      })
+    ).not.toBeInTheDocument()
   })
 })

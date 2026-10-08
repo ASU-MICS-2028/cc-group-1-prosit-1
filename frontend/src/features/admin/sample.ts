@@ -88,6 +88,29 @@ export const agents: readonly Agent[] = [
 ]
 export const agentTotal = 61
 
+export type PhoneProblem = "lost" | "stolen" | "broken"
+export type ReportedVia = "app" | "call" | "sms" | "inPerson"
+
+/** A lost, stolen or broken phone, reported by the agent (Profile, from another phone) or for them. */
+export interface PhoneReport {
+  agentId: string
+  problem: PhoneProblem
+  via: ReportedVia
+  when: string
+  /** Farmers saved on that phone but not sent: listed so another agent can re-visit them */
+  unsent: number
+}
+
+export const phoneReports: readonly PhoneReport[] = [
+  {
+    agentId: "a4",
+    problem: "stolen",
+    via: "call",
+    when: "Today 07:40",
+    unsent: 4,
+  },
+]
+
 /** P4 · D3 System Health */
 export const systemHealth = {
   environment: "Production · af-south-1",

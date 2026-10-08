@@ -6,6 +6,7 @@ import {
   LogOut,
   RefreshCw,
   CircleHelp,
+  ShieldAlert,
 } from "lucide-react"
 import { useEffect, useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
@@ -17,6 +18,7 @@ import { useLastSync } from "@/features/sync/sync"
 import { LANGUAGES } from "@/i18n"
 import { formatTime, formatShortDate, isToday } from "@/lib/dates"
 import { LogoutSheet } from "./LogoutSheet"
+import { LostPhoneSheet } from "./LostPhoneSheet"
 
 /** The app version people see in About. */
 export const APP_VERSION = "1.0"
@@ -61,6 +63,7 @@ export function ProfileView({
   const lastSync = useLastSync()
   const usedMb = useStorageUsedMb()
   const [loggingOut, setLoggingOut] = useState(false)
+  const [reportingPhone, setReportingPhone] = useState(false)
   const language =
     LANGUAGES.find((l) => l.code === i18n.language)?.label ?? "English"
   const lastSent = lastSync
@@ -134,6 +137,14 @@ export function ProfileView({
             title={t("profile.about")}
             subtitle={t("profile.version", { version: APP_VERSION })}
           />
+          {officer ? (
+            <ListRow
+              icon={ShieldAlert}
+              title={t("lostPhone.row")}
+              subtitle={t("lostPhone.rowHint")}
+              onClick={() => setReportingPhone(true)}
+            />
+          ) : null}
           <ListRow
             icon={LogOut}
             title={t("common.logOut")}
@@ -143,6 +154,10 @@ export function ProfileView({
         </Group>
       </div>
 
+      <LostPhoneSheet
+        open={reportingPhone}
+        onClose={() => setReportingPhone(false)}
+      />
       <LogoutSheet
         open={loggingOut}
         onClose={() => setLoggingOut(false)}
