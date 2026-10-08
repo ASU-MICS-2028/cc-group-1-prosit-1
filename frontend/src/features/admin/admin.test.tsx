@@ -106,6 +106,15 @@ describe("MoFA admin", () => {
     expect(
       within(table).getByRole("row", { name: /Fuseini Alhassan/ })
     ).toHaveTextContent(/6 Oct \d\d:\d\d/)
+    // The sample sections: the map, registrations against the plan, money and reach
+    expect(
+      screen.getByRole("heading", { name: "Where the farmers are" })
+    ).toBeInTheDocument()
+    expect(screen.getByText("No officer: reassign farmers")).toBeInTheDocument()
+    expect(
+      screen.getByRole("img", { name: /Sep: 292 registered, plan 270/ })
+    ).toBeInTheDocument()
+    expect(screen.getByText("1 : 171")).toBeInTheDocument()
     // The admin sidebar: who is signed in, their area, and all seven places
     expect(screen.getByText("MoFA, Northern Region")).toBeInTheDocument()
     expect(

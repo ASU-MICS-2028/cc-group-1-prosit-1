@@ -58,7 +58,9 @@ describe("admin pages on sample data", () => {
       "312"
     )
     expect(screen.getByText("App 70% · USSD 30%")).toBeInTheDocument()
-    expect(screen.getAllByText("Sample data").length).toBeGreaterThan(0)
+    expect(
+      screen.getAllByText("Coming in a later phase").length
+    ).toBeGreaterThan(0)
   })
 
   it("Agents turns off a lost phone's access and invites a person", async () => {
@@ -141,6 +143,13 @@ describe("admin pages on sample data", () => {
     expect(
       screen.getByText("Each cooperative runs its own copy of the app")
     ).toBeInTheDocument()
+    // not built yet: says so instead of doing nothing
+    await userEvent.click(
+      screen.getByRole("button", { name: "Download report (PDF)" })
+    )
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Coming in a later phase."
+    )
   })
 
   it("System shows each service and recent alerts", async () => {

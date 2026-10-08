@@ -17,7 +17,7 @@ import { useId, useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { ChoiceChips } from "@/components/form/ChoiceChips"
 import { TextField } from "@/components/form/TextField"
-import { SampleBadge } from "@/components/Flow"
+import { LaterPhaseButton, SampleBadge } from "@/components/Flow"
 import { Sheet } from "@/components/Sheet"
 import { Button } from "@/components/ui/button"
 import { cedis } from "@/features/sample/data"
@@ -877,11 +877,7 @@ export function HelpDesk() {
               : t("adminPages.help.unassigned", { place: open.place })}
           </p>
           {open.voiceNote ? (
-            <Button
-              size="xl"
-              variant="secondary"
-              className="gap-3 pl-2 text-primary"
-            >
+            <LaterPhaseButton className="gap-3 self-start pl-2">
               <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Play aria-hidden className="size-5" />
               </span>
@@ -889,7 +885,7 @@ export function HelpDesk() {
                 farmer: open.farmer.split(" ")[0],
                 length: open.voiceNote,
               })}
-            </Button>
+            </LaterPhaseButton>
           ) : null}
           <p className="text-sm text-muted-foreground">
             {t("adminPages.help.adviceFrom")}
@@ -958,14 +954,9 @@ export function Impact() {
         title={t("adminPages.impact.title")}
         subtitle={t("adminPages.impact.subtitle", { season: impact.season })}
         action={
-          <Button
-            size="xl"
-            variant="secondary"
-            className="px-8 text-primary"
-            onClick={() => window.print()}
-          >
+          <LaterPhaseButton className="px-8">
             {t("adminPages.impact.download")}
-          </Button>
+          </LaterPhaseButton>
         }
       />
       <StatTiles

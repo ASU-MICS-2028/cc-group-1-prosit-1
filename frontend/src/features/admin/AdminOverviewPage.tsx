@@ -5,6 +5,12 @@ import { useServerData } from "@/features/farmer/useServerData"
 import { formatShortDate, formatTime, isToday } from "@/lib/dates"
 import { maskPhone } from "@/lib/phone"
 import { cn } from "@/lib/utils"
+import {
+  BusinessTiles,
+  Channels,
+  RegionMap,
+  RegistrationsChart,
+} from "./OverviewExtras"
 
 /** "today 09:02" or "6 Oct 09:02" */
 function when(iso: string, today: string) {
@@ -75,6 +81,13 @@ export function Component() {
               </li>
             ))}
           </ul>
+
+          <RegionMap />
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <RegistrationsChart />
+            <Channels />
+          </div>
+          <BusinessTiles />
 
           <section
             aria-labelledby="admin-officers"

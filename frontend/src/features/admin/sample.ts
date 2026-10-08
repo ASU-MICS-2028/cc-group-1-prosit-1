@@ -284,3 +284,121 @@ export const impact = {
     { name: "Each cooperative runs its own copy of the app", done: false },
   ],
 }
+
+// ---------- Overview extras (map, trend, business) ----------
+
+export type DistrictHealth = "good" | "late" | "noOfficer"
+
+/** Where the farmers are: one circle per district, at the district capital. */
+export const districtMap: readonly {
+  name: string
+  lat: number
+  lng: number
+  farmers: number
+  officers: number
+  women: number
+  lastSync: string
+  health: DistrictHealth
+}[] = [
+  {
+    name: "Tolon",
+    lat: 9.431,
+    lng: -1.064,
+    farmers: 312,
+    officers: 2,
+    women: 48,
+    lastSync: "Yesterday",
+    health: "good",
+  },
+  {
+    name: "Savelugu",
+    lat: 9.624,
+    lng: -0.825,
+    farmers: 286,
+    officers: 2,
+    women: 44,
+    lastSync: "Today",
+    health: "good",
+  },
+  {
+    name: "Kumbungu",
+    lat: 9.567,
+    lng: -0.951,
+    farmers: 241,
+    officers: 1,
+    women: 51,
+    lastSync: "3 days ago",
+    health: "late",
+  },
+  {
+    name: "Tamale Metro",
+    lat: 9.401,
+    lng: -0.839,
+    farmers: 198,
+    officers: 1,
+    women: 39,
+    lastSync: "12 days ago",
+    health: "late",
+  },
+  {
+    name: "Yendi",
+    lat: 9.443,
+    lng: -0.009,
+    farmers: 211,
+    officers: 0,
+    women: 42,
+    lastSync: "Officer left",
+    health: "noOfficer",
+  },
+  {
+    name: "Karaga",
+    lat: 9.925,
+    lng: -0.432,
+    farmers: 74,
+    officers: 1,
+    women: 46,
+    lastSync: "Today",
+    health: "good",
+  },
+  {
+    name: "Mion",
+    lat: 9.383,
+    lng: -0.29,
+    farmers: 52,
+    officers: 1,
+    women: 40,
+    lastSync: "Yesterday",
+    health: "good",
+  },
+]
+
+/** Farmers registered each month this season, against the plan. */
+export const monthlyRegistrations: readonly {
+  month: string
+  farmers: number
+  target: number
+}[] = [
+  { month: "May", farmers: 96, target: 150 },
+  { month: "Jun", farmers: 184, target: 180 },
+  { month: "Jul", farmers: 231, target: 210 },
+  { month: "Aug", farmers: 268, target: 240 },
+  { month: "Sep", farmers: 292, target: 270 },
+  { month: "Oct", farmers: 177, target: 300 },
+]
+
+/** Money moving through AgroConnect and what it means for farmers (Phase 2 services). */
+export const business = {
+  paidToDealers: 48200,
+  loansOut: 61800,
+  repaymentPercent: 94,
+  insuredFarmers: 140,
+  coopPriceGain: 0.3,
+  farmersPerOfficer: 171,
+  activeLast30: 72,
+  channels: [
+    { name: "App", percent: 64 },
+    { name: "USSD", percent: 22 },
+    { name: "SMS", percent: 9 },
+    { name: "Officer visit only", percent: 5 },
+  ],
+}

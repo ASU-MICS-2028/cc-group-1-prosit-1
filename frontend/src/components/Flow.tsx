@@ -1,27 +1,67 @@
-import { CheckCheck, FlaskConical, Minus, Plus } from "lucide-react"
-import type { ReactNode } from "react"
+import { CheckCheck, Clock, Minus, Plus } from "lucide-react"
+import { useState, type ReactNode } from "react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { BackHeader } from "@/components/Blocks"
 import { IllustrationCard } from "@/components/IllustrationCard"
 import { Picture, type PictureSource } from "@/components/Picture"
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 // Pieces for the step-by-step screens (money, cooperative, officer requests and loans), so every
 // flow looks the same: a header with Back, an optional "Step 2 of 3", cards, and the main button
 // pinned to the bottom on phones like the Figma flows (inline under the content on computers).
 
-/** "Sample data": shown while a screen runs on stand-in data, before its backend exists. */
+/**
+ * "Coming in a later phase": on every screen of a Phase 2 to 4 feature that runs on stand-in data. People
+ * can look around and try the steps, but nothing is saved or sent until its backend exists.
+ */
 export function SampleBadge() {
   const { t } = useTranslation()
   return (
     <span
-      title={t("farmerApp.sampleHint")}
+      title={t("flow.laterPhaseHint")}
       className="inline-flex h-7 w-fit items-center gap-1.5 rounded-full bg-muted px-3 text-xs font-medium text-muted-foreground"
     >
-      <FlaskConical aria-hidden className="size-3.5" />
-      {t("farmerApp.sample")}
+      <Clock aria-hidden className="size-3.5" />
+      {t("flow.laterPhase")}
+    </span>
+  )
+}
+
+/**
+ * A button for something not built yet (a voice note, a PDF, a call to a driver): tapping it says
+ * "Coming in a later phase" instead of doing nothing.
+ */
+export function LaterPhaseButton({
+  children,
+  className,
+  variant = "secondary",
+}: {
+  children: ReactNode
+  className?: string
+  variant?: "default" | "secondary"
+}) {
+  const { t } = useTranslation()
+  const [told, setTold] = useState(false)
+  return (
+    <span className="flex flex-col items-stretch gap-1.5">
+      <Button
+        size="xl"
+        variant={variant}
+        className={cn(variant === "secondary" && "text-primary", className)}
+        onClick={() => setTold(true)}
+      >
+        {children}
+      </Button>
+      {told ? (
+        <span
+          role="status"
+          className="text-center text-sm text-muted-foreground"
+        >
+          {t("flow.laterPhaseTold")}
+        </span>
+      ) : null}
     </span>
   )
 }

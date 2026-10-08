@@ -67,7 +67,9 @@ describe("farmer money", () => {
       expect(screen.getByRole("link", { name: service })).toBeInTheDocument()
     expect(await screen.findByText("Tolon Agro Inputs")).toBeInTheDocument()
     expect(screen.getByText(/MTN MoMo · \+233 24 ••• 1234/)).toBeInTheDocument()
-    expect(screen.getAllByText("Sample data").length).toBeGreaterThan(0)
+    expect(
+      screen.getAllByText("Coming in a later phase").length
+    ).toBeGreaterThan(0)
   })
 
   it("asks to link mobile money when none is linked", async () => {
