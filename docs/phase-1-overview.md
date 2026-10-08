@@ -9,7 +9,7 @@ _Last updated: Monday 5 October 2026, midday._
 ## 0. Where we are now
 
 ### Done
-- **Decisions:** 37 ADRs (short decision notes), including one repository (0017), the backend structure (0020), the UI from Figma (0021), sign-in rules (0022), database naming and links (0023), roles and devices (0024), pictures online and icons offline (0025), the private network (0026, proposed) how the registration form works (0027) and the installable app (0028) the app screens with the sync contract (0029), the computer top bar with the account menu (0030), the farmer's app with sample providers (0031), the sync service (0032), MoFA admin accounts with the Overview (0033), mobile money through Paystack (0034), help requests (0035), speech in Ghanaian languages through Khaya (0036), and SMS through Arkesel (0037).
+- **Decisions:** 39 ADRs (short decision notes), including one repository (0017), the backend structure (0020), the UI from Figma (0021), sign-in rules (0022), database naming and links (0023), roles and devices (0024), pictures online and icons offline (0025), the private network (0026, proposed) how the registration form works (0027) and the installable app (0028) the app screens with the sync contract (0029), the computer top bar with the account menu (0030), the farmer's app with sample providers (0031), the sync service (0032), MoFA admin accounts with the Overview (0033), mobile money through Paystack (0034), help requests (0035), speech in Ghanaian languages through Khaya (0036), SMS through Arkesel (0037), USSD through Arkesel (0038), and real sign-in codes with a backup code (0039).
 - **Repository and checks:** branch rules, pre-commit hooks, secret scanning, the CI pipeline (frontend, backend, Docker) with the 70% coverage gate, and the deploy pipeline (not tried on a server yet).
 - **Backend base:** a thin API host plus services, shared tools, structured logs, standard error answers in the caller's language, and the OpenAPI contract written on every build.
 - **Database:** five tables (users, login_codes, farmers, visits, photos) and the first migration, with PostgreSQL-style names (`full_name`) and six enforced links (foreign keys), so the database itself refuses, for example, a visit for a farmer that does not exist. The API creates the tables when it starts and adds a demo officer and a sample farmer on a laptop.
@@ -36,7 +36,7 @@ _Last updated: Monday 5 October 2026, midday._
 1. **Sync, second half (backend and app, Bernard and Liza):** `GET /api/sync/changes`, so a phone or laptop also receives what the officer saved on another device; then the duplicate phone check across phones and the photo upload with its link check.
 2. **Planned visits and the MoFA side (ADR 0024):** visit plans from the server ("Tomorrow", "Start visit"), the admin role, sign-in and *Add a person*, and the MoFA reports page (D20).
 3. **Install on a real phone:** try the installed app on a cheap Android phone over USB (port forwarding), then from staging once it has HTTPS (DevOps lead).
-4. **USSD** for feature phones; SMS delivery reports (SMS itself works through Arkesel, ADR 0037).
+4. **USSD in Arkesel's emulator** (the menu is built, ADR 0038) once the callback URL is public; SMS delivery reports (SMS works through Arkesel, ADR 0037).
 5. **Translations and recordings (Germain and the community):** Twi, Ewe and Dagbani texts and the voice prompts.
 
 ### What we test on a laptop (automatic, on every change)
@@ -46,7 +46,7 @@ _Last updated: Monday 5 October 2026, midday._
 - The API contract and the app's download size.
 
 ### What needs a real phone, accounts or servers
-- **Real SMS on the servers:** the Arkesel key as a server secret (DevOps lead). On a laptop only allowed numbers are texted, and the code is always `123456`.
+- **Real SMS on the servers:** the Arkesel key as a server secret (DevOps lead). Codes are random and texted; on a laptop only allowed numbers get the SMS, and the backup code `123456` works when SMS fails (ADR 0039).
 - **A real phone:** install the app, airplane mode then sync, GPS and the camera in the registration form (they need HTTPS on a server, or the laptop's address), speed on a cheap Android.
 - **Design review:** compare the screens with Figma on a phone.
 - **CI on GitHub:** every pull request runs the full checks.
@@ -70,7 +70,7 @@ What we are building:
 |---|---|---|---|
 | 1 | Where we host | AWS, Cape Town | The team knows it (a stated bias). Faster for Ghana than Ireland (116 to 136 ms against 166 to 178 ms). Price within 1% of Azure. |
 | 2 | The app | One installable web app (React, TypeScript, Vite) | No app store, one codebase, works on old Android phones. |
-| 3 | Simple phones | USSD and SMS through Africa's Talking | Work on any phone, with no data. |
+| 3 | Simple phones | USSD and SMS through Arkesel | Work on any phone, with no data. |
 | 4 | Backend language | C# (.NET 10) | Safe code, little memory on a small server, good tools. |
 | 5 | Database | PostgreSQL on the server, IndexedDB on the phone | Farmer records are linked data, so SQL fits. The phone needs a box that works offline. |
 | 6 | Sync | Save on the phone first, send later, never duplicate | Each record gets its ID on the phone, so sending it twice does no harm. |
@@ -294,7 +294,7 @@ Full reasoning: [ADR 0022](adr/0022-sign-in-codes-and-tokens.md). Known gap: a t
 | For | Building and fixing | Proving each change is safe | QA, rehearsal, load tests | Real farmers, officers, MoFA |
 | Code gets there | Any branch | Every pull request | Merge to `staging` deploys | Merge to `main` deploys after approval |
 | Database | PostgreSQL in Docker (port 5433) | Throwaway PostgreSQL | PostgreSQL container, fake data | RDS (private, encrypted, backups) |
-| Sign-in codes | Always `123456`, shown in the log | Fixed test code | Africa's Talking sandbox | Live SMS |
+| Sign-in codes | Random, texted to allowed numbers or shown in the log; backup code `123456` | Random and texted; backup code `123456` | Africa's Talking sandbox | Live SMS |
 | Secrets | `appsettings.Development.json` (laptop-only values) | GitHub secrets | `staging` secrets | `production` secrets, approval needed |
 
 **Why two servers:** a bad release, a heavy test or a broken database change only hurts the test server.
@@ -325,7 +325,7 @@ Full reasoning: [ADR 0022](adr/0022-sign-in-codes-and-tokens.md). Known gap: a t
 **Running it on a laptop:** see [`local-development.md`](local-development.md). It covers every command we run, what it does, the three layers of health checks, how to look inside the database, and how the laptop maps to the servers. Short version:
 1. From `backend/`, start the database: `docker compose -f docker-compose.dev.yml up -d db`.
 2. Start the API: `dotnet run --project APIs/agroconnect-api`.
-3. Open `http://localhost:8000/health`. Sign in as the demo officer with phone `0240000001` and code `123456`.
+3. Open `http://localhost:8000/health`. Sign in as the demo officer with phone `0240000001` and the backup code `123456`.
 
 ## 9. Plan for Thursday, risks and decisions
 

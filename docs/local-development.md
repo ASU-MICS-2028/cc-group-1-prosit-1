@@ -2,9 +2,11 @@
 
 A hands-on guide: every command we use, what it does, and why. Your laptop runs the same pieces as the servers, in the same way (in containers), so each command here teaches a cloud idea you will meet again on EC2.
 
-_Last updated: 7 October 2026. Commands are for Windows (PowerShell or Git Bash). Run backend commands from `backend/` and frontend commands from `frontend/`._
+_Last updated: 8 October 2026. Commands are for Windows (PowerShell or Git Bash). Run backend commands from `backend/` and frontend commands from `frontend/`._
 
 > **Test sign-ins (laptop only)**
+>
+> Codes are real: a random 6-digit code is texted to every registered number (ADR 0039). The demo accounts below have made-up numbers that cannot get an SMS, so use the **backup code `123456`** for them, or read their code in the API log.
 >
 > | Who are you? | Phone | Code | Opens |
 > |---|---|---|---|
@@ -15,9 +17,22 @@ _Last updated: 7 October 2026. Commands are for Windows (PowerShell or Git Bash)
 > - These accounts are created by the API when it starts on a laptop (`Seed` in `backend/APIs/agroconnect-api/appsettings.Development.json`).
 > - **Mobile money (ADR 0034):** with the Paystack test key in user-secrets (5.11), the farmer's Money pages use Paystack test mode; without it they show "Sample data" and a payment is approved by itself after a few seconds.
 > - **Limits:** one number can ask for 20 codes an hour, on a laptop and on the servers; codes are 15 seconds apart on a laptop and 45 seconds on the servers (`Auth:MaxCodesPerHour`, `Auth:ResendCooldownSeconds`). Over the limit the answer is `429 TOO_MANY_CODES` or `RESEND_TOO_SOON`.
-> - The code is always `123456` on a laptop (`Auth:FixedCode`). It never works on the servers, which send real SMS.
+> - **Backup code:** `123456` (`Auth:BackupCode`) also works on a laptop and the staging demo, for any registered number, after **Send code**. Use it only when the SMS does not arrive. Production refuses to start if it is set.
+> - **Real team accounts** (your own officer, admin or farmer phone) go in user-secrets, never in a committed file:
+>
+>   ```
+>   dotnet user-secrets set "Seed:Admins:1:FullName" "<name>" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Admins:1:Phone" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Farmers:0:FullName" "<name>" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Farmers:0:Phone" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Farmers:0:OfficerPhone" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Sms:OnlyTo:1" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   ```
+>
+>   Index 0 of `Officers` and `Admins` is the demo account in `appsettings.Development.json`, so real ones start at 1. Restart the API; it adds anyone missing. Each number must also be on `Sms:OnlyTo` to get the SMS on a laptop.
+> - **Not registered?** The app answers "code sent" anyway (so nobody can find out who is registered), no SMS arrives, and any code is refused. After the resend wait the code screen says to ask their extension officer or MoFA admin.
 > - The phone number must match the role: the officer's number does not open the farmer app.
-> - A farmer you register in the app can sign in once their record reaches the server: as the officer, open **Sync** and tap **Sync now** (it also sends by itself when the app opens). Then sign in as a farmer with the number you registered, code `123456` (section 5.8).
+> - A farmer you register in the app can sign in once their record reaches the server: as the officer, open **Sync** and tap **Sync now** (it also sends by itself when the app opens). Then sign in as a farmer with the number you registered: the code is texted if the number is on `Sms:OnlyTo`; otherwise use the backup code `123456` (section 5.8).
 > - A sign-in lasts 1 hour on a laptop (`Auth:TokenLifetime`). To see the sign-in screens again sooner, use Profile → Log out, or open a private window (`Ctrl+Shift+N`).
 > - The farmer app (Home, My details, Market, Weather, Check my crop, Harvest, Cooperative, Lessons) reads `/api/farmer/...`. Restart the API after pulling so it has the farmer endpoints. Answers marked "Sample data" come from sample providers (ADR 0031); all of them can be tried in Swagger (`/swagger`, section *Farmer*) after signing in as the farmer.
 
@@ -349,6 +364,23 @@ Swagger UI is a web page made from the API contract, built into the API on lapto
 
 **Swagger or Postman?** Swagger needs nothing installed and always shows the latest endpoints, which suits a quick check. Postman keeps saved requests, the sign-in steps and examples, and can run a whole folder, which suits repeating a flow.
 
+### 5.15 Test the USSD menu
+
+The USSD menu answers at `POST /api/ussd/arkesel` (ADR 0038). Arkesel calls it for every key a person presses.
+
+**On the laptop, with Postman:** folder *USSD (as Arkesel calls it)*. Run *1. Dial the code*, then any *Press* request. Each answer's `message` is what the phone shows; `continueSession: false` ends the session. The sample farmer's number is `233240001234`.
+
+**In Arkesel's emulator:** Arkesel needs a public HTTPS address for the callback.
+- **A deployed server:** `https://<server address>/api/ussd/arkesel` (staging's CloudFront address works once this code is deployed).
+- **Your laptop, for a test session only:** a temporary tunnel gives the local API a public address.
+  ```
+  winget install Cloudflare.cloudflared
+  cloudflared tunnel --url http://localhost:8000
+  ```
+  It prints an address like `https://random-words.trycloudflare.com`. In the Arkesel USSD settings, set the callback URL to that address plus `/api/ussd/arkesel`. Stop the tunnel (`Ctrl+C`) when you finish: while it runs, anyone with the address can reach your local API.
+- **Only our USSD app:** put the app id Arkesel shows in the secret store, `dotnet user-secrets set "Ussd:UserId" "<id>" --project APIs/agroconnect-api`. Requests with another id are then refused. Left empty, any request is answered.
+- The number you dial from must belong to a registered farmer, otherwise the menu says the number is not registered.
+
 ### 5.9 Stop things
 
 | Command | Effect | Data |
@@ -582,3 +614,5 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | `POST /api/admin/sms/test` as the MoFA admin (port 8001 copy of the new API) | First live SMS through Arkesel, sender ID AgroConnect: answer `sent`, message received; the demo admin's own sign-in code went to the log (not on the list) |
 | `node` script writing `backend/postman/AgroConnect.postman_collection.json` | A Postman collection of every endpoint (26 requests), with sign-in steps that save the token |
 | `Auth:MaxCodesPerHour` 20 for laptops and servers, `Auth:ResendCooldownSeconds` 15 on laptops | The team tests sign-in many times an hour; the servers keep a 45 s wait against SMS abuse |
+| `dotnet ef migrations add AddUssdSessions ...` | The `ussd_sessions` table: where each USSD dial is in the menu (ADR 0038) |
+| `dotnet test tests/UssdService.Tests`, `dotnet test tests/Api.Tests` | 16 USSD tests (every menu path, wrong keys, back and exit, old sessions, the app id check) and 2 end-to-end; 289 backend tests in all |

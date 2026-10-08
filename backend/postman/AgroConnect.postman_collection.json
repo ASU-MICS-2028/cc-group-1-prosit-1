@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "AgroConnect API",
-    "description": "Every AgroConnect endpoint, grouped by who uses it.\n\n1. Start the API (port 8000).\n2. Open a \"Sign in as …\" folder and run 1, then 2: the token is saved.\n3. Run any request in that person's folder.\n\nTest phones (laptop, code 123456): officer 024 000 0001, farmer 024 000 1234, MoFA admin 024 000 0009.\nSigning in again as someone else replaces the token.",
+    "description": "Every AgroConnect endpoint, grouped by who uses it.\n\n1. Start the API (port 8000).\n2. Open a \"Sign in as …\" folder and run 1, then 2: the token is saved.\n3. Run any request in that person's folder.\n\nTest phones (laptop, backup code 123456): officer 024 000 0001, farmer 024 000 1234, MoFA admin 024 000 0009.\nSigning in again as someone else replaces the token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -25,6 +25,10 @@
     },
     {
       "key": "reference",
+      "value": ""
+    },
+    {
+      "key": "ussdSession",
       "value": ""
     }
   ],
@@ -55,7 +59,7 @@
     },
     {
       "name": "Sign in as extension officer",
-      "description": "Run 1 then 2. On a laptop the code is always 123456. The token is saved for every other request.",
+      "description": "Run 1 then 2. On a laptop the demo numbers use the backup code 123456 (real numbers get a texted code). The token is saved for every other request.",
       "item": [
         {
           "name": "1. Ask for a code",
@@ -90,7 +94,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log and is always 123456."
+            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log, and the backup code 123456 also works."
           }
         },
         {
@@ -165,7 +169,7 @@
     },
     {
       "name": "Sign in as farmer",
-      "description": "Run 1 then 2. On a laptop the code is always 123456. The token is saved for every other request.",
+      "description": "Run 1 then 2. On a laptop the demo numbers use the backup code 123456 (real numbers get a texted code). The token is saved for every other request.",
       "item": [
         {
           "name": "1. Ask for a code",
@@ -200,7 +204,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log and is always 123456."
+            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log, and the backup code 123456 also works."
           }
         },
         {
@@ -275,7 +279,7 @@
     },
     {
       "name": "Sign in as MoFA admin",
-      "description": "Run 1 then 2. On a laptop the code is always 123456. The token is saved for every other request.",
+      "description": "Run 1 then 2. On a laptop the demo numbers use the backup code 123456 (real numbers get a texted code). The token is saved for every other request.",
       "item": [
         {
           "name": "1. Ask for a code",
@@ -310,7 +314,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log and is always 123456."
+            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log, and the backup code 123456 also works."
           }
         },
         {
@@ -822,6 +826,233 @@
               }
             },
             "description": "Leave phone empty to text the admin's own phone. On a laptop only numbers in Sms:OnlyTo get a real SMS; others go to the log (outcome logged)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "USSD (as Arkesel calls it)",
+      "description": "The USSD menu, step by step, the way Arkesel calls our server (no sign-in). Run 1, then any next step; each answer's \"message\" is what the phone shows and \"continueSession\": false ends the session. The farmer is known by msisdn (233240001234 is the sample farmer). ADR 0038.",
+      "item": [
+        {
+          "name": "1. Dial the code (new session)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": true,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"*928*1#\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"ussdSession\", \"postman-\" + Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Press 1: Market prices",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"1\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Press 2: Weather (from the main menu)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"2\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Press 3: Ask my officer",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"3\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Press 4: My officer's number",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"4\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Press 0: Back or Exit",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"0\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         }
       ]

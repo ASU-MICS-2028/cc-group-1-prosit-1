@@ -30,7 +30,7 @@ ADR 0007 chose phone number + one-time SMS code. Building it needed concrete num
 | Token lifetime | **7 days** on the servers (setting `Auth:TokenLifetime`, default `7.00:00:00`); **1 hour** on laptops (`appsettings.Development.json`) so the sign-in screens are tested often | Covers a week of field work between trips to signal; limits the damage of a lost phone to a week |
 | Farmer accounts | Created on first sign-in from the farmer record an officer registered; on a shared family phone, the first farmer registered on it | Farmers need no separate sign-up |
 | Signing key | At least 32 bytes, from `Auth__SigningKey` on the server; the API refuses to start without it | Secrets never in the code (ADR 0015) |
-| Laptop and tests | Fixed code `123456`; the SMS text is written to the log | Development without an SMS account |
+| Laptop and tests | Random texted code, plus the backup code `123456` (ADR 0039, which replaced the fixed code) | Development, and a way in when SMS fails |
 
 All values are settings (`Auth` section) and can be tuned per environment without code changes.
 

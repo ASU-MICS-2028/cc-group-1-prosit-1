@@ -2035,6 +2035,56 @@
           }
         }
       }
+    },
+    "/api/ussd/arkesel": {
+      "post": {
+        "tags": [
+          "USSD"
+        ],
+        "operationId": "ArkeselUssd",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArkeselUssdRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArkeselUssdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2171,6 +2221,76 @@
           "acres",
           "hectares"
         ]
+      },
+      "ArkeselUssdRequest": {
+        "required": [
+          "sessionID",
+          "userID",
+          "newSession",
+          "msisdn",
+          "userData",
+          "network"
+        ],
+        "type": "object",
+        "properties": {
+          "sessionID": {
+            "type": "string"
+          },
+          "userID": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newSession": {
+            "type": "boolean"
+          },
+          "msisdn": {
+            "type": "string"
+          },
+          "userData": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "network": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ArkeselUssdResponse": {
+        "required": [
+          "sessionID",
+          "userID",
+          "msisdn",
+          "message",
+          "continueSession"
+        ],
+        "type": "object",
+        "properties": {
+          "sessionID": {
+            "type": "string"
+          },
+          "userID": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "msisdn": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "continueSession": {
+            "type": "boolean"
+          }
+        }
       },
       "AskRequest": {
         "required": [
@@ -4236,6 +4356,9 @@
     },
     {
       "name": "Speech"
+    },
+    {
+      "name": "USSD"
     }
   ]
 }

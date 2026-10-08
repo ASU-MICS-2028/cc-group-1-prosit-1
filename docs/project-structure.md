@@ -189,7 +189,7 @@ backend/
 │   ├── Program.cs                     logging, errors, sign-in checks, rate limits; adds each service in one line; Swagger UI in Development
 │   ├── OpenApi/BearerSecurity.cs      describes the sign-in token in the contract (Swagger's "Authorize" button, padlocks)
 │   ├── appsettings.json               settings for every environment
-│   ├── appsettings.Development.json   laptop only: local database, dev signing key, code 123456, demo officer
+│   ├── appsettings.Development.json   laptop only: local database, dev signing key, backup code 123456, demo accounts
 │   └── Properties/launchSettings.json `dotnet run` listens on http://localhost:8000
 ├── Services/
 │   ├── PlatformService/               GET /health, GET /languages: the smallest example of a service
@@ -227,7 +227,10 @@ backend/
 │   │   ├── Langs/en.json              the reasons shown to the officer as "To fix"
 │   │   └── SyncServiceExtension.cs    AddSyncService(): registers the endpoint
 │   ├── (next)  SyncService            GET /api/sync/changes, the duplicate phone check, photo upload
-│   ├── (later) UssdService            POST /api/ussd: Africa's Talking callback, menu state machine, SMS
+│   ├── UssdService/                   AgroConnect on simple phones by dialling a code (ADR 0038)
+│   │   ├── Features/ArkeselUssd.cs    POST /api/ussd/arkesel: Arkesel's callback for every key (no sign-in); checks Ussd:UserId
+│   │   ├── Features/UssdMenu.cs       the menu: prices, weather, ask my officer (a help request), my officer's number; state in ussd_sessions
+│   │   └── Langs/en.json              the menu text, one USSD screen (182 characters) at most
 │   └── Libs/
 │       ├── SharedLibrary/             used by every service
 │       │   ├── ValueObjects/PhoneNumber.cs   "024 000 0001" -> "+233240000001"; rejects non-Ghana numbers

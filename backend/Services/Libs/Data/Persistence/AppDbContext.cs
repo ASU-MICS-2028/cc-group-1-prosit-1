@@ -23,6 +23,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<HelpRequest> HelpRequests => Set<HelpRequest>();
 
+    public DbSet<UssdSession> UssdSessions => Set<UssdSession>();
+
     public DbSet<HelpVoiceNote> HelpVoiceNotes => Set<HelpVoiceNote>();
 
     public DbSet<AlertSetting> AlertSettings => Set<AlertSetting>();
@@ -148,6 +150,18 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             clip.Property(c => c.Translated).HasMaxLength(1500);
             clip.Property(c => c.ContentType).HasMaxLength(50);
             clip.HasIndex(c => new { c.Language, c.TextHash }).IsUnique();
+        });
+
+        modelBuilder.Entity<UssdSession>(session =>
+        {
+            session.ToTable("ussd_sessions");
+            session.HasKey(u => u.SessionId);
+            session.Property(u => u.SessionId).HasMaxLength(64);
+            session.Property(u => u.PhoneE164).HasMaxLength(16);
+            session.Property(u => u.Screen).HasMaxLength(30);
+            session.Property(u => u.Data).HasMaxLength(200);
+            // Finished sessions are cleared by age.
+            session.HasIndex(u => u.UpdatedAt);
         });
 
         UseSnakeCaseNames(modelBuilder);
