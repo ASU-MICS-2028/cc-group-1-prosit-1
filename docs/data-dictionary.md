@@ -206,7 +206,7 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 ### 4.1 `users`: people who can sign in
 
 **What a row is:** one person who can sign in, as an officer or as a farmer.
-- **Officers** are added by MoFA (for now they are seeded from settings).
+- **Officers** are added by MoFA (for now they are seeded from settings: the demo accounts from `appsettings.Development.json`, real team phones from user-secrets or server secrets only, ADR 0039). `Seed:Farmers` can add farmers the same way, each registered by a named officer.
 - **A farmer account** is created automatically the first time a registered farmer signs in.
 
 | Column | Type | Required | Meaning | Example |

@@ -212,6 +212,11 @@ describe("start screens", () => {
       as: null,
       state: { phone: "+233240001234", resendAfterSeconds: 0 },
     })
+    expect(
+      await screen.findByText(
+        /Codes only go to numbers registered with AgroConnect/
+      )
+    ).toBeInTheDocument()
     await userEvent.click(
       await screen.findByRole("button", { name: "Resend code" })
     )

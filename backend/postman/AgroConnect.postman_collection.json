@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "AgroConnect API",
-    "description": "Every AgroConnect endpoint, grouped by who uses it.\n\n1. Start the API (port 8000).\n2. Open a \"Sign in as …\" folder and run 1, then 2: the token is saved.\n3. Run any request in that person's folder.\n\nTest phones (laptop, code 123456): officer 024 000 0001, farmer 024 000 1234, MoFA admin 024 000 0009.\nSigning in again as someone else replaces the token.",
+    "description": "Every AgroConnect endpoint, grouped by who uses it.\n\n1. Start the API (port 8000).\n2. Open a \"Sign in as …\" folder and run 1, then 2: the token is saved.\n3. Run any request in that person's folder.\n\nTest phones (laptop, backup code 123456): officer 024 000 0001, farmer 024 000 1234, MoFA admin 024 000 0009.\nSigning in again as someone else replaces the token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -59,7 +59,7 @@
     },
     {
       "name": "Sign in as extension officer",
-      "description": "Run 1 then 2. On a laptop the code is always 123456. The token is saved for every other request.",
+      "description": "Run 1 then 2. On a laptop the demo numbers use the backup code 123456 (real numbers get a texted code). The token is saved for every other request.",
       "item": [
         {
           "name": "1. Ask for a code",
@@ -94,7 +94,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log and is always 123456."
+            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log, and the backup code 123456 also works."
           }
         },
         {
@@ -169,7 +169,7 @@
     },
     {
       "name": "Sign in as farmer",
-      "description": "Run 1 then 2. On a laptop the code is always 123456. The token is saved for every other request.",
+      "description": "Run 1 then 2. On a laptop the demo numbers use the backup code 123456 (real numbers get a texted code). The token is saved for every other request.",
       "item": [
         {
           "name": "1. Ask for a code",
@@ -204,7 +204,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log and is always 123456."
+            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log, and the backup code 123456 also works."
           }
         },
         {
@@ -279,7 +279,7 @@
     },
     {
       "name": "Sign in as MoFA admin",
-      "description": "Run 1 then 2. On a laptop the code is always 123456. The token is saved for every other request.",
+      "description": "Run 1 then 2. On a laptop the demo numbers use the backup code 123456 (real numbers get a texted code). The token is saved for every other request.",
       "item": [
         {
           "name": "1. Ask for a code",
@@ -314,7 +314,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log and is always 123456."
+            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log, and the backup code 123456 also works."
           }
         },
         {

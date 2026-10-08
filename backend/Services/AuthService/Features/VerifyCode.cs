@@ -13,15 +13,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace AgroConnect.AuthService.Features;
 
 /// <summary>
-/// "Enter code": checks the latest code for the phone and, if it matches, signs the person in.
+/// "Enter code": checks the latest code for the phone (the texted code, or the backup code where one is set)
+/// and, if it matches, signs the person in.
 /// A farmer's account is made on first sign-in from the record an officer registered.
 /// </summary>
-public sealed class VerifyCode : IFeature
+public sealed partial class VerifyCode : IFeature
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
@@ -40,6 +42,7 @@ public sealed class VerifyCode : IFeature
         ITokenIssuer tokens,
         IClock clock,
         IOptions<AuthOptions> options,
+        ILogger<VerifyCode> logger,
         CancellationToken cancellationToken)
     {
         if (!PhoneNumber.TryParse(request.Phone, out var phone))
@@ -65,7 +68,9 @@ public sealed class VerifyCode : IFeature
         }
 
         var code = request.Code?.Trim() ?? string.Empty;
-        if (!LoginCodeHasher.Matches(code, phone.E164, settings.SigningKey, login.CodeHash))
+        var texted = LoginCodeHasher.Matches(code, phone.E164, settings.SigningKey, login.CodeHash);
+        var backup = !texted && settings.IsBackupCode(code);
+        if (!texted && !backup)
         {
             login.Attempts++;
             await db.SaveChangesAsync(cancellationToken);
@@ -76,6 +81,11 @@ public sealed class VerifyCode : IFeature
         // was never texted, so the same "wrong code" answer is correct here.
         var user = await FindOrCreateUserAsync(db, phone, request.Role, now, cancellationToken)
             ?? throw new ApiException(StatusCodes.Status400BadRequest, "CODE_WRONG");
+
+        if (backup)
+        {
+            LogBackupCode(logger, user.Role, user.Id);
+        }
 
         login.UsedAt = now;
         await db.SaveChangesAsync(cancellationToken);
@@ -117,4 +127,7 @@ public sealed class VerifyCode : IFeature
         db.Users.Add(user);
         return user;
     }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Signed in with the backup code: {Role} {UserId}")]
+    private static partial void LogBackupCode(ILogger logger, UserRole role, Guid userId);
 }

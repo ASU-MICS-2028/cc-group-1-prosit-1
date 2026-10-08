@@ -32,8 +32,21 @@ public sealed class AuthOptions
     public int RateLimitPerWindow { get; set; } = 30;
 
     /// <summary>
-    /// Demo and test only: every code is this value and no SMS is needed. Leave empty in production,
-    /// where codes go out by SMS.
+    /// A backup code for when SMS is not working (laptops and the staging demo only, ADR 0039). Codes are always
+    /// random and texted; this code is also accepted, for any number that has an account, after "Send code".
+    /// Production must leave it empty and refuses to start otherwise.
     /// </summary>
-    public string? FixedCode { get; set; }
+    public string? BackupCode { get; set; }
+
+    /// <summary>The old name of <see cref="BackupCode"/>, still read so a server's Auth__FixedCode keeps working.</summary>
+    [Obsolete("Use BackupCode (Auth__BackupCode).")]
+    public string? FixedCode
+    {
+        get => null;
+        set => BackupCode ??= value;
+    }
+
+    /// <summary>True when a backup code is set and this is it.</summary>
+    public bool IsBackupCode(string code) =>
+        BackupCode is { Length: 6 } backup && backup.All(char.IsAsciiDigit) && code == backup;
 }

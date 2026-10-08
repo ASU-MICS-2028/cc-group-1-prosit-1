@@ -46,7 +46,8 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
   - **Tokens:** 7-day signed tokens (JWT) with the role (officer or farmer) (ADR 0022).
   - **Abuse limits:** 30 requests per 5 minutes per network address.
   - **Farmer accounts:** created on first sign-in.
-  - **SMS:** sent through Arkesel (ADR 0037), only to allowed numbers unless the server texts everyone; the laptop code is always 123456.
+  - **SMS:** sent through Arkesel (ADR 0037), only to allowed numbers unless the server texts everyone.
+  - **Codes are always random** and texted (ADR 0039); the backup code 123456 works on laptops and staging when SMS fails, never in production. Real team accounts (one officer, one admin, one farmer) are seeded from user-secrets; the demo accounts stay as the backup.
   - **Tests:** 31, 99% coverage.
   - **Live check:** done against the local database.
 - Database clean-up (ADR 0023): snake_case names (`full_name`) and six enforced links (foreign keys); the first migration was regenerated before anything was committed or deployed. A test proves the database refuses a visit for a farmer that does not exist.
@@ -108,7 +109,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 - lessons.
 
 **Backend runs, but nothing reaches anyone yet:**
-- SMS sign-in codes are written to the log, not sent (`LogOnlySmsSender`; the fixed code 123456 works on laptops);
+- SMS sign-in codes are written to the log, not sent (`LogOnlySmsSender`; the backup code 123456 works on laptops);
 - change-detail requests are written to the log (`LogOnlyChangeRequestInbox`).
 
 **Mobile money (MoneyService):**

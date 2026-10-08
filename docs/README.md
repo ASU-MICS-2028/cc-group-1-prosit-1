@@ -57,5 +57,6 @@ Still to write: `architecture.md` (diagram), `ussd-menu.md`, `consent-form.md`, 
 | [0036](adr/0036-speech-in-ghanaian-languages.md) | Speaker buttons in Twi, Ewe and Dagbani through GhanaNLP Khaya | Accepted |
 | [0037](adr/0037-sms-through-arkesel.md) | SMS through Arkesel, safe by default | Accepted |
 | [0038](adr/0038-ussd-through-arkesel.md) | USSD for simple phones, through Arkesel | Accepted |
+| [0039](adr/0039-real-codes-with-a-backup-code.md) | Real sign-in codes, with a backup code for when SMS fails | Accepted |
 
 **Proposed** means recommended but waiting for the owning team member to confirm.

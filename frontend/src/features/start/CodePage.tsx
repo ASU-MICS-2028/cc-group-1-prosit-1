@@ -158,6 +158,11 @@ export function Component() {
             </>
           )}
         </p>
+        {waitLeft === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t("login.notRegistered")}
+          </p>
+        ) : null}
         {notice && waitLeft > 0 ? (
           <p className="text-sm font-medium text-primary">{notice}</p>
         ) : null}

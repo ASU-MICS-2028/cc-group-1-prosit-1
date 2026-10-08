@@ -76,12 +76,57 @@ public sealed partial class DatabaseMigrator(
             await SeedUserAsync(db, admin, UserRole.Admin, now, cancellationToken);
         }
 
+        // The accounts first, so a farmer can name the officer who registered them; then all farmers in one save.
+        await db.SaveChangesAsync(cancellationToken);
+
         if (seed.Value.SampleFarmer && firstOfficer is not null && !await db.Farmers.AnyAsync(cancellationToken))
         {
             db.Farmers.Add(SampleFarmer(firstOfficer.Id, now));
         }
 
+        foreach (var farmer in seed.Value.Farmers)
+        {
+            await SeedFarmerAsync(db, farmer, firstOfficer, now, cancellationToken);
+        }
+
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>Adds the farmer unless one with this phone is there. Skipped without a valid phone or a registering officer.</summary>
+    private static async Task SeedFarmerAsync(
+        AppDbContext db, SeedFarmer person, AppUser? firstOfficer, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        if (!PhoneNumber.TryParse(person.Phone, out var phone)
+            || db.Farmers.Local.Any(f => f.PhoneE164 == phone.E164)
+            || await db.Farmers.AnyAsync(f => f.PhoneE164 == phone.E164, cancellationToken))
+        {
+            return;
+        }
+
+        var officer = PhoneNumber.TryParse(person.OfficerPhone, out var officerPhone)
+            ? await db.Users.FirstOrDefaultAsync(u => u.PhoneE164 == officerPhone.E164 && u.Role == UserRole.Officer, cancellationToken)
+            : firstOfficer;
+        if (officer is null)
+        {
+            return;
+        }
+
+        db.Farmers.Add(new Farmer
+        {
+            Id = Guid.CreateVersion7(now),
+            RegisteredById = officer.Id,
+            ConsentGiven = true,
+            ConsentAt = now,
+            Language = person.Language,
+            FullName = person.FullName,
+            PhoneE164 = phone.E164,
+            Community = person.Community,
+            RegionDistrict = person.RegionDistrict ?? (officer.District is null ? officer.Region : $"{officer.Region} · {officer.District}"),
+            Crops = person.Crops,
+            ClientUpdatedAt = now,
+            ServerUpdatedAt = now,
+            CreatedAt = now,
+        });
     }
 
     // Sample data only (see the design's "sample data" note): not a real person.

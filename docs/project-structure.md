@@ -189,7 +189,7 @@ backend/
 │   ├── Program.cs                     logging, errors, sign-in checks, rate limits; adds each service in one line; Swagger UI in Development
 │   ├── OpenApi/BearerSecurity.cs      describes the sign-in token in the contract (Swagger's "Authorize" button, padlocks)
 │   ├── appsettings.json               settings for every environment
-│   ├── appsettings.Development.json   laptop only: local database, dev signing key, code 123456, demo officer
+│   ├── appsettings.Development.json   laptop only: local database, dev signing key, backup code 123456, demo accounts
 │   └── Properties/launchSettings.json `dotnet run` listens on http://localhost:8000
 ├── Services/
 │   ├── PlatformService/               GET /health, GET /languages: the smallest example of a service
