@@ -92,8 +92,9 @@ public sealed class RequestCode : IFeature
             new RequestCodeResponse(settings.ResendCooldownSeconds, settings.CodeLifetimeMinutes * 60));
     }
 
+    /// <summary>Officers and admins need an account made for them; a farmer needs a farmer record with this phone.</summary>
     private static Task<bool> HasAccountAsync(AppDbContext db, PhoneNumber phone, UserRole role, CancellationToken cancellationToken) =>
-        role == UserRole.Officer
-            ? db.Users.AnyAsync(u => u.PhoneE164 == phone.E164 && u.Role == UserRole.Officer, cancellationToken)
-            : db.Farmers.AnyAsync(f => f.PhoneE164 == phone.E164, cancellationToken);
+        role == UserRole.Farmer
+            ? db.Farmers.AnyAsync(f => f.PhoneE164 == phone.E164, cancellationToken)
+            : db.Users.AnyAsync(u => u.PhoneE164 == phone.E164 && u.Role == role, cancellationToken);
 }

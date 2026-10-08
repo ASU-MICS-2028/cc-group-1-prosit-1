@@ -36,6 +36,30 @@ public sealed class VerifyCodeTests(PostgresFixture database) : AuthTestBase(dat
     }
 
     [Fact]
+    public async Task Signs_in_an_admin_with_an_admin_token()
+    {
+        var admin = await AddOfficerAsync(AdminPhone, UserRole.Admin);
+        await RequestAsync(AdminPhone, UserRole.Admin);
+
+        var response = await VerifyAsync(AdminPhone, UserRole.Admin, Code);
+
+        Assert.Equal(admin.Id, response.User.Id);
+        Assert.Equal(UserRole.Admin, response.User.Role);
+        var role = new Microsoft.IdentityModel.JsonWebTokens.JsonWebToken(response.Token).GetPayloadValue<string>("role");
+        Assert.Equal("admin", role);
+    }
+
+    [Fact]
+    public async Task An_officer_cannot_sign_in_as_admin_and_no_admin_account_is_made()
+    {
+        await AddOfficerAsync();
+        await RequestAsync(OfficerPhone, UserRole.Admin);
+
+        await ApiAssert.FailsAsync(StatusCodes.Status400BadRequest, "CODE_WRONG", () => VerifyAsync(OfficerPhone, UserRole.Admin, Code));
+        Assert.False(await Db.Users.AnyAsync(u => u.Role == UserRole.Admin));
+    }
+
+    [Fact]
     public async Task A_code_works_only_once()
     {
         await AddOfficerAsync();

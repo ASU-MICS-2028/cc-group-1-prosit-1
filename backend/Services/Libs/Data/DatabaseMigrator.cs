@@ -66,29 +66,14 @@ public sealed partial class DatabaseMigrator(
         AppUser? firstOfficer = null;
         foreach (var officer in seed.Value.Officers)
         {
-            if (!PhoneNumber.TryParse(officer.Phone, out var phone))
-            {
-                continue;
-            }
+            // Every officer is added; the first one registers the sample farmer.
+            var added = await SeedUserAsync(db, officer, UserRole.Officer, now, cancellationToken);
+            firstOfficer ??= added;
+        }
 
-            var existing = await db.Users.SingleOrDefaultAsync(
-                u => u.PhoneE164 == phone.E164 && u.Role == UserRole.Officer, cancellationToken);
-            if (existing is null)
-            {
-                existing = new AppUser
-                {
-                    Id = Guid.CreateVersion7(now),
-                    Role = UserRole.Officer,
-                    PhoneE164 = phone.E164,
-                    FullName = officer.FullName,
-                    Region = officer.Region,
-                    District = officer.District,
-                    CreatedAt = now,
-                };
-                db.Users.Add(existing);
-            }
-
-            firstOfficer ??= existing;
+        foreach (var admin in seed.Value.Admins)
+        {
+            await SeedUserAsync(db, admin, UserRole.Admin, now, cancellationToken);
         }
 
         if (seed.Value.SampleFarmer && firstOfficer is not null && !await db.Farmers.AnyAsync(cancellationToken))
@@ -100,6 +85,35 @@ public sealed partial class DatabaseMigrator(
     }
 
     // Sample data only (see the design's "sample data" note): not a real person.
+    /// <summary>Adds the account unless it is already there. A phone number that is not Ghanaian is skipped (null).</summary>
+    private static async Task<AppUser?> SeedUserAsync(
+        AppDbContext db, SeedOfficer person, UserRole role, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        if (!PhoneNumber.TryParse(person.Phone, out var phone))
+        {
+            return null;
+        }
+
+        var existing = await db.Users.SingleOrDefaultAsync(u => u.PhoneE164 == phone.E164 && u.Role == role, cancellationToken);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var user = new AppUser
+        {
+            Id = Guid.CreateVersion7(now),
+            Role = role,
+            PhoneE164 = phone.E164,
+            FullName = person.FullName,
+            Region = person.Region,
+            District = person.District,
+            CreatedAt = now,
+        };
+        db.Users.Add(user);
+        return user;
+    }
+
     private static Farmer SampleFarmer(Guid officerId, DateTimeOffset now) => new()
     {
         Id = Guid.Parse("0192f0a0-0000-7000-8000-000000000001"),

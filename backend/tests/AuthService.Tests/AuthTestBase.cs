@@ -59,12 +59,14 @@ public abstract class AuthTestBase(PostgresFixture database) : IAsyncLifetime
 
     public async Task DisposeAsync() => await Db.DisposeAsync();
 
-    protected async Task<AppUser> AddOfficerAsync(string phone = OfficerPhone)
+    protected const string AdminPhone = "+233240000009";
+
+    protected async Task<AppUser> AddOfficerAsync(string phone = OfficerPhone, UserRole role = UserRole.Officer)
     {
         var officer = new AppUser
         {
             Id = Guid.CreateVersion7(),
-            Role = UserRole.Officer,
+            Role = role,
             PhoneE164 = phone,
             FullName = "Fuseini Alhassan",
             Region = "Northern",

@@ -10,7 +10,9 @@ export function Component() {
   const { t } = useTranslation()
 
   return (
-    <ScreenShell brand={{ tagline: t("start.brand"), illustration: "welcome" }}>
+    <ScreenShell
+      brand={{ tagline: t("start.brand"), illustration: "farmer-home" }}
+    >
       <FarmerOnComputer
         actions={
           <Link

@@ -56,7 +56,7 @@ export function LoanOffer() {
         </>
       }
     >
-      <IllustrationCard name="receipt.webp" className="h-40 py-2" />
+      <IllustrationCard name="receipt" className="h-40 py-2" />
       <h2 className="text-2xl leading-9 font-semibold text-foreground">
         {t("money.loan.upTo", { amount: cedis(loanOffer.max) })}
       </h2>
@@ -168,7 +168,7 @@ export function Insurance() {
         </ButtonLink>
       }
     >
-      <IllustrationCard name="yield-growth.webp" className="h-40 py-2" />
+      <IllustrationCard name="yield-growth" className="h-40 py-2" />
       <h2 className="text-2xl leading-9 font-semibold text-foreground">
         {t("money.insure.headline")}
       </h2>
@@ -207,7 +207,7 @@ export function Insured() {
   const { t } = useTranslation()
   return (
     <Confirmation
-      illustration="yield-growth.webp"
+      illustration="yield-growth"
       sample
       badge={t("money.approvedOnPhone")}
       title={t("money.insure.doneTitle")}

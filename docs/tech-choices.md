@@ -194,6 +194,7 @@ Each pick answers four questions: **why this**, **what we rejected**, **what it 
 | Web fonts (Poppins from Figma) | An extra download on every first visit; the system font looks native and costs nothing. |
 | Module Federation / micro-frontends | Extra round trips and harder offline caching now; planned after Phase 1. |
 | React Native / Flutter | App store install, bigger downloads, a second codebase. |
+| A chart library (Recharts, Chart.js) | 50 to 100 KB more for two small charts. `src/components/Charts.tsx` draws them in plain HTML and CSS: axis with its unit, light gridlines, the value on every bar, and a hidden table of the numbers for screen readers. |
 
 ### 3.5 The size budget
 - Initial JavaScript **under about 200 KB gzipped**. Today about 130 KB, checked in the `vite build` output.
@@ -337,6 +338,7 @@ Rejected: Kubernetes (about $73 a month for the control plane), ECS/Fargate (mor
 | Service | Use | Status |
 |---|---|---|
 | **Africa's Talking** | SMS sign-in codes, USSD menus, confirmation texts | Planned; on a laptop the SMS goes to the log |
+| **Paystack** | Mobile money payments for farmers (MTN, Telecel, AirtelTigo in GHS) and payouts to their wallets (ADR 0034). Chosen over the MTN MoMo API: one integration for all three networks | Test mode; live needs business verification |
 | **Figma** | The UI design: the source for every screen, icon and illustration | In use |
 | **GitHub** | Code, pull requests, CI, images (GHCR) | In use |
 

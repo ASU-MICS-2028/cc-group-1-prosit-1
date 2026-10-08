@@ -278,6 +278,76 @@ namespace AgroConnect.Data.Migrations
                     b.ToTable("login_codes", (string)null);
                 });
 
+            modelBuilder.Entity("AgroConnect.Data.Entities.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<long>("AmountPesewas")
+                        .HasColumnType("bigint")
+                        .HasColumnName("amount_pesewas");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("FarmerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("farmer_id");
+
+                    b.Property<int>("Network")
+                        .HasColumnType("integer")
+                        .HasColumnName("network");
+
+                    b.Property<string>("PhoneE164")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("phone_e164");
+
+                    b.Property<string>("ProviderMessage")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("provider_message");
+
+                    b.Property<int>("Purpose")
+                        .HasColumnType("integer")
+                        .HasColumnName("purpose");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("reference");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_payments");
+
+                    b.HasIndex("Reference")
+                        .IsUnique()
+                        .HasDatabaseName("ix_payments_reference");
+
+                    b.HasIndex("FarmerId", "CreatedAt")
+                        .HasDatabaseName("ix_payments_farmer_id_created_at");
+
+                    b.ToTable("payments", (string)null);
+                });
+
             modelBuilder.Entity("AgroConnect.Data.Entities.Photo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -388,6 +458,49 @@ namespace AgroConnect.Data.Migrations
                     b.ToTable("visits", (string)null);
                 });
 
+            modelBuilder.Entity("AgroConnect.Data.Entities.Wallet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("FarmerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("farmer_id");
+
+                    b.Property<int>("Network")
+                        .HasColumnType("integer")
+                        .HasColumnName("network");
+
+                    b.Property<string>("PhoneE164")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("phone_e164");
+
+                    b.Property<string>("RecipientCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("recipient_code");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_wallets");
+
+                    b.HasIndex("FarmerId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_wallets_farmer_id");
+
+                    b.ToTable("wallets", (string)null);
+                });
+
             modelBuilder.Entity("AgroConnect.Data.Entities.AppUser", b =>
                 {
                     b.HasOne("AgroConnect.Data.Entities.Farmer", null)
@@ -405,6 +518,16 @@ namespace AgroConnect.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_farmers_users_registered_by_id");
+                });
+
+            modelBuilder.Entity("AgroConnect.Data.Entities.Payment", b =>
+                {
+                    b.HasOne("AgroConnect.Data.Entities.Farmer", null)
+                        .WithMany()
+                        .HasForeignKey("FarmerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_payments_farmers_farmer_id");
                 });
 
             modelBuilder.Entity("AgroConnect.Data.Entities.Photo", b =>
@@ -439,6 +562,16 @@ namespace AgroConnect.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_visits_users_officer_id");
+                });
+
+            modelBuilder.Entity("AgroConnect.Data.Entities.Wallet", b =>
+                {
+                    b.HasOne("AgroConnect.Data.Entities.Farmer", null)
+                        .WithMany()
+                        .HasForeignKey("FarmerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_wallets_farmers_farmer_id");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,90 +1,148 @@
 import {
   CheckCheck,
   ChevronRight,
-  ClipboardList,
+  CloudSun,
+  Leaf,
+  LineChart,
   Pencil,
   Phone,
+  Play,
+  Store,
+  Users,
   Volume2,
-  Wallet,
+  type LucideIcon,
 } from "lucide-react"
+import type { ReactNode } from "react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { getMyFarm, getWeather } from "@/api/farmer"
+import {
+  getCooperative,
+  getHarvestForecast,
+  getLessons,
+  getMyFarm,
+  getPrices,
+  getWeather,
+} from "@/api/farmer"
 import { useSession } from "@/auth/session"
 import { AudioButton } from "@/components/AudioButton"
-import { ListRow, SectionTitle } from "@/components/Blocks"
 import { FieldArt } from "@/components/FieldArt"
-import { Picture, type PictureSource } from "@/components/Picture"
 import { farmerSpeech } from "@/features/farmers/describe"
 import { Avatar } from "@/features/farmers/FarmerRow"
 import { promptAudio } from "@/lib/audio"
-import { formatShortDate } from "@/lib/dates"
 import { maskPhone } from "@/lib/phone"
 import { speak } from "@/lib/speech"
 import { cn } from "@/lib/utils"
 import { toFacts } from "./profile"
 import { useServerData } from "./useServerData"
-import { WeatherIcon } from "./WeatherIcon"
 
-const SERVICES: {
-  key:
-    "prices" | "weather" | "cropCheck" | "harvest" | "cooperative" | "lessons"
+/** One farm service tile: its colours follow Figma 23 (cream, blue or green, with matching icon and line). */
+function ServiceTile({
+  to,
+  icon: Icon,
+  title,
+  line,
+  tone,
+  ink,
+}: {
   to: string
-  picture: PictureSource
+  icon: LucideIcon
+  title: string
+  /** The live line under the title ("Maize ₵6.50 ↑"); empty until the first answer arrives */
+  line?: ReactNode
+  /** Tile background */
   tone: string
-}[] = [
-  {
-    key: "prices",
-    to: "/farmer/prices",
-    picture: { photo: "options/trading", emoji: "chart-increasing" },
-    tone: "bg-secondary",
-  },
-  {
-    key: "weather",
-    to: "/farmer/weather",
-    picture: { photo: "options/rainy", emoji: "sun-behind-rain-cloud" },
-    tone: "bg-cream",
-  },
-  {
-    key: "cropCheck",
-    to: "/farmer/crop-check",
-    picture: { photo: "options/pests", emoji: "magnifying-glass" },
-    tone: "bg-cream",
-  },
-  {
-    key: "harvest",
-    to: "/farmer/harvest",
-    picture: { photo: "options/corn", emoji: "ear-of-corn" },
-    tone: "bg-secondary",
-  },
-  {
-    key: "cooperative",
-    to: "/farmer/cooperative",
-    picture: { photo: "options/cooperative", emoji: "handshake" },
-    tone: "bg-secondary",
-  },
-  {
-    key: "lessons",
-    to: "/farmer/lessons",
-    picture: { photo: "options/phone", emoji: "television" },
-    tone: "bg-cream",
-  },
-]
+  /** Icon and line colour */
+  ink: string
+}) {
+  return (
+    <li>
+      <Link
+        to={to}
+        className={cn(
+          "flex h-full min-h-28 flex-col gap-2 rounded-[20px] p-3 outline-none transition-[filter] hover:brightness-[0.97] focus-visible:ring-3 focus-visible:ring-ring/50",
+          tone
+        )}
+      >
+        <span
+          aria-hidden
+          className="flex size-9 items-center justify-center rounded-full bg-card"
+        >
+          <Icon className={cn("size-4.5", ink)} />
+        </span>
+        <span className="mt-auto text-sm leading-5 font-medium text-foreground">
+          {title}
+        </span>
+        <span className={cn("min-h-4 text-xs leading-4 font-medium", ink)}>
+          {line}
+        </span>
+      </Link>
+    </li>
+  )
+}
+
+/** One row of the actions card: an icon in a green circle, a title, a hint and a chevron. */
+function ActionRow({
+  icon: Icon,
+  title,
+  hint,
+}: {
+  icon: LucideIcon
+  title: string
+  hint: string
+}) {
+  return (
+    <>
+      <span
+        aria-hidden
+        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"
+      >
+        <Icon className="size-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-base font-medium text-foreground">
+          {title}
+        </span>
+        <span className="block truncate text-sm text-muted-foreground">
+          {hint}
+        </span>
+      </span>
+      <ChevronRight aria-hidden className="size-5 shrink-0 text-foreground" />
+    </>
+  )
+}
+
+const rowClass =
+  "flex w-full items-center gap-3 px-4 py-3 text-left outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
 
 /**
- * The farmer's home (Figma 23): Akwaaba, registered with MoFA, their status, the farm services and their own
- * details. On computers the services sit beside the status, today's weather and the links.
+ * The farmer's home (Figma 23): Akwaaba, the "Registered with MoFA" banner, their card, six farm service
+ * tiles with a live line each (from the last saved answer, so they work offline), then listen, change
+ * and call their agent.
  */
 export function Component() {
   const { t } = useTranslation()
   const user = useSession()?.user
   const name = user?.fullName ?? ""
   const farm = useServerData("me", getMyFarm)
-  const weather = useServerData("weather", getWeather)
+  const prices = useServerData("prices", getPrices).data
+  const weather = useServerData("weather", getWeather).data
+  const harvest = useServerData("harvest", getHarvestForecast).data
+  const cooperative = useServerData("cooperative", getCooperative).data
+  const lessons = useServerData("lessons", getLessons).data
   const officer = farm.data?.officer
+  // Read here, not inside the click handler: the compiler tracks what a handler reads, and would read it
+  // before the first answer arrives.
+  const facts = farm.data ? toFacts(farm.data.farmer) : null
+
+  // The farmer's own first crop leads the prices (the server lists their crops first).
+  const price = prices?.prices[0]
+  const harvestBags = harvest?.crops.reduce(
+    (sum, c) => sum + Math.round((c.lowBags + c.highBags) / 2),
+    0
+  )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <header className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground">
@@ -101,178 +159,182 @@ export function Component() {
         />
       </header>
 
-      {/* Phones read top to bottom: banner, status, services, my details (Figma 23). Computers put
-          the banner and services on the left, status and my details on the right. */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,740fr)_minmax(0,364fr)]">
-        <section className="relative isolate h-40 min-w-0 overflow-hidden rounded-[30px] bg-cream md:h-55 lg:col-start-1 lg:row-start-1">
-          <FieldArt className="absolute inset-0 -z-10 size-full" />
-          <img
-            src="/illustrations/farmer-home.svg"
-            alt=""
-            decoding="async"
-            className="absolute right-2 bottom-0 h-[94%] w-auto max-w-[55%] mask-[linear-gradient(to_right,transparent,black_30%)] object-contain"
-          />
-          <div className="relative flex max-w-[55%] flex-col items-start gap-1.5 p-4 md:gap-2 md:p-9">
-            <span className="text-base font-medium text-primary md:text-2xl">
-              {t("farmerHome.youAre")}
-            </span>
-            <span className="bg-primary py-1 pr-5 pl-3 text-lg font-semibold text-primary-foreground [clip-path:polygon(0_0,100%_0,92%_50%,100%_100%,0_100%)] md:text-2xl md:leading-9">
-              {t("farmerHome.registered")}
-            </span>
-            <span className="font-serif text-lg text-[#b8573c] italic md:text-3xl md:leading-10">
-              {t("farmerHome.withMofa")}
-            </span>
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="farmer-services"
-          className="min-w-0 space-y-3 self-start lg:col-start-1 lg:row-start-2"
-        >
-          <SectionTitle id="farmer-services">
-            {t("farmerApp.home.services")}
-          </SectionTitle>
-          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-            {SERVICES.map(({ key, to, picture, tone }) => (
-              <li key={key}>
-                <Link
-                  to={to}
-                  className={cn(
-                    "flex h-full flex-col gap-2 rounded-[20px] p-3 outline-none transition-[filter] hover:brightness-[0.97] focus-visible:ring-3 focus-visible:ring-ring/50",
-                    tone
-                  )}
-                >
-                  <Picture
-                    source={picture}
-                    fit="contain"
-                    className="h-16 w-full rounded-2xl bg-card/70 p-1.5 md:h-20"
-                    emojiClassName="mx-auto h-16 w-12 md:h-20"
-                  />
-                  <span className="text-base leading-6 font-medium text-foreground">
-                    {t(`farmerApp.tiles.${key}`)}
-                  </span>
-                  <span className="text-sm leading-5 text-muted-foreground">
-                    {t(`farmerApp.tiles.${key}Hint`)}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <Link
-            to="/farmer/money"
-            className="flex items-center gap-3 rounded-[20px] bg-primary p-4 text-primary-foreground outline-none hover:brightness-110 focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <span
-              aria-hidden
-              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white/15"
-            >
-              <Wallet className="size-5.5" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-base font-medium">
-                {t("farmerApp.tiles.money")}
-              </span>
-              <span className="block text-sm opacity-90">
-                {t("farmerApp.tiles.moneyHint")}
-              </span>
-            </span>
-            <ChevronRight aria-hidden className="size-5 shrink-0" />
-          </Link>
-        </section>
-
-        <div className="space-y-6 self-start lg:col-start-2 lg:row-start-1">
-          <section className="flex items-center gap-4 rounded-[20px] border bg-card p-4">
-            <Avatar name={name} size="lg" className="size-16" />
-            <div className="min-w-0 space-y-1.5">
-              <p className="truncate text-lg font-medium text-foreground">
-                {name}
-              </p>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-sm font-medium text-primary">
-                <CheckCheck aria-hidden className="size-4" />
-                {t("farmerHome.saved")}
-              </span>
-              {farm.data ? (
-                <p className="text-sm text-muted-foreground">
-                  {t("farmerApp.home.registeredBy", {
-                    date: formatShortDate(farm.data.farmer.createdAt),
-                    officer:
-                      officer?.fullName.split(" ")[0] ??
-                      t("farmers.anotherOfficer"),
-                  })}
-                </p>
-              ) : null}
-            </div>
-          </section>
-
-          {weather.data ? (
-            <Link
-              to="/farmer/weather"
-              className="flex items-center gap-4 rounded-[20px] bg-cream p-4 outline-none hover:brightness-[0.98] focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <WeatherIcon
-                condition={weather.data.today.condition}
-                className="size-14 bg-card"
-              />
-              <span className="min-w-0">
-                <span className="block text-sm text-muted-foreground">
-                  {t("farmerApp.home.todayWeather", {
-                    place: weather.data.place,
-                  })}
-                </span>
-                <span className="block text-lg font-medium text-foreground">
-                  {weather.data.today.maxC}°C ·{" "}
-                  {t(
-                    `farmerApp.weather.conditions.${weather.data.today.condition}`
-                  )}
-                </span>
-              </span>
-            </Link>
-          ) : null}
+      <section className="relative isolate h-40 min-w-0 overflow-hidden rounded-[30px] bg-cream">
+        <FieldArt className="absolute inset-0 -z-10 size-full" />
+        <img
+          src="/illustrations/farmer-home.svg"
+          alt=""
+          decoding="async"
+          className="absolute right-2 bottom-0 h-[94%] w-auto max-w-[55%] mask-[linear-gradient(to_right,transparent,black_30%)] object-contain"
+        />
+        <div className="relative flex max-w-[55%] flex-col items-start gap-1.5 p-4">
+          <span className="text-base font-medium text-primary">
+            {t("farmerHome.youAre")}
+          </span>
+          <span className="bg-primary py-1 pr-5 pl-3 text-lg font-semibold text-primary-foreground [clip-path:polygon(0_0,100%_0,92%_50%,100%_100%,0_100%)]">
+            {t("farmerHome.registered")}
+          </span>
+          <span className="font-serif text-lg text-[#b8573c] italic">
+            {t("farmerHome.withMofa")}
+          </span>
         </div>
+      </section>
 
-        <section
-          aria-labelledby="farmer-mine"
-          className="space-y-3 self-start lg:col-start-2 lg:row-start-2"
-        >
-          <SectionTitle id="farmer-mine">
-            {t("farmerApp.home.mine")}
-          </SectionTitle>
-          <ListRow
-            icon={Volume2}
-            title={t("farmerApp.rows.listen")}
-            subtitle={t("farmerApp.rows.listenHint")}
-            onClick={
-              farm.data
-                ? () => speak(farmerSpeech(toFacts(farm.data!.farmer), t))
-                : undefined
+      {/* Their card opens My details: the full record, their officer and their visits. */}
+      <Link
+        to="/farmer/details"
+        aria-label={t("farmerApp.home.openDetails", { name })}
+        className="flex items-center gap-4 rounded-[20px] border bg-card p-4 outline-none hover:bg-muted/40 focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        <Avatar name={name} size="lg" className="size-14" />
+        <span className="min-w-0 space-y-1.5">
+          <span className="block truncate text-lg font-medium text-foreground">
+            {name}
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-sm font-medium text-primary">
+            <CheckCheck aria-hidden className="size-4" />
+            {t("farmerHome.saved")}
+          </span>
+        </span>
+      </Link>
+
+      <nav aria-label={t("farmerApp.home.services")}>
+        <ul className="grid grid-cols-3 gap-3">
+          <ServiceTile
+            to="/farmer/prices"
+            icon={Store}
+            title={t("farmerApp.tiles.prices")}
+            tone="bg-cream"
+            ink="text-[#b8573c]"
+            line={
+              price ? (
+                <>
+                  {t("farmerApp.home.priceLine", {
+                    crop: t(`register.crops.${price.crop}`),
+                    price: price.markets[0]?.pricePerKg.toFixed(2),
+                  })}
+                  {price.weekChangePercent !== 0 ? (
+                    <>
+                      <span aria-hidden>
+                        {price.weekChangePercent > 0 ? " ↑" : " ↓"}
+                      </span>
+                      <span className="sr-only">
+                        {t(
+                          price.weekChangePercent > 0
+                            ? "farmerApp.home.priceUp"
+                            : "farmerApp.home.priceDown"
+                        )}
+                      </span>
+                    </>
+                  ) : null}
+                </>
+              ) : null
             }
           />
-          <ListRow
-            icon={ClipboardList}
-            title={t("farmerApp.rows.details")}
-            subtitle={t("farmerApp.rows.detailsHint")}
-            to="/farmer/details"
+          <ServiceTile
+            to="/farmer/weather"
+            icon={CloudSun}
+            title={t("farmerApp.tiles.weather")}
+            tone="bg-info-soft"
+            ink="text-info"
+            line={
+              weather
+                ? t("farmerApp.home.weatherLine", {
+                    max: weather.today.maxC,
+                    condition: t(
+                      `farmerApp.weather.conditions.${weather.today.condition}`
+                    ),
+                  })
+                : null
+            }
           />
-          <ListRow
-            icon={Pencil}
-            title={t("farmerApp.rows.change")}
-            subtitle={t("farmerApp.rows.changeHint")}
-            to="/farmer/details/change"
+          <ServiceTile
+            to="/farmer/crop-check"
+            icon={Leaf}
+            title={t("farmerApp.tiles.cropCheck")}
+            tone="bg-secondary"
+            ink="text-primary"
+            line={t("farmerApp.home.snapLeaf")}
           />
-          {officer ? (
-            <a
-              href={`tel:${officer.phoneE164}`}
-              className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <ListRow
+          <ServiceTile
+            to="/farmer/harvest"
+            icon={LineChart}
+            title={t("farmerApp.tiles.harvest")}
+            tone="bg-secondary"
+            ink="text-primary"
+            line={
+              harvestBags !== undefined && harvest!.crops.length > 0
+                ? t("farmerApp.home.harvestLine", { count: harvestBags })
+                : null
+            }
+          />
+          <ServiceTile
+            to="/farmer/cooperative"
+            icon={Users}
+            title={t("farmerApp.tiles.cooperative")}
+            tone="bg-cream"
+            ink="text-warning"
+            line={
+              cooperative
+                ? t("farmerApp.home.membersLine", {
+                    count: cooperative.members,
+                  })
+                : null
+            }
+          />
+          <ServiceTile
+            to="/farmer/lessons"
+            icon={Play}
+            title={t("farmerApp.tiles.lessons")}
+            tone="bg-info-soft"
+            ink="text-info"
+            line={
+              lessons
+                ? t("farmerApp.home.lessonsLine", {
+                    count: lessons.lessons.length,
+                  })
+                : null
+            }
+          />
+        </ul>
+      </nav>
+
+      <ul className="divide-y overflow-hidden rounded-[20px] border bg-card">
+        <li>
+          <button
+            type="button"
+            disabled={!facts}
+            onClick={() => facts && speak(farmerSpeech(facts, t))}
+            className={cn(rowClass, "disabled:opacity-60")}
+          >
+            <ActionRow
+              icon={Volume2}
+              title={t("farmerApp.rows.listen")}
+              hint={t("farmerApp.rows.listenHint")}
+            />
+          </button>
+        </li>
+        <li>
+          <Link to="/farmer/details/change" className={rowClass}>
+            <ActionRow
+              icon={Pencil}
+              title={t("farmerApp.rows.change")}
+              hint={t("farmerApp.rows.changeHint")}
+            />
+          </Link>
+        </li>
+        {officer ? (
+          <li>
+            <a href={`tel:${officer.phoneE164}`} className={rowClass}>
+              <ActionRow
                 icon={Phone}
                 title={t("farmerApp.rows.call")}
-                subtitle={`${officer.fullName} · ${maskPhone(officer.phoneE164)}`}
+                hint={`${officer.fullName.split(" ")[0]} · ${maskPhone(officer.phoneE164)}`}
               />
             </a>
-          ) : null}
-        </section>
-      </div>
+          </li>
+        ) : null}
+      </ul>
     </div>
   )
 }

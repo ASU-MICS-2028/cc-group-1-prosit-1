@@ -48,7 +48,7 @@ export function CooperativeHome() {
       source={coop?.source}
       state={state}
     >
-      <IllustrationCard name="cooperative.webp" className="h-40 py-2" />
+      <IllustrationCard name="cooperative" className="h-40 py-2" />
       {!coop ? (
         <NoDataYet state={state} />
       ) : (
@@ -159,7 +159,7 @@ export function SavingsAdded() {
   const { savings } = sample
   return (
     <Confirmation
-      illustration="cooperative.webp"
+      illustration="cooperative"
       sample
       badge={t("money.approvedOnPhone")}
       title={t("coop.savings.doneTitle", { amount: cedis(savings.add) })}
@@ -214,7 +214,7 @@ export function MeetingConfirmed() {
   const { meeting } = sample
   return (
     <Confirmation
-      illustration="cooperative.webp"
+      illustration="cooperative"
       sample
       badge={t("coop.meeting.comingBadge")}
       title={t("coop.meeting.doneTitle")}
@@ -306,7 +306,7 @@ export function OrderJoined() {
   const bags = (useLocation().state as { bags?: number } | null)?.bags ?? 2
   return (
     <Confirmation
-      illustration="cooperative.webp"
+      illustration="cooperative"
       sample
       badge={t("coop.order.joinedBadge")}
       title={t("coop.order.joinedTitle", { count: bags })}
@@ -386,7 +386,7 @@ export function BagsAdded() {
   const kg = bags * sale.kgPerBag
   return (
     <Confirmation
-      illustration="cooperative.webp"
+      illustration="cooperative"
       sample
       badge={t("coop.sale.addedBadge")}
       title={t("coop.sale.doneTitle", { count: bags })}

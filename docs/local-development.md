@@ -10,8 +10,10 @@ _Last updated: 7 October 2026. Commands are for Windows (PowerShell or Git Bash)
 > |---|---|---|---|
 > | Extension officer (Fuseini Alhassan) | `024 000 0001` | `123456` | Officer app at `/` |
 > | Farmer (Ama Boateng) | `024 000 1234` | `123456` | Farmer app at `/farmer` |
+> | MoFA admin (Esi Owusu, Northern Region), **on a computer** | `024 000 0009` | `123456` | Admin Overview at `/admin` (on a phone: "Admin works on a computer") |
 >
-> - These two accounts are created by the API when it starts on a laptop (`Seed` in `backend/APIs/agroconnect-api/appsettings.Development.json`).
+> - These accounts are created by the API when it starts on a laptop (`Seed` in `backend/APIs/agroconnect-api/appsettings.Development.json`).
+> - **Mobile money (ADR 0034):** with the Paystack test key in user-secrets (5.11), the farmer's Money pages use Paystack test mode; without it they show "Sample data" and a payment is approved by itself after a few seconds.
 > - The code is always `123456` on a laptop (`Auth:FixedCode`). It never works on the servers, which send real SMS.
 > - The phone number must match the role: the officer's number does not open the farmer app.
 > - A farmer you register in the app can sign in once their record reaches the server: as the officer, open **Sync** and tap **Sync now** (it also sends by itself when the app opens). Then sign in as a farmer with the number you registered, code `123456` (section 5.8).
@@ -291,6 +293,21 @@ In Swagger (`/swagger`, section *Sync*) you can send a batch by hand after signi
 
 **GPS and the camera:** browsers allow them only on HTTPS or on `localhost`. On the laptop at `http://localhost:5173` they work: the browser asks for location, and "Take a photo" opens the file picker. On a phone over the Wi-Fi address (`http://192.168...`) they are blocked until the servers have HTTPS; the form still works without them.
 
+### 5.11 Mobile money with Paystack (test mode)
+
+The secret key stays out of the repository. Store it once in .NET's secret store on your laptop (from `backend/`):
+
+```
+dotnet user-secrets set "Paystack:SecretKey" "sk_test_..." --project APIs/agroconnect-api
+dotnet user-secrets list --project APIs/agroconnect-api
+```
+
+- **User-secrets** are kept in your user profile, not in the project folder, and are only read when the API runs as Development. On the servers the same setting is the environment variable `Paystack__SecretKey` (the DevOps lead adds it as a secret).
+- Restart the API. It applies the `AddMobileMoney` migration and now sends payments to Paystack in test mode.
+- Sign in as the farmer, open Money → Link mobile money → choose the network → Link. Then Buy inputs → Check and pay → Pay. The app shows *Approve the payment* and checks with the server every 3 seconds.
+- In test mode no real prompt reaches a phone. Use the test mobile money numbers from Paystack's *Test payments* page; payments then appear in the Paystack dashboard under Transactions (test mode).
+- Remove the key (`dotnet user-secrets remove "Paystack:SecretKey" --project APIs/agroconnect-api`) to go back to the sample provider.
+
 ### 5.9 Stop things
 
 | Command | Effect | Data |
@@ -513,3 +530,10 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | `npm run test:ci` after building every Phase 1 screen | 120 tests pass, 93.9% of lines covered; Sync is tested against a fake server |
 | Headless Chrome screenshots of every new screen at 390, 768 and 1440 px | Compared with Figma; fixed the banner edges, the tablet header, the card order on the farmer page and the 24-hour clock |
 | `npx vite --port 5173` and headless Chrome at 390 × 844, 768 × 1024 and 1440 × 900 | Screenshots of every registration screen (consent, the error state, each step, Check and save, the duplicate check, Saved) compared with Figma 04 to 12, 19, 28 and D07 to D15 |
+| `cp design/assets/agro-illustrations/by-screen/<file>.svg frontend/public/illustrations/<name>.svg` (17 drawings) and the crop JPGs to `frontend/public/pictures/crops/`; `cmp` to confirm each copy is identical | The app now shows the design team's own files, byte for byte; `npx svgo` was tried and could not make them smaller, so nothing is re-encoded |
+| `npm install` after a failed `npm ci` | `npm ci` deletes `node_modules` first; with `npm run dev` running, Windows locks one Vite file and the delete stops halfway. Stop the dev server before `npm ci`, or use `npm install` to repair |
+| `dotnet test tests/AdminService.Tests`, `dotnet test tests/AuthService.Tests`, `dotnet test tests/Api.Tests` | Admin sign-in and the Overview: 4 AdminService tests (100% of lines), admin code and token tests, and end-to-end: the seeded admin signs in, cannot use officer endpoints, and every seeded officer is added |
+| `ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:8001 dotnet AgroConnect.Api.dll` (from `bin/Release/net10.0`) and `API_PROXY_TARGET=http://localhost:8001 npx vite --port 5174` | A second copy of the new API and app beside the usual ones, to check the admin pages in Chrome; restart your own API (port 8000) to get the admin account |
+| `dotnet user-secrets init --project APIs/agroconnect-api`, then `dotnet user-secrets set "Paystack:SecretKey" ...` | Gave the API project its own secret store (it had none) and put the Paystack test key there, outside the repository |
+| `dotnet ef migrations add AddMobileMoney --project Services/Libs/Data --startup-project APIs/agroconnect-api` | The `wallets` and `payments` tables for mobile money (ADR 0034); applied by the API on start-up |
+| `dotnet test tests/MoneyService.Tests` | 32 tests: the Paystack client against a fake Paystack (requests, network codes, statuses, errors), the sample provider, and every money endpoint on a real database; 99% of lines |

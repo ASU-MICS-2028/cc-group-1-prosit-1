@@ -68,7 +68,7 @@ public sealed class SignInFlowTests(SeededApiFixture api)
     {
         using var client = api.Factory.CreateClient();
 
-        var response = await client.PostAsJsonAsync("/api/auth/code", new { phone = "0240000001", role = "admin" }, SeededApiFixture.Json);
+        var response = await client.PostAsJsonAsync("/api/auth/code", new { phone = "0240000001", role = "superuser" }, SeededApiFixture.Json);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

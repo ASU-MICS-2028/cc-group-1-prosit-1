@@ -159,11 +159,12 @@ export const routes: RouteObject[] = [
           })),
       },
       {
-        path: "money/link/approve",
+        // Approve a payment on the phone; the app waits for the network (ADR 0034).
+        path: "money/pay/:reference",
         handle: { hideBottomNav: true },
         lazy: () =>
-          import("@/features/money/link").then((m) => ({
-            Component: m.ApproveOnPhone,
+          import("@/features/money/pay").then((m) => ({
+            Component: m.PaymentApproval,
           })),
       },
       {
@@ -297,6 +298,19 @@ export const routes: RouteObject[] = [
       {
         index: true,
         lazy: () => import("@/features/registration/RegisterPage"),
+      },
+    ],
+  },
+  {
+    // The MoFA admin's pages (ADR 0024): computer only, the admin sidebar beside each page.
+    path: "/admin",
+    loader: requireRole("admin"),
+    HydrateFallback: Loading,
+    lazy: () => import("@/features/admin/AdminLayout"),
+    children: [
+      {
+        index: true,
+        lazy: () => import("@/features/admin/AdminOverviewPage"),
       },
     ],
   },

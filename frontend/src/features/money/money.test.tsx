@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { fakeServer } from "@/test/fakes"
+import { fakeServer, json } from "@/test/fakes"
 import { renderRoute } from "@/test/renderRoute"
 
 beforeEach(() => {
@@ -14,8 +14,46 @@ afterEach(() => {
 const go = async (name: string | RegExp) =>
   userEvent.click(await screen.findByRole("link", { name }))
 
-describe("farmer money (sample data)", () => {
+const linked = {
+  network: "mtn",
+  phoneE164: "+233240001234",
+  nameOnWallet: "Ama Boateng",
+  canReceive: true,
+}
+
+const payment = (status: string, extra: Record<string, unknown> = {}) => ({
+  reference: "agc_1",
+  purpose: "inputs",
+  description: "Tolon Agro Inputs",
+  amount: 525,
+  network: "mtn",
+  status,
+  message: null,
+  createdAt: new Date().toISOString(),
+  ...extra,
+})
+
+/** The money server: a linked wallet unless told otherwise, and payment answers. */
+function moneyServer(
+  answers: Record<string, (body: unknown) => Response> = {}
+) {
+  return fakeServer({
+    "/api/money": () =>
+      json(200, { sample: false, wallet: linked, payments: [] }),
+    ...answers,
+  })
+}
+
+describe("farmer money", () => {
   it("shows the wallet, the four services and recent payments", async () => {
+    moneyServer({
+      "/api/money": () =>
+        json(200, {
+          sample: true,
+          wallet: linked,
+          payments: [payment("paid")],
+        }),
+    })
     renderRoute("/farmer/money", { as: "farmer" })
     expect(
       await screen.findByRole("heading", { name: "Money" })
@@ -27,28 +65,55 @@ describe("farmer money (sample data)", () => {
       /Ask a buyer/,
     ])
       expect(screen.getByRole("link", { name: service })).toBeInTheDocument()
-    expect(screen.getByText("Tolon Agro Inputs")).toBeInTheDocument()
+    expect(await screen.findByText("Tolon Agro Inputs")).toBeInTheDocument()
+    expect(screen.getByText(/MTN MoMo · \+233 24 ••• 1234/)).toBeInTheDocument()
     expect(screen.getAllByText("Sample data").length).toBeGreaterThan(0)
   })
 
-  it("links mobile money and approves on the phone", async () => {
+  it("asks to link mobile money when none is linked", async () => {
+    moneyServer({
+      "/api/money": () =>
+        json(200, { sample: false, wallet: null, payments: [] }),
+    })
+    renderRoute("/farmer/money", { as: "farmer" })
+    expect(
+      await screen.findByRole("link", { name: /Link your mobile money/ })
+    ).toHaveAttribute("href", "/farmer/money/link")
+    expect(await screen.findByText("No payments yet.")).toBeInTheDocument()
+  })
+
+  it("links the registered number on the chosen network", async () => {
+    const fetchMock = moneyServer({
+      "PUT /api/money/wallet": (body) =>
+        json(200, {
+          ...linked,
+          network: (body as { network: string }).network,
+        }),
+    })
     const { router } = renderRoute("/farmer/money/link", { as: "farmer" })
     await userEvent.click(
       await screen.findByRole("radio", { name: /Telecel Cash/ })
     )
-    expect(screen.getByRole("radio", { name: /Telecel Cash/ })).toBeChecked()
-    await go(/Link 024/)
-    expect(await screen.findByText("No message came?")).toBeInTheDocument()
-    await go("I have approved it")
-    expect(await screen.findByText("MTN MoMo is linked")).toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole("button", { name: /Link \+233 24 ••• 1234/ })
+    )
+    expect(
+      await screen.findByText("Telecel Cash is linked")
+    ).toBeInTheDocument()
     expect(screen.getByText("Never stored")).toBeInTheDocument()
+    const put = fetchMock.mock.calls.find(([, init]) => init?.method === "PUT")
+    expect(JSON.parse(String(put![1]!.body))).toEqual({ network: "telecel" })
     await go("Back to Money")
     await waitFor(() =>
       expect(router.state.location.pathname).toBe("/farmer/money")
     )
   })
 
-  it("buys inputs: basket, shop, pay, paid, delivery", async () => {
+  it("buys inputs and pays once the farmer approves on the phone", async () => {
+    const fetchMock = moneyServer({
+      "POST /api/money/payments": () => json(200, payment("waiting")),
+      "/api/money/payments/agc_1": () => json(200, payment("paid")),
+    })
     renderRoute("/farmer/money/buy", { as: "farmer" })
     expect(await screen.findByText("GH₵ 525")).toBeInTheDocument()
     await userEvent.click(
@@ -61,10 +126,63 @@ describe("farmer money (sample data)", () => {
     )
     await go("Check and pay")
     expect(await screen.findByText("Pick up at the shop")).toBeInTheDocument()
-    await go(/^Pay GH₵/)
+    await userEvent.click(
+      await screen.findByRole("button", { name: /^Pay GH₵/ })
+    )
+
     expect(await screen.findByText(/paid$/)).toBeInTheDocument()
+    expect(screen.getByText("agc_1")).toBeInTheDocument()
+    const sent = fetchMock.mock.calls.find(
+      ([, init]) => init?.method === "POST"
+    )
+    expect(JSON.parse(String(sent![1]!.body))).toMatchObject({
+      purpose: "inputs",
+      amount: 690,
+    })
     await go("Track delivery")
     expect(await screen.findByText("On the way")).toBeInTheDocument()
+  })
+
+  it("takes the code a network texts, and explains a payment that fails", async () => {
+    let paid = false
+    moneyServer({
+      "/api/money/payments/agc_1": () =>
+        json(
+          200,
+          paid
+            ? payment("paid")
+            : payment("needs_code", { message: "Enter the code we sent" })
+        ),
+      "POST /api/money/payments/agc_1/code": () => {
+        paid = true
+        return json(200, payment("paid"))
+      },
+    })
+    const { router, unmount } = renderRoute("/farmer/money/pay/agc_1", {
+      as: "farmer",
+    })
+    expect(
+      await screen.findByText("Enter the code we sent")
+    ).toBeInTheDocument()
+    await userEvent.type(
+      screen.getByLabelText("Code from your network"),
+      "1234"
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Send code" }))
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/farmer/money")
+    )
+    unmount()
+
+    moneyServer({
+      "/api/money/payments/agc_1": () =>
+        json(200, payment("failed", { message: "Insufficient funds" })),
+    })
+    renderRoute("/farmer/money/pay/agc_1", { as: "farmer" })
+    expect(
+      await screen.findByText("The payment did not go through")
+    ).toBeInTheDocument()
+    expect(screen.getByText("Insufficient funds")).toBeInTheDocument()
   })
 
   it("asks for a smaller seed loan and sends it", async () => {

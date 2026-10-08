@@ -53,11 +53,17 @@ export function BottomNav({
 export function SideNav({
   items = sideNavItems,
   footer = <OfficerSideFooter />,
+  homeTo = "/",
+  subtitle,
   open,
   onToggle,
 }: {
   items?: readonly NavItem[]
   footer?: ReactNode
+  /** Where the logo leads: the role's home */
+  homeTo?: string
+  /** A line under the logo, e.g. "MoFA admin" (Figma admin sidebar) */
+  subtitle?: string
   open: boolean
   onToggle: () => void
 }) {
@@ -72,12 +78,17 @@ export function SideNav({
   }
   return (
     <aside className="sticky top-0 hidden h-svh w-62 shrink-0 flex-col gap-8 border-r bg-card px-5 pt-7 pb-6 md:flex">
-      <Link
-        to="/"
-        className="px-1 text-2xl leading-9 font-semibold text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        {t("app.name")}
-      </Link>
+      <div className="px-1">
+        <Link
+          to={homeTo}
+          className="text-2xl leading-9 font-semibold text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          {t("app.name")}
+        </Link>
+        {subtitle ? (
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
+        ) : null}
+      </div>
       <nav aria-label={t("nav.main")}>
         <ul className="space-y-2">
           {items.map(({ to, key, icon: Icon, end }) => (

@@ -1,17 +1,22 @@
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 
-/** Whether the browser thinks it is online, kept up to date. */
+function subscribe(notify: () => void) {
+  window.addEventListener("online", notify)
+  window.addEventListener("offline", notify)
+  return () => {
+    window.removeEventListener("online", notify)
+    window.removeEventListener("offline", notify)
+  }
+}
+
+/**
+ * Whether the browser thinks it is online, kept up to date. React reads navigator.onLine again after it
+ * starts listening, so a change between the first draw and the subscription is never missed.
+ */
 export function useOnline() {
-  const [online, setOnline] = useState(() => navigator.onLine)
-  useEffect(() => {
-    const on = () => setOnline(true)
-    const off = () => setOnline(false)
-    window.addEventListener("online", on)
-    window.addEventListener("offline", off)
-    return () => {
-      window.removeEventListener("online", on)
-      window.removeEventListener("offline", off)
-    }
-  }, [])
-  return online
+  return useSyncExternalStore(
+    subscribe,
+    () => navigator.onLine,
+    () => true
+  )
 }

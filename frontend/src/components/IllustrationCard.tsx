@@ -9,7 +9,7 @@ export function IllustrationCard({
   className,
   imageClassName,
 }: {
-  /** File in public/illustrations: a name for .svg, or with its extension (".webp" pictures) */
+  /** File in public/illustrations: a name for .svg, or a name with its extension */
   name: string
   className?: string
   imageClassName?: string

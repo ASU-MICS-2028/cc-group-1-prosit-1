@@ -39,3 +39,9 @@ coverage.json
 
 # Personal notes (not shared)
 CLAUDE.md
+
+# Design source pictures (designers' working files: previews, contact sheets, originals). The app uses
+# exact copies in frontend/public (ADR 0025); only the licence credits are kept in Git.
+design/assets/**
+!design/assets/**/
+!design/assets/**/CREDITS.md

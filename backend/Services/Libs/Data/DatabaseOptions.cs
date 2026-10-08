@@ -12,6 +12,9 @@ public sealed class SeedOptions
 {
     public List<SeedOfficer> Officers { get; set; } = [];
 
+    /// <summary>MoFA admins (ADR 0024). Same fields as an officer; Region and District are the area they look after (no District = the whole region).</summary>
+    public List<SeedOfficer> Admins { get; set; } = [];
+
     /// <summary>Also add one sample farmer (registered by the first officer) so the farmer sign-in can be tried.</summary>
     public bool SampleFarmer { get; set; }
 }

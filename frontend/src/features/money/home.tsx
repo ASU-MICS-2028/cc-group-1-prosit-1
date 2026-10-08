@@ -4,8 +4,11 @@ import { useTranslation } from "react-i18next"
 import { SectionTitle } from "@/components/Blocks"
 import { SampleBadge } from "@/components/Flow"
 import { Picture, type PictureSource } from "@/components/Picture"
-import { cedis, transactions, wallet } from "@/features/sample/data"
+import { NoDataYet } from "@/features/farmer/DataStatus"
+import { cedis } from "@/features/sample/data"
+import { formatShortDate } from "@/lib/dates"
 import { cn } from "@/lib/utils"
+import { useMoney, walletText } from "./wallet"
 
 const actions: {
   to: string
@@ -34,9 +37,11 @@ const actions: {
   },
 ]
 
-/** P3 · 01 Money: the linked wallet, the four money services and recent payments. */
+/** P3 · 01 Money: the linked wallet (or a card to link one), the four money services and recent payments. */
 export function MoneyHome() {
   const { t } = useTranslation()
+  const money = useMoney()
+  const wallet = money.data?.wallet
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -44,16 +49,26 @@ export function MoneyHome() {
         <h1 className="text-2xl leading-9 font-semibold text-primary">
           {t("money.title")}
         </h1>
-        <SampleBadge />
+        {money.data?.sample ? <SampleBadge /> : null}
       </header>
 
       <Link
         to="/farmer/money/link"
         className="space-y-1 rounded-[24px] bg-primary p-5 text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <p className="text-sm opacity-90">{t("money.linked")}</p>
+        <p className="text-sm opacity-90">
+          {wallet
+            ? t("money.linked")
+            : money.data
+              ? t("money.linkFirst")
+              : t("money.title")}
+        </p>
         <p className="text-xl font-semibold">
-          {wallet.provider} · {wallet.number}
+          {wallet
+            ? walletText(wallet)
+            : money.data
+              ? t("money.linkFirstHint")
+              : t("common.loading")}
         </p>
         <p className="flex items-center gap-1.5 text-sm opacity-90">
           <Lock aria-hidden className="size-4" />
@@ -89,40 +104,51 @@ export function MoneyHome() {
 
       <section aria-labelledby="money-recent" className="space-y-3">
         <SectionTitle id="money-recent">{t("money.recent")}</SectionTitle>
-        <ul className="space-y-3">
-          {transactions.map((tx) => (
-            <li
-              key={tx.id}
-              className="flex items-center gap-3 rounded-[20px] border bg-card p-4"
-            >
-              <span className="min-w-0 flex-1">
-                <span className="block text-base font-medium text-foreground">
-                  {tx.who}
-                </span>
-                <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                  {tx.note === "waiting" ? (
-                    <>
-                      <Clock aria-hidden className="size-3.5" />
-                      {t("money.waitingNetwork")}
-                    </>
-                  ) : (
-                    tx.note
-                  )}{" "}
-                  · {tx.when}
-                </span>
-              </span>
-              <span
-                className={cn(
-                  "text-base font-semibold",
-                  tx.amount > 0 ? "text-primary" : "text-warning"
-                )}
+        {!money.data ? (
+          <NoDataYet state={money} />
+        ) : money.data.payments.length === 0 ? (
+          <p className="rounded-[20px] border border-dashed p-5 text-center text-muted-foreground">
+            {t("money.noPayments")}
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {money.data.payments.map((p) => (
+              <li
+                key={p.reference}
+                className="flex items-center gap-3 rounded-[20px] border bg-card p-4"
               >
-                {tx.amount > 0 ? "+ " : "− "}
-                {cedis(Math.abs(tx.amount))}
-              </span>
-            </li>
-          ))}
-        </ul>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base font-medium text-foreground">
+                    {p.description}
+                  </span>
+                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                    {p.status === "paid" ? (
+                      t("money.status.paid")
+                    ) : p.status === "failed" ? (
+                      t("money.status.failed")
+                    ) : (
+                      <>
+                        <Clock aria-hidden className="size-3.5" />
+                        {t("money.waitingNetwork")}
+                      </>
+                    )}{" "}
+                    · {formatShortDate(p.createdAt)}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    "text-base font-semibold",
+                    p.status === "failed"
+                      ? "text-muted-foreground line-through"
+                      : "text-warning"
+                  )}
+                >
+                  − {cedis(p.amount)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
         <p className="text-sm text-muted-foreground">
           {t("money.offlineNote")}
         </p>

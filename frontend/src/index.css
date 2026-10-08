@@ -29,6 +29,8 @@
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
   --color-cream: var(--cream);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
   /* shadow/floating: the soft green glow under the bottom bar */
   --shadow-floating: 0 0 14px #007e2f17;
   --color-accent-foreground: var(--accent-foreground);
@@ -78,6 +80,9 @@
   /* Sync states: waiting (amber), synced (green), failed (red) */
   --warning: #b26b00;
   --warning-soft: #fff0d3;
+  /* info: weather and lessons tiles on the farmer home (Figma 23) */
+  --info: #1f6aa5;
+  --info-soft: #e3eef8;
   /* accent/cream: banners and illustrations */
   --cream: #fff0d3;
   --border: #ededed;
@@ -118,6 +123,8 @@
   --destructive-soft: oklch(0.3 0.06 25);
   --warning: oklch(0.82 0.13 80);
   --warning-soft: oklch(0.32 0.06 75);
+  --info: oklch(0.78 0.09 245);
+  --info-soft: oklch(0.3 0.05 245);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);

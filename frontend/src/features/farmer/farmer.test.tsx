@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 import type {
   Cooperative,
   HarvestForecast,
@@ -12,6 +12,12 @@ import type {
 import { db } from "@/db/local"
 import { fakeServer, json } from "@/test/fakes"
 import { renderRoute, testFarmer } from "@/test/renderRoute"
+
+// Pages are lazy chunks compiled on first use. Load them once here, with time to spare on a busy
+// machine, so each test measures the screen and not the compiler.
+beforeAll(async () => {
+  await Promise.all([import("./FarmerLayout"), import("./FarmerHomePage")])
+}, 60_000)
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -152,30 +158,42 @@ function farmerServer(extra: Record<string, (body: unknown) => Response> = {}) {
 }
 
 describe("farmer home", () => {
-  it("shows their status, today's weather, the six services and their officer", async () => {
+  it("shows their card, the six services with a live line each, and their agent (Figma 23)", async () => {
     farmerServer()
     renderRoute("/farmer", { as: "farmer" })
 
+    // Each tile shows the latest answer of its service. (Without CSS the test browser joins the
+    // title and the line with no space; a real browser reads them as two blocks.)
     expect(
-      await screen.findByText("Registered 6 Oct by Fuseini")
+      await screen.findByRole("link", { name: /^Weather ?31° · Sunny$/ })
+    ).toHaveAttribute("href", "/farmer/weather")
+    expect(
+      await screen.findByRole("link", {
+        name: /^Prices ?Maize ₵6\.50, up this week$/,
+      })
+    ).toHaveAttribute("href", "/farmer/prices")
+    expect(
+      await screen.findByRole("link", {
+        name: /^Harvest forecast ?About 10 bags$/,
+      })
     ).toBeInTheDocument()
-    expect(screen.getByText("31°C · Sunny")).toBeInTheDocument()
-    for (const service of [
-      "Prices",
-      "Weather",
-      "Check my crop",
-      "Harvest forecast",
-      "My cooperative",
-      "Lessons",
-    ])
-      expect(
-        screen.getByRole("link", { name: new RegExp(`^${service}`) })
-      ).toBeInTheDocument()
     expect(
-      screen.getByRole("link", { name: /Pay for inputs/ })
-    ).toHaveAttribute("href", "/farmer/money")
+      await screen.findByRole("link", { name: /^My cooperative ?42 members$/ })
+    ).toBeInTheDocument()
     expect(
-      screen.getByRole("link", { name: /Call my officer/ })
+      screen.getByRole("link", { name: /^Check my crop ?Snap a leaf$/ })
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole("link", { name: /^Lessons ?\d+ lessons?$/ })
+    ).toBeInTheDocument()
+
+    expect(
+      screen.getByRole("link", {
+        name: "Ama Boateng, saved with MoFA. Open my details",
+      })
+    ).toHaveAttribute("href", "/farmer/details")
+    expect(
+      await screen.findByRole("link", { name: /Call my agent/ })
     ).toHaveAttribute("href", "tel:+233240000001")
     expect(screen.getAllByRole("link", { name: "Market" })[0]).toHaveAttribute(
       "href",
@@ -199,11 +217,11 @@ describe("farmer home", () => {
     )
     farmerServer()
     renderRoute("/farmer", { as: "farmer" })
-    await screen.findByText("Registered 6 Oct by Fuseini")
-
-    await userEvent.click(
-      screen.getByRole("button", { name: /Listen to my details/ })
-    )
+    const listen = await screen.findByRole("button", {
+      name: /Listen to my details/,
+    })
+    await waitFor(() => expect(listen).toBeEnabled())
+    await userEvent.click(listen)
     expect((speakMock.mock.calls[0][0] as { text: string }).text).toMatch(
       /^Ama Boateng\. Tolon, Northern/
     )
@@ -291,6 +309,7 @@ describe("farm services", () => {
         "listitem"
       )
     ).toHaveLength(7)
+    expect(screen.getAllByText(/^High \d+° · Low \d+°$/)).toHaveLength(8)
   })
 
   it("crop check: asks for a crop and a sign, then shows the problem and what to do", async () => {
@@ -353,10 +372,15 @@ describe("farm services", () => {
   it("harvest, cooperative and lessons", async () => {
     farmerServer()
     const { unmount } = renderRoute("/farmer/harvest", { as: "farmer" })
-    expect(
-      await screen.findByText("8 to 12 bags of 100 kg")
-    ).toBeInTheDocument()
-    expect(screen.getByText("Usually ready in September")).toBeInTheDocument()
+    expect(await screen.findByText("8 to 12 bags")).toBeInTheDocument()
+    // The chart's numbers, as a screen reader gets them
+    const table = screen.getByRole("table", {
+      name: "Expected harvest per crop",
+    })
+    expect(within(table).getByRole("row", { name: /Maize/ })).toHaveTextContent(
+      "Maize812Usually ready in September"
+    )
+    expect(screen.getByText("Bags of 100 kg")).toBeInTheDocument()
     unmount()
 
     const coop = renderRoute("/farmer/cooperative", { as: "farmer" })
@@ -380,17 +404,13 @@ describe("offline", () => {
   it("shows the copy saved on the device, with its time, when the network is gone", async () => {
     farmerServer()
     const first = renderRoute("/farmer/harvest", { as: "farmer" })
-    expect(
-      await screen.findByText("8 to 12 bags of 100 kg")
-    ).toBeInTheDocument()
+    expect(await screen.findByText("8 to 12 bags")).toBeInTheDocument()
     await waitFor(async () => expect(await db.cache.count()).toBeGreaterThan(0))
     first.unmount()
 
     fakeServer({}) // no network
     renderRoute("/farmer/harvest", { as: "farmer" })
-    expect(
-      await screen.findByText("8 to 12 bags of 100 kg")
-    ).toBeInTheDocument()
+    expect(await screen.findByText("8 to 12 bags")).toBeInTheDocument()
     expect(
       await screen.findByText(/No network · saved today/)
     ).toBeInTheDocument()

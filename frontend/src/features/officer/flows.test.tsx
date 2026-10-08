@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react"
+import { screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { fakeServer } from "@/test/fakes"
@@ -50,6 +50,13 @@ describe("officer requests, money and market (sample data)", () => {
     ).toBeInTheDocument()
     expect(screen.getByText("GH₵ 48,200")).toBeInTheDocument()
     expect(screen.getByText("Streak virus")).toBeInTheDocument()
+    // The weekly chart: an axis in cedis, and each week's amount in full for screen readers
+    const weeks = screen.getByRole("table", { name: "Paid to shops by week" })
+    expect(
+      within(weeks).getByRole("row", { name: /Week 4/ })
+    ).toHaveTextContent("Week 4GH₵ 15,800")
+    expect(screen.getByText("15.8k")).toBeInTheDocument()
+    expect(screen.getByText("20k")).toBeInTheDocument()
     expect(
       screen.getByRole("link", { name: /2 loans to review/ })
     ).toHaveAttribute("href", "/money/loans")

@@ -1,9 +1,10 @@
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect } from "react"
 import { Outlet } from "react-router-dom"
 import { syncNow } from "@/features/sync/sync"
 import { Loading } from "./Loading"
 import { BottomNav, SideNav } from "./nav"
 import { useHideBottomNav } from "./useHideBottomNav"
+import { useSidebar } from "./useSidebar"
 
 /** "We also sync on our own": when the app opens and whenever the network comes back. */
 function useAutoSync() {
@@ -14,29 +15,6 @@ function useAutoSync() {
     window.addEventListener("online", quietly)
     return () => window.removeEventListener("online", quietly)
   }, [])
-}
-
-const SIDEBAR_KEY = "agroconnect.sidebar"
-
-/** Whether the desktop sidebar is open; remembered on this device (Figma "Sidebar Tab"). */
-function useSidebar() {
-  const [open, setOpen] = useState(() => {
-    try {
-      return localStorage.getItem(SIDEBAR_KEY) !== "closed"
-    } catch {
-      return true
-    }
-  })
-  const toggle = () =>
-    setOpen((was) => {
-      try {
-        localStorage.setItem(SIDEBAR_KEY, was ? "closed" : "open")
-      } catch {
-        // Private mode or storage blocked: the choice just is not remembered.
-      }
-      return !was
-    })
-  return { open, toggle }
 }
 
 /**

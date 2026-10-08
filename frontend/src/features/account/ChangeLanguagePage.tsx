@@ -1,3 +1,4 @@
+import { LanguageBanner } from "@/components/LanguageBanner"
 import { useEffect, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
@@ -28,12 +29,7 @@ export function Component() {
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-6">
       <BackHeader title={t("profile.languageTitle")} tone="green" to={back} />
-      <img
-        src="/illustrations/language-banner.svg"
-        alt=""
-        decoding="async"
-        className="aspect-358/160 w-full rounded-[30px] bg-cream object-cover"
-      />
+      <LanguageBanner />
       <div>
         <h2 className="text-base font-medium text-foreground">
           {t("welcome.question")}

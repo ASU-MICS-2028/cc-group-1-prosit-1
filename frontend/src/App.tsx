@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react"
 import { RouterProvider } from "react-router-dom"
 import { router } from "@/app/router"
 import { AppPrompts } from "@/app/pwa/AppPrompts"
+import { SpeechOverlay } from "@/components/SpeechOverlay"
 
 const subscribe = (notify: () => void) => router.subscribe(notify)
 const currentPath = () => router.state.location.pathname
@@ -14,6 +15,7 @@ export default function App() {
     <>
       <RouterProvider router={router} />
       <AppPrompts pathname={pathname} />
+      <SpeechOverlay />
     </>
   )
 }
