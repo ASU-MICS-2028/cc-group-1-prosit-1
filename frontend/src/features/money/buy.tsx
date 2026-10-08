@@ -11,6 +11,7 @@ import {
   FlowPage,
   InfoCard,
   TermsCard,
+  LaterPhaseButton,
 } from "@/components/Flow"
 import { IllustrationCard } from "@/components/IllustrationCard"
 import { Picture } from "@/components/Picture"
@@ -324,13 +325,10 @@ export function TrackDelivery() {
       back="/farmer/money"
       sample
       footer={
-        <a
-          href="tel:+233240000000"
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-secondary text-base font-medium text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-        >
+        <LaterPhaseButton className="w-full">
           <Phone aria-hidden className="size-5" />
           {t("money.delivery.callDriver")}
-        </a>
+        </LaterPhaseButton>
       }
     >
       <IllustrationCard name="delivery" className="h-40 py-2" />

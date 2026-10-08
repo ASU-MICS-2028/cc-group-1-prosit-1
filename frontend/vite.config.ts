@@ -47,7 +47,13 @@ export default defineConfig({
         // Saved on install: every page's code, styles, the small icons and the language files,
         // so the whole app opens offline. Pictures are not (ADR 0025): see runtimeCaching.
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
-        globIgnores: ["illustrations/**", "pictures/**", "app-icon.svg"],
+        globIgnores: [
+          "illustrations/**",
+          "pictures/**",
+          "app-icon.svg",
+          // the admin dashboard and its map: computer only and online, so phones never store it
+          "assets/AdminOverviewPage-*",
+        ],
         // Any address opened offline (/farmers, /register?step=3) gets the app, which routes it.
         navigateFallback: "/index.html",
         // ...except the API and its test pages, which must always go to the server.

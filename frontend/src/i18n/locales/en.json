@@ -280,7 +280,17 @@
       "text_male": "{{name}} is registered. We will send his details to MoFA automatically when you have network. You can keep working.",
       "another": "Register another farmer",
       "home": "Go to home",
-      "someone": "The farmer"
+      "someone": "The farmer",
+      "sending": "Sending {{name}} to MoFA…",
+      "sentBadge": "Sent to MoFA",
+      "sentTitle": "{{name}} is registered",
+      "sentText": "Their details are with MoFA now.",
+      "sentText_female": "Her details are with MoFA now.",
+      "sentText_male": "His details are with MoFA now.",
+      "failedBadge": "Needs fixing",
+      "failedTitle": "{{name}} needs a fix",
+      "failedText": "MoFA could not accept these details. Open the farmer to see what to change.",
+      "fix": "Fix the details"
     },
     "errors": {
       "name": "Enter the farmer’s full name.",
@@ -790,7 +800,10 @@
   },
   "flow": {
     "less": "Fewer {{what}}",
-    "more": "More {{what}}"
+    "more": "More {{what}}",
+    "laterPhase": "Coming in a later phase",
+    "laterPhaseHint": "Sample data: you can try it, but nothing is saved or sent yet.",
+    "laterPhaseTold": "Coming in a later phase."
   },
   "money": {
     "title": "Money",
@@ -1166,13 +1179,43 @@
       "access": {
         "active": "Active",
         "checkIn": "Check in",
-        "phoneLost": "Phone lost",
+        "phoneLost": "Phone reported",
         "off": "Access off"
       },
       "lostTitle": "Lost phone? Turn off access in one click.",
       "lostText": "Farmers saved on that phone but not yet synced are listed so another agent can re-visit them. Admins see totals; personal details are shown only to the farmer's own agent.",
       "turnOff": "Turn off {{name}}'s access",
-      "invited": "Invite sent to {{name}} by SMS"
+      "invited": "Invite sent to {{name}} by SMS",
+      "colActions": "Actions",
+      "report": "Report phone",
+      "reportFor": "Report a lost or stolen phone for {{name}}",
+      "howReported": "Agents report from another phone (Profile, Report a lost or stolen phone), or by calling or texting the district office. You can also report it here for them.",
+      "noReports": "No phones reported.",
+      "reportLine": "{{name}}: phone {{problem}}",
+      "reportDetail_one": "Reported by {{via}} · {{when}} · {{count}} farmer not sent yet",
+      "reportDetail_other": "Reported by {{via}} · {{when}} · {{count}} farmers not sent yet",
+      "problem": {
+        "lost": "lost",
+        "stolen": "stolen",
+        "broken": "broken"
+      },
+      "via": {
+        "app": "the app",
+        "call": "phone call",
+        "sms": "SMS",
+        "inPerson": "in person"
+      },
+      "justNow": "just now",
+      "reportTitle": "Report {{name}}'s phone",
+      "whatHappened": "What happened?",
+      "howTold": "How did they tell you?",
+      "reportAndTurnOff": "Report and turn off access",
+      "reportOnly": "Report only",
+      "viaChip": {
+        "call": "Phone call",
+        "sms": "SMS",
+        "inPerson": "In person"
+      }
     },
     "person": {
       "title": "Add a person",
@@ -1255,5 +1298,50 @@
       "slow": "Slow SMS delivery",
       "alerts": "Recent alerts"
     }
+  },
+  "lostPhone": {
+    "row": "Report a lost or stolen phone",
+    "rowHint": "Lock your old phone out of AgroConnect",
+    "title": "Lost or stolen phone?",
+    "text": "Tell your admin so your old phone is locked out. Farmers saved on it but not sent yet will be listed so you can visit them again.",
+    "what": "What happened to the old phone?",
+    "reason": {
+      "lost": "Lost",
+      "stolen": "Stolen",
+      "broken": "Broken"
+    },
+    "noPhone": "No phone at all? Call your district office; your admin can report it for you.",
+    "report": "Report to my admin",
+    "cancel": "Cancel",
+    "sent": "Reported. Your admin will turn off access on the old phone.",
+    "sample": "Sample: the report reaches the admin once the backend is connected.",
+    "done": "Done"
+  },
+  "adminOverview": {
+    "mapTitle": "Where the farmers are",
+    "mapLabel": "Map of farmers by district",
+    "tooltip": "{{farmers}} farmers · {{officers}} officers · {{women}}% women",
+    "health": {
+      "good": "Covered",
+      "late": "Sync late",
+      "noOfficer": "No officer"
+    },
+    "noOfficer": "No officer: reassign farmers",
+    "districtLine_one": "{{count}} officer · synced {{sync}}",
+    "districtLine_other": "{{count}} officers · synced {{sync}}",
+    "trendTitle": "Registrations by month",
+    "trendSummary": "{{total}} farmers registered this season, against the monthly plan.",
+    "trendPoint": "{{month}}: {{farmers}} registered, plan {{target}}",
+    "legendMet": "Plan met",
+    "legendBelow": "Below plan",
+    "legendPlan": "Monthly plan",
+    "businessTitle": "Money and reach",
+    "paidToDealers": "Paid to input dealers this month",
+    "loansOut": "Seed loans out · {{percent}}% repaid on time",
+    "insured": "Farmers insured",
+    "coopGain": "More per kg selling together",
+    "ratio": "Officer to farmers",
+    "active": "Farmers active in the last 30 days",
+    "channels": "How farmers reach us"
   }
 }

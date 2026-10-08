@@ -10,13 +10,15 @@ import {
   Phone,
   Play,
   Server,
+  ShieldAlert,
   X,
 } from "lucide-react"
 import { useId, useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { ChoiceChips } from "@/components/form/ChoiceChips"
 import { TextField } from "@/components/form/TextField"
-import { SampleBadge } from "@/components/Flow"
+import { LaterPhaseButton, SampleBadge } from "@/components/Flow"
+import { Sheet } from "@/components/Sheet"
 import { Button } from "@/components/ui/button"
 import { cedis } from "@/features/sample/data"
 import { cn } from "@/lib/utils"
@@ -29,9 +31,14 @@ import {
   impact,
   regionReport,
   systemHealth,
+  phoneReports,
   type Access,
+  type Agent,
   type HelpStatus,
   type OrderStatus,
+  type PhoneProblem,
+  type PhoneReport,
+  type ReportedVia,
 } from "./sample"
 
 // The MoFA admin pages from Figma P4 · D2 to D6 (and D20 under Regions), on sample data until
@@ -253,17 +260,22 @@ const accessTone: Record<Access, Tone> = {
   off: "grey",
 }
 
-/** Agents and Access (Figma P4 · D2) with Add a person (D2b). */
+/**
+ * Agents and Access (Figma P4 · D2) with Add a person (D2b). A lost or stolen phone reaches this page
+ * three ways: the agent reports it from another phone (Profile, "Report a lost or stolen phone"), calls
+ * or texts the district office, or tells the admin in person; the admin then reports it here. Either
+ * way the report is listed and access on that phone is turned off.
+ */
 export function Agents() {
   const { t } = useTranslation()
   const [adding, setAdding] = useState(false)
   const [invited, setInvited] = useState<string | null>(null)
   const [turnedOff, setTurnedOff] = useState<string[]>([])
-  const lost = agents.find(
-    (a) => a.access === "phoneLost" && !turnedOff.includes(a.id)
-  )
-  const access = (id: string, a: Access): Access =>
-    turnedOff.includes(id) ? "off" : a
+  const [reports, setReports] = useState<PhoneReport[]>([...phoneReports])
+  const [reporting, setReporting] = useState<Agent | null>(null)
+  const reportFor = (id: string) => reports.find((r) => r.agentId === id)
+  const access = (a: Agent): Access =>
+    turnedOff.includes(a.id) ? "off" : reportFor(a.id) ? "phoneLost" : a.access
 
   return (
     <div className="space-y-6">
@@ -289,7 +301,7 @@ export function Agents() {
         </p>
       ) : null}
       <div className="overflow-x-auto rounded-[20px] border bg-card">
-        <table className="w-full min-w-200 text-left text-sm">
+        <table className="w-full min-w-220 text-left text-sm">
           <thead className="bg-secondary text-primary">
             <tr>
               {(
@@ -306,6 +318,11 @@ export function Agents() {
                   {t(`adminPages.agents.${c}`)}
                 </th>
               ))}
+              <th scope="col" className="px-5 py-3.5">
+                <span className="sr-only">
+                  {t("adminPages.agents.colActions")}
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -326,43 +343,116 @@ export function Agents() {
                   {t(`adminPages.agents.role.${a.role}`)}
                 </td>
                 <td className="px-5 py-3">
-                  <Pill tone={accessTone[access(a.id, a.access)]}>
-                    {t(`adminPages.agents.access.${access(a.id, a.access)}`)}
+                  <Pill tone={accessTone[access(a)]}>
+                    {t(`adminPages.agents.access.${access(a)}`)}
                   </Pill>
+                </td>
+                <td className="px-5 py-3 text-right">
+                  {reportFor(a.id) || turnedOff.includes(a.id) ? null : (
+                    <Button
+                      variant="ghost"
+                      className="text-destructive"
+                      aria-label={t("adminPages.agents.reportFor", {
+                        name: a.name,
+                      })}
+                      onClick={() => setReporting(a)}
+                    >
+                      <ShieldAlert aria-hidden />
+                      {t("adminPages.agents.report")}
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <section className="flex flex-wrap items-center gap-4 rounded-[20px] border bg-card p-5">
-        <span
-          aria-hidden
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"
-        >
-          <KeyRound className="size-5" />
-        </span>
-        <div className="min-w-0 flex-1 basis-80">
-          <h2 className="text-base font-medium text-foreground">
-            {t("adminPages.agents.lostTitle")}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {t("adminPages.agents.lostText")}
-          </p>
-        </div>
-        {lost ? (
-          <Button
-            size="xl"
-            variant="secondary"
-            className="px-7 text-primary"
-            onClick={() => setTurnedOff((ids) => [...ids, lost.id])}
+
+      <section
+        aria-labelledby="phone-reports"
+        className="space-y-4 rounded-[20px] border bg-card p-5"
+      >
+        <div className="flex items-start gap-4">
+          <span
+            aria-hidden
+            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"
           >
-            {t("adminPages.agents.turnOff", {
-              name: lost.name.split(" ")[0],
+            <KeyRound className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <h2
+              id="phone-reports"
+              className="text-base font-medium text-foreground"
+            >
+              {t("adminPages.agents.lostTitle")}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t("adminPages.agents.howReported")}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t("adminPages.agents.lostText")}
+            </p>
+          </div>
+        </div>
+        {reports.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t("adminPages.agents.noReports")}
+          </p>
+        ) : (
+          <ul className="divide-y border-t">
+            {reports.map((r) => {
+              const agent = agents.find((a) => a.id === r.agentId)!
+              const off = turnedOff.includes(r.agentId)
+              return (
+                <li
+                  key={r.agentId}
+                  className="flex flex-wrap items-center gap-3 py-4"
+                >
+                  <span className="min-w-0 flex-1 basis-80">
+                    <span className="block text-base text-foreground">
+                      {t("adminPages.agents.reportLine", {
+                        name: agent.name,
+                        problem: t(`adminPages.agents.problem.${r.problem}`),
+                      })}
+                    </span>
+                    <span className="block text-sm text-muted-foreground">
+                      {t("adminPages.agents.reportDetail", {
+                        via: t(`adminPages.agents.via.${r.via}`),
+                        when: r.when,
+                        count: r.unsent,
+                      })}
+                    </span>
+                  </span>
+                  {off ? (
+                    <Pill tone="grey">{t("adminPages.agents.access.off")}</Pill>
+                  ) : (
+                    <Button
+                      size="xl"
+                      variant="secondary"
+                      className="px-7 text-primary"
+                      onClick={() => setTurnedOff((ids) => [...ids, r.agentId])}
+                    >
+                      {t("adminPages.agents.turnOff", {
+                        name: agent.name.split(" ")[0],
+                      })}
+                    </Button>
+                  )}
+                </li>
+              )
             })}
-          </Button>
-        ) : null}
+          </ul>
+        )}
       </section>
+
+      <ReportPhone
+        agent={reporting}
+        onClose={() => setReporting(null)}
+        onReport={(report, turnOff) => {
+          setReports((list) => [...list, report])
+          if (turnOff) setTurnedOff((ids) => [...ids, report.agentId])
+          setReporting(null)
+        }}
+      />
       <AddPerson
         open={adding}
         onClose={() => setAdding(false)}
@@ -372,6 +462,84 @@ export function Agents() {
         }}
       />
     </div>
+  )
+}
+
+/** The admin reports a phone for an agent who called, texted or came in. */
+function ReportPhone({
+  agent,
+  onClose,
+  onReport,
+}: {
+  agent: Agent | null
+  onClose: () => void
+  onReport: (report: PhoneReport, turnOff: boolean) => void
+}) {
+  const { t } = useTranslation()
+  const [problem, setProblem] = useState<PhoneProblem>("lost")
+  const [via, setVia] = useState<ReportedVia>("call")
+  if (!agent) return null
+  const report = (turnOff: boolean) =>
+    onReport(
+      {
+        agentId: agent.id,
+        problem,
+        via,
+        when: t("adminPages.agents.justNow"),
+        unsent: 0,
+      },
+      turnOff
+    )
+
+  return (
+    <Sheet
+      open
+      onClose={onClose}
+      icon={<ShieldAlert aria-hidden />}
+      tone="red"
+      title={t("adminPages.agents.reportTitle", { name: agent.name })}
+    >
+      <p id="report-problem" className="text-sm font-medium text-foreground">
+        {t("adminPages.agents.whatHappened")}
+      </p>
+      <ChoiceChips
+        labelledBy="report-problem"
+        options={(["lost", "stolen", "broken"] as const).map((p) => ({
+          value: p,
+          label: t(`lostPhone.reason.${p}`),
+        }))}
+        value={problem}
+        onChange={(p) => setProblem(p)}
+      />
+      <p id="report-via" className="text-sm font-medium text-foreground">
+        {t("adminPages.agents.howTold")}
+      </p>
+      <ChoiceChips
+        labelledBy="report-via"
+        options={(["call", "sms", "inPerson"] as const).map((v) => ({
+          value: v,
+          label: t(`adminPages.agents.viaChip.${v}`),
+        }))}
+        value={via}
+        onChange={(v) => setVia(v)}
+      />
+      <Button
+        size="xl"
+        variant="destructive"
+        className="w-full"
+        onClick={() => report(true)}
+      >
+        {t("adminPages.agents.reportAndTurnOff")}
+      </Button>
+      <Button
+        size="xl"
+        variant="secondary"
+        className="w-full text-primary"
+        onClick={() => report(false)}
+      >
+        {t("adminPages.agents.reportOnly")}
+      </Button>
+    </Sheet>
   )
 }
 
@@ -709,11 +877,7 @@ export function HelpDesk() {
               : t("adminPages.help.unassigned", { place: open.place })}
           </p>
           {open.voiceNote ? (
-            <Button
-              size="xl"
-              variant="secondary"
-              className="gap-3 pl-2 text-primary"
-            >
+            <LaterPhaseButton className="gap-3 self-start pl-2">
               <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Play aria-hidden className="size-5" />
               </span>
@@ -721,7 +885,7 @@ export function HelpDesk() {
                 farmer: open.farmer.split(" ")[0],
                 length: open.voiceNote,
               })}
-            </Button>
+            </LaterPhaseButton>
           ) : null}
           <p className="text-sm text-muted-foreground">
             {t("adminPages.help.adviceFrom")}
@@ -790,14 +954,9 @@ export function Impact() {
         title={t("adminPages.impact.title")}
         subtitle={t("adminPages.impact.subtitle", { season: impact.season })}
         action={
-          <Button
-            size="xl"
-            variant="secondary"
-            className="px-8 text-primary"
-            onClick={() => window.print()}
-          >
+          <LaterPhaseButton className="px-8">
             {t("adminPages.impact.download")}
-          </Button>
+          </LaterPhaseButton>
         }
       />
       <StatTiles
