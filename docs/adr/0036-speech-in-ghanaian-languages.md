@@ -13,7 +13,7 @@ GhanaNLP's Khaya API translates English into Twi, Ewe and Dagbani, and speaks al
 ## Decision
 **A SpeechService:**
 - `GET /api/speech?lang=tw|ee|dag&text=<English sentence>` returns the sentence spoken in that language.
-- On the server: it translates with Khaya `POST /v1/translate` (`{"in", "lang": "en-tw"}`), then speaks with `POST /tts/v1/tts` (`{"text", "language": "twi"}`, WAV).
+- On the server: it translates with Khaya Translation v2 `POST /v2/translate` (`{"in", "lang": "en-tw"}`), then speaks with Text-To-Speech v2 `POST /tts/v2/synthesize` (`{"text", "language": "twi"}`, WAV). Version 1 of both APIs is deprecated, so the app uses v2. When subscribing on the Khaya portal, choose **Translation API v2** and **Text-To-Speech API v2**.
 - The base URL is `https://translation-api.ghananlp.org`, with the key in the `Ocp-Apim-Subscription-Key` header.
 
 **Each sentence is made once:**

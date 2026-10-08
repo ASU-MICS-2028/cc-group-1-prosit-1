@@ -31,8 +31,9 @@ public sealed class NoSpeechProvider : ISpeechProvider
 }
 
 /// <summary>
-/// GhanaNLP Khaya (the API the Khaya SDK uses): POST /v1/translate {"in", "lang": "en-tw"} returns the text;
-/// POST /tts/v1/tts {"text", "language": "twi"} returns WAV audio. Authenticated with Ocp-Apim-Subscription-Key.
+/// GhanaNLP Khaya, current versions (v1 of both is deprecated): POST /v2/translate {"in", "lang": "en-tw"}
+/// returns the text; POST /tts/v2/synthesize {"text", "language": "twi"} returns WAV audio. Same bodies as
+/// v1, new paths (checked against the Khaya SDK). Authenticated with Ocp-Apim-Subscription-Key.
 /// </summary>
 public sealed class KhayaSpeechProvider(HttpClient http) : ISpeechProvider
 {
@@ -61,7 +62,7 @@ public sealed class KhayaSpeechProvider(HttpClient http) : ISpeechProvider
             return null;
         }
 
-        using var translate = await http.PostAsJsonAsync("v1/translate", new { @in = english, lang = codes.Pair }, cancellationToken);
+        using var translate = await http.PostAsJsonAsync("v2/translate", new { @in = english, lang = codes.Pair }, cancellationToken);
         if (!translate.IsSuccessStatusCode)
         {
             return null;
@@ -75,7 +76,7 @@ public sealed class KhayaSpeechProvider(HttpClient http) : ISpeechProvider
             return null;
         }
 
-        using var tts = await http.PostAsJsonAsync("tts/v1/tts", new { text = translated, language = codes.Voice }, cancellationToken);
+        using var tts = await http.PostAsJsonAsync("tts/v2/synthesize", new { text = translated, language = codes.Voice }, cancellationToken);
         var type = tts.Content.Headers.ContentType?.MediaType ?? "audio/wav";
         if (!tts.IsSuccessStatusCode || !type.StartsWith("audio/", StringComparison.Ordinal))
         {

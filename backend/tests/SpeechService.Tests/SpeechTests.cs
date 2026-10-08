@@ -47,7 +47,7 @@ public sealed class KhayaProviderTests
         var (provider, fake) = Provider(request =>
         {
             key = request.Headers.GetValues("Ocp-Apim-Subscription-Key").Single();
-            return request.RequestUri!.AbsolutePath.EndsWith("/v1/translate", StringComparison.Ordinal)
+            return request.RequestUri!.AbsolutePath.EndsWith("/v2/translate", StringComparison.Ordinal)
                 ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("\"Me ho yɛ\"", Encoding.UTF8, "application/json") }
                 : Audio();
         });
@@ -56,7 +56,7 @@ public sealed class KhayaProviderTests
         Assert.Equal("Me ho yɛ", spoken.Translated);
         Assert.Equal("audio/wav", spoken.ContentType);
         Assert.Equal("test-key", key);
-        Assert.Equal(["/v1/translate", "/tts/v1/tts"], fake.Calls);
+        Assert.Equal(["/v2/translate", "/tts/v2/synthesize"], fake.Calls);
     }
 
     [Fact]
