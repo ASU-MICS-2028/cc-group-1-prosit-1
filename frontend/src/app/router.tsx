@@ -460,6 +460,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "money/loans/:id/approved",
+        handle: { hideBottomNav: true },
         lazy: () =>
           import("@/features/officer/money").then((m) => ({
             Component: m.LoanApproved,
