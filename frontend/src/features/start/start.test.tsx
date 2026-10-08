@@ -69,22 +69,18 @@ describe("start screens", () => {
     ).not.toBeInTheDocument()
   })
 
-  it("previews a language without saving it, then saves it on Continue", async () => {
+  it("continues in English; Twi, Ewe and Dagbani are listed for a later phase", async () => {
     const { router } = renderRoute("/language", { firstRun: true })
     expect(await screen.findByRole("radio", { name: /English/ })).toBeChecked()
-
+    expect(screen.getByRole("radio", { name: /Twi/ })).toBeDisabled()
     await userEvent.click(screen.getByRole("radio", { name: /Twi/ }))
-    expect(
-      screen.getByRole("button", { name: "Continue in Twi" })
-    ).toBeInTheDocument()
     expect(localStorage.getItem("agroconnect.lang")).toBeNull()
 
-    await userEvent.click(screen.getByRole("radio", { name: /Eʋegbe/ }))
     await userEvent.click(
-      screen.getByRole("button", { name: "Continue in Eʋegbe" })
+      screen.getByRole("button", { name: "Continue in English" })
     )
     await waitFor(() => expect(router.state.location.pathname).toBe("/who"))
-    expect(localStorage.getItem("agroconnect.lang")).toBe("ee")
+    expect(localStorage.getItem("agroconnect.lang")).toBe("en")
   })
 
   it("asks who you are once the language is known", async () => {

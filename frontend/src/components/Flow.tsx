@@ -322,6 +322,7 @@ export function Confirmation({
   primary,
   secondary,
   sample = false,
+  back,
 }: {
   illustration?: string
   badge: string
@@ -332,9 +333,12 @@ export function Confirmation({
   primary: { to: string; label: string }
   secondary?: { to: string; label: string }
   sample?: boolean
+  /** A Back button to the list this result came from (where there is one) */
+  back?: { to: string; label: string }
 }) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 pb-36 md:pb-0">
+      {back ? <BackHeader title={back.label} to={back.to} /> : null}
       <IllustrationCard name={illustration} className="h-52 py-3" />
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-secondary px-3 text-sm font-medium text-primary">

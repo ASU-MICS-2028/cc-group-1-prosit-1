@@ -112,9 +112,31 @@ describe("officer requests, money and market", () => {
     expect(
       screen.getByText("No previous loan to check repayment")
     ).toBeInTheDocument()
-    await userEvent.click(screen.getByRole("link", { name: "Approve GH₵ 800" }))
+    await userEvent.click(
+      screen.getByRole("button", { name: "Approve GH₵ 800" })
+    )
     expect(
       await screen.findByText("Ama's loan is approved")
+    ).toBeInTheDocument()
+    // Back to the list: the loan now shows as approved
+    await userEvent.click(screen.getByRole("button", { name: "Back" }))
+    expect(
+      await screen.findByRole("link", {
+        name: /Ama Boateng · GH₵ 800.*Approved/,
+      })
+    ).toBeInTheDocument()
+  })
+
+  it("declines a loan and says so on the list", async () => {
+    renderRoute("/money/loans/l2")
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Decline" })
+    )
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Issah Abdulai's loan is declined"
+    )
+    expect(
+      screen.getByRole("link", { name: /Issah Abdulai · GH₵ 600.*Declined/ })
     ).toBeInTheDocument()
   })
 
