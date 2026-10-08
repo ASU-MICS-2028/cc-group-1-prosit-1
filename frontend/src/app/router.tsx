@@ -45,6 +45,16 @@ export const routes: RouteObject[] = [
       { index: true, lazy: () => import("@/features/farmer/FarmerHomePage") },
       { path: "help", lazy: () => import("@/features/account/HelpPage") },
       {
+        path: "help/ask",
+        handle: { hideBottomNav: true },
+        lazy: () => import("@/features/account/GetHelpPage"),
+      },
+      {
+        path: "help/requests/:id",
+        handle: { hideBottomNav: true },
+        lazy: () => import("@/features/account/HelpRequestPage"),
+      },
+      {
         path: "profile",
         lazy: () => import("@/features/farmer/FarmerProfilePage"),
       },

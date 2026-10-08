@@ -1,6 +1,15 @@
-import { AlertTriangle, Camera, CheckCircle2, Phone, X } from "lucide-react"
+import {
+  AlertTriangle,
+  Camera,
+  CheckCircle2,
+  Phone,
+  Send,
+  X,
+} from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
+import { askForHelp } from "@/api/help"
 import { ApiError } from "@/api/client"
 import {
   checkCrop,
@@ -60,6 +69,38 @@ export function Component() {
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState<string | null>(null)
   const [result, setResult] = useState<CropCheck | null>(null)
+  const [asking, setAsking] = useState(false)
+  const navigate = useNavigate()
+
+  /** "Ask my officer to confirm": the check goes to the officer as a help request, with the signs. */
+  async function askOfficer() {
+    if (!result || !crop) return
+    setAsking(true)
+    setProblem(null)
+    try {
+      const sent = await askForHelp({
+        category: "crops",
+        crop,
+        problem: result.likelyProblem,
+        text: t("farmerApp.cropCheck.askText", {
+          crop: t(`register.crops.${crop}`),
+          signs: symptoms
+            .map((s) => t(`farmerApp.cropCheck.symptoms.${s}`))
+            .join(", "),
+        }),
+        voiceNoteBase64: null,
+        voiceNoteType: null,
+        voiceSeconds: null,
+      })
+      void navigate(`/farmer/help/requests/${sent.id}`)
+    } catch (error) {
+      setProblem(
+        error instanceof ApiError ? error.message : t("errors.generic")
+      )
+    } finally {
+      setAsking(false)
+    }
+  }
   const photo = useLeafPhoto()
   const fileInput = useRef<HTMLInputElement>(null)
 
@@ -128,13 +169,26 @@ export function Component() {
             </p>
           </div>
           <div className="flex flex-col gap-3 md:flex-row">
+            {/* Sends the crop, the likely problem and the signs to the farmer's officer (HelpService) */}
+            <Button
+              size="xl"
+              className="md:w-72"
+              disabled={asking}
+              onClick={() => void askOfficer()}
+            >
+              <Send aria-hidden />
+              {t("farmerApp.cropCheck.askOfficer")}
+            </Button>
             {officer ? (
               <a
                 href={`tel:${officer.phoneE164}`}
-                className={cn(buttonVariants({ size: "xl" }), "md:w-72")}
+                className={cn(
+                  buttonVariants({ size: "xl", variant: "secondary" }),
+                  "text-primary md:w-60"
+                )}
               >
                 <Phone aria-hidden />
-                {t("farmerApp.cropCheck.askOfficer")}
+                {t("farmerApp.rows.call")}
               </a>
             ) : null}
             <Button

@@ -4,7 +4,6 @@ import {
   Check,
   CheckCheck,
   Clock,
-  Hash,
   KeyRound,
   MessageSquare,
   Phone,
@@ -26,19 +25,27 @@ import { toE164 } from "@/lib/phone"
 import { listen } from "@/lib/speech"
 import { fullName, ghanaPhone, required, type Problem } from "@/lib/validate"
 import { cn } from "@/lib/utils"
+import type { TFunction } from "i18next"
+import { ApiError } from "@/api/client"
+import {
+  getHelpDesk,
+  reassignHelpRequest,
+  remindOfficer,
+  voiceNoteUrl,
+  type RequestItem,
+} from "@/api/help"
+import { NoDataYet } from "@/features/farmer/DataStatus"
+import { useServerData } from "@/features/farmer/useServerData"
 import {
   adminCooperative,
   agents,
   agentTotal,
-  helpCounts,
-  helpRequests,
   impact,
   regionReport,
   systemHealth,
   phoneReports,
   type Access,
   type Agent,
-  type HelpStatus,
   type OrderStatus,
   type PhoneProblem,
   type PhoneReport,
@@ -789,30 +796,88 @@ export function Cooperatives() {
   )
 }
 
-const helpTone: Record<HelpStatus, Tone> = {
-  waiting: "amber",
-  overdue: "amber",
-  answered: "green",
-}
-const viaIcon = { call: Phone, message: MessageSquare, ussd: Hash } as const
+type DeskFilter = "waiting" | "overdue" | "answered"
 
-/** Help desk (Figma P4 · D4): the admin steps in when a farmer waits too long for their officer. */
+const deskClock = (s: number) =>
+  `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`
+
+/** "2 days", "5 hours", "20 minutes": how long a question has waited. */
+function waited(iso: string, t: TFunction) {
+  const minutes = Math.max(
+    1,
+    Math.round((Date.now() - Date.parse(iso)) / 60000)
+  )
+  if (minutes < 60) return t("adminPages.help.minutes", { count: minutes })
+  const hours = Math.round(minutes / 60)
+  if (hours < 48) return t("adminPages.help.hours", { count: hours })
+  return t("adminPages.help.days", { count: Math.round(hours / 24) })
+}
+
+/**
+ * Help desk (Figma P4 · D4, HelpService): every farmer's question in the admin's area, overdue ones first.
+ * Advice comes from the farmer's officer; the admin reminds them, or gives the question to the officer
+ * with the fewest open questions.
+ */
 export function HelpDesk() {
   const { t } = useTranslation()
-  const [filter, setFilter] = useState<HelpStatus | "all">("all")
-  const [openId, setOpenId] = useState(helpRequests[0].id)
+  const state = useServerData("admin-help-desk", getHelpDesk)
+  const [filter, setFilter] = useState<DeskFilter | null>(null)
+  const [openId, setOpenId] = useState<string | null>(null)
+  const [changed, setChanged] = useState<Record<string, RequestItem>>({})
   const [done, setDone] = useState<Record<string, string>>({})
-  const shown = helpRequests.filter(
-    (r) => filter === "all" || r.status === filter
+  const [busy, setBusy] = useState(false)
+  const [failed, setFailed] = useState<string | null>(null)
+  const desk = state.data
+  const items = (desk?.requests ?? []).map((r) => changed[r.id] ?? r)
+  const isOpen = (r: RequestItem) =>
+    r.status === "waiting" || r.status === "still_needs_help"
+  const shown = items.filter((r) =>
+    filter === null
+      ? true
+      : filter === "overdue"
+        ? r.overdue
+        : filter === "waiting"
+          ? isOpen(r)
+          : !isOpen(r)
   )
-  const open = helpRequests.find((r) => r.id === openId) ?? helpRequests[0]
+  const open = items.find((r) => r.id === openId) ?? shown[0]
+  const loads = desk?.officers ?? []
+  const current = loads.find((o) => o.id === open?.officerId)
+  const lightest = loads.find((o) => o.id !== open?.officerId)
+
+  async function act(run: () => Promise<RequestItem>, note: string) {
+    if (!open) return
+    setBusy(true)
+    setFailed(null)
+    try {
+      const item = await run()
+      setChanged((c) => ({ ...c, [item.id]: item }))
+      setDone((d) => ({ ...d, [item.id]: note }))
+    } catch (error) {
+      setFailed(error instanceof ApiError ? error.message : t("errors.generic"))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function playVoice() {
+    if (!open) return
+    const url = await voiceNoteUrl(open.id)
+    if (url) listen(t("requests.voiceOnly"), url)
+  }
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t("adminPages.help.title")}
-        subtitle={t("adminPages.help.subtitle")}
-        action={
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl leading-9 font-semibold text-primary">
+            {t("adminPages.help.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t("adminPages.help.subtitle")}
+          </p>
+        </div>
+        {desk ? (
           <div
             role="group"
             aria-label={t("adminPages.help.filter")}
@@ -823,7 +888,7 @@ export function HelpDesk() {
                 key={s}
                 type="button"
                 aria-pressed={filter === s}
-                onClick={() => setFilter(filter === s ? "all" : s)}
+                onClick={() => setFilter(filter === s ? null : s)}
                 className={cn(
                   "h-12 rounded-full px-5 text-base outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   filter === s
@@ -831,147 +896,196 @@ export function HelpDesk() {
                     : "bg-secondary text-foreground"
                 )}
               >
-                {t(`adminPages.help.count.${s}`, { count: helpCounts[s] })}
+                {t(`adminPages.help.count.${s}`, { count: desk[s] })}
               </button>
             ))}
           </div>
-        }
-      />
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,640fr)_minmax(0,464fr)]">
-        <ul className="divide-y rounded-[20px] border bg-card px-5 py-2">
-          {shown.map((r) => {
-            const Icon = viaIcon[r.via]
-            return (
+        ) : null}
+      </header>
+      {!desk ? (
+        <NoDataYet state={state} />
+      ) : items.length === 0 ? (
+        <p className="rounded-[20px] border border-dashed p-6 text-center text-muted-foreground">
+          {t("adminPages.help.none")}
+        </p>
+      ) : (
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,640fr)_minmax(0,464fr)]">
+          <ul className="divide-y rounded-[20px] border bg-card px-5 py-2">
+            {shown.map((r) => (
               <li key={r.id}>
                 <button
                   type="button"
                   onClick={() => setOpenId(r.id)}
-                  aria-current={r.id === open.id ? "true" : undefined}
+                  aria-current={r.id === open?.id ? "true" : undefined}
                   className="flex w-full items-center gap-3 py-3.5 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <span
                     aria-hidden
                     className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"
                   >
-                    <Icon className="size-5" />
+                    {r.hasVoiceNote ? (
+                      <Phone className="size-5" />
+                    ) : (
+                      <MessageSquare className="size-5" />
+                    )}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span
                       className={cn(
-                        "block text-base text-foreground",
-                        r.id === open.id && "font-medium"
+                        "block truncate text-base text-foreground",
+                        r.id === open?.id && "font-medium"
                       )}
                     >
-                      {r.farmer}: {r.title}
+                      {r.farmerName}:{" "}
+                      {r.text ?? t(`help.category.${r.category}`)}
                     </span>
                     <span className="block text-sm text-muted-foreground">
-                      {r.officer
-                        ? t("adminPages.help.officerLine", {
-                            officer: r.officer,
-                            waited: r.waited,
-                            status: t(
-                              r.status === "answered"
-                                ? "adminPages.help.answeredLower"
-                                : "adminPages.help.waitingLower"
-                            ),
-                          })
+                      {r.officerName
+                        ? t(
+                            isOpen(r)
+                              ? "adminPages.help.officerWaiting"
+                              : "adminPages.help.officerAnswered",
+                            {
+                              officer: r.officerName.split(" ")[0],
+                              waited: waited(r.createdAt, t),
+                            }
+                          )
                         : t("adminPages.help.noOfficer")}
                     </span>
                   </span>
-                  <Pill tone={helpTone[r.status]}>
-                    {t(`adminPages.help.status.${r.status}`)}
+                  <Pill
+                    tone={!isOpen(r) ? "green" : r.overdue ? "red" : "amber"}
+                  >
+                    {t(
+                      `adminPages.help.status.${!isOpen(r) ? "answered" : r.overdue ? "overdue" : "waiting"}`
+                    )}
                   </Pill>
                 </button>
               </li>
-            )
-          })}
-        </ul>
-        <section className="space-y-4 rounded-[20px] border bg-card p-5">
-          <h2 className="text-xl font-medium text-foreground">
-            {t("adminPages.help.waited", {
-              farmer: open.farmer,
-              waited: open.waited,
-            })}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {open.officer
-              ? t("adminPages.help.assigned", {
-                  place: open.place,
-                  officer: open.officer,
-                  sent: open.sent,
-                })
-              : t("adminPages.help.unassigned", { place: open.place })}
-          </p>
-          {open.voiceNote ? (
-            <Button
-              size="xl"
-              variant="secondary"
-              className="gap-3 self-start pl-2 text-primary"
-              onClick={() => listen(open.voiceNote!.transcript)}
-            >
-              <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <Play aria-hidden className="size-5" />
-              </span>
-              {t("adminPages.help.play", {
-                farmer: open.farmer.split(" ")[0],
-                length: open.voiceNote.length,
-              })}
-            </Button>
-          ) : null}
-          <p className="text-sm text-muted-foreground">
-            {t("adminPages.help.adviceFrom")}
-          </p>
-          {done[open.id] ? (
-            <p
-              role="status"
-              className="flex items-center gap-2 rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-primary"
-            >
-              <Check aria-hidden className="size-4" />
-              {done[open.id]}
-            </p>
-          ) : open.suggestion ? (
-            <>
-              <p className="rounded-2xl bg-cream px-4 py-3 text-sm text-foreground">
-                {open.suggestion.text}
+            ))}
+          </ul>
+          {open ? (
+            <section className="space-y-4 rounded-[20px] border bg-card p-5">
+              <h2 className="text-xl font-medium text-foreground">
+                {t("adminPages.help.waited", {
+                  farmer: open.farmerName,
+                  waited: waited(open.createdAt, t),
+                })}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {[
+                  open.community,
+                  open.officerName
+                    ? t("adminPages.help.assignedTo", {
+                        officer: open.officerName,
+                      })
+                    : t("adminPages.help.unassignedShort"),
+                  t(`help.category.${open.category}`),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
+              {open.text ? (
+                <p className="text-base text-foreground">{open.text}</p>
+              ) : null}
+              {open.hasVoiceNote ? (
                 <Button
                   size="xl"
                   variant="secondary"
-                  className="text-primary"
-                  onClick={() =>
-                    setDone((d) => ({
-                      ...d,
-                      [open.id]: t("adminPages.help.reassigned", {
-                        officer: open.suggestion!.reassignTo,
-                      }),
-                    }))
-                  }
+                  className="gap-3 self-start pl-2 text-primary"
+                  onClick={() => void playVoice()}
                 >
-                  {t("adminPages.help.reassign", {
-                    officer: open.suggestion.reassignTo,
+                  <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Play aria-hidden className="size-5" />
+                  </span>
+                  {t("adminPages.help.play", {
+                    farmer: open.farmerName.split(" ")[0],
+                    length: deskClock(open.voiceSeconds ?? 0),
                   })}
                 </Button>
-                {open.officer ? (
-                  <Button
-                    size="xl"
-                    onClick={() =>
-                      setDone((d) => ({
-                        ...d,
-                        [open.id]: t("adminPages.help.remindedOfficer", {
-                          officer: open.officer,
-                        }),
-                      }))
-                    }
-                  >
-                    {t("adminPages.help.remind", { officer: open.officer })}
-                  </Button>
-                ) : null}
-              </div>
-            </>
+              ) : null}
+              {open.answer ? (
+                <p className="rounded-2xl bg-secondary px-4 py-3 text-sm text-primary">
+                  {t("adminPages.help.answer", { answer: open.answer })}
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {t("adminPages.help.adviceFrom")}
+                </p>
+              )}
+              <FieldError id="desk-error" message={failed ?? undefined} />
+              {done[open.id] ? (
+                <p
+                  role="status"
+                  className="flex items-center gap-2 rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-primary"
+                >
+                  <Check aria-hidden className="size-4" />
+                  {done[open.id]}
+                </p>
+              ) : isOpen(open) ? (
+                <>
+                  {lightest ? (
+                    <p className="rounded-2xl bg-cream px-4 py-3 text-sm text-foreground">
+                      {current
+                        ? t("adminPages.help.suggest", {
+                            officer: current.fullName.split(" ")[0],
+                            open: current.open,
+                            other: lightest.fullName.split(" ")[0],
+                            district: lightest.district ?? "",
+                            otherOpen: lightest.open,
+                          })
+                        : t("adminPages.help.suggestNoOfficer", {
+                            other: lightest.fullName.split(" ")[0],
+                            otherOpen: lightest.open,
+                          })}
+                    </p>
+                  ) : null}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {lightest ? (
+                      <Button
+                        size="xl"
+                        variant="secondary"
+                        className="text-primary"
+                        disabled={busy}
+                        onClick={() =>
+                          void act(
+                            () => reassignHelpRequest(open.id, lightest.id),
+                            t("adminPages.help.reassigned", {
+                              officer: lightest.fullName.split(" ")[0],
+                            })
+                          )
+                        }
+                      >
+                        {t("adminPages.help.reassign", {
+                          officer: lightest.fullName.split(" ")[0],
+                        })}
+                      </Button>
+                    ) : null}
+                    {open.officerName ? (
+                      <Button
+                        size="xl"
+                        disabled={busy}
+                        onClick={() =>
+                          void act(
+                            () => remindOfficer(open.id),
+                            t("adminPages.help.remindedOfficer", {
+                              officer: open.officerName!.split(" ")[0],
+                            })
+                          )
+                        }
+                      >
+                        {t("adminPages.help.remind", {
+                          officer: open.officerName.split(" ")[0],
+                        })}
+                      </Button>
+                    ) : null}
+                  </div>
+                </>
+              ) : null}
+            </section>
           ) : null}
-        </section>
-      </div>
+        </div>
+      )}
     </div>
   )
 }

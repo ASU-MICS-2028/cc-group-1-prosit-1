@@ -75,7 +75,8 @@
     "requestsOpen_one": "{{count}} waiting for advice",
     "requestsOpen_other": "{{count}} waiting for advice",
     "loansToReview_one": "{{count}} loan to review",
-    "loansToReview_other": "{{count}} loans to review"
+    "loansToReview_other": "{{count}} loans to review",
+    "requestsHint": "Questions from your farmers"
   },
   "register": {
     "title": "Register a farmer",
@@ -539,7 +540,7 @@
     "row": "Get help",
     "short": "Answers to common questions",
     "question": "How can we help?",
-    "oneMinute": "Short answer · tap the speaker to listen",
+    "oneMinute": "1 minute · tap to listen",
     "call": "Call the MoFA help line",
     "callHours": "Free · 8am to 5pm",
     "sms": "Send us an SMS",
@@ -565,6 +566,68 @@
         "title": "Who to call",
         "text": "Your extension officer is your first contact for advice and changes to your details."
       }
+    },
+    "ask": "Ask a question",
+    "askHint": "Record it in your language",
+    "lessons": "Short lessons",
+    "lessonsHint": "Listen and learn, even offline",
+    "yourQuestions": "Your questions",
+    "voiceQuestion": "Your voice question",
+    "category": {
+      "my_details": "My details",
+      "money": "Money or loan",
+      "crops": "My crops",
+      "other": "Something else"
+    },
+    "status": {
+      "waiting": "Waiting",
+      "answered": "Answered",
+      "solved": "Solved",
+      "still_needs_help": "Still needs help"
+    },
+    "ask_": {
+      "title": "Get help",
+      "question": "What is the problem?",
+      "hold": "Hold to record your question",
+      "anyLanguage": "Speak in any language",
+      "letGo": "Let go to stop",
+      "recording": "Recording {{length}} of {{max}}",
+      "recorded": "Your voice note · {{length}}",
+      "playBack": "Play your voice note",
+      "delete": "Delete the voice note",
+      "orType": "Or type it (optional)",
+      "send": "Send to my officer",
+      "sending": "Sending…",
+      "callInstead": "Call the help line instead",
+      "note": "Your question goes to your extension officer. We reply by SMS or call you back.",
+      "chooseCategory": "Choose what the problem is about.",
+      "sayIt": "Record your question or type it.",
+      "tooLong": "Keep it under 1,000 letters, or record it instead.",
+      "mic": {
+        "unsupported": "This phone cannot record here. Type your question instead.",
+        "denied": "The microphone is blocked. Allow it in your browser settings, or type your question."
+      }
+    },
+    "request": {
+      "title": "Your question",
+      "listen": "Listen to the answer",
+      "sent": "sent {{when}}",
+      "voice": "Your voice note · {{length}}",
+      "received": "Received",
+      "withOfficer": "{{name}}, your extension officer, has it",
+      "withHelpDesk": "The help desk has it",
+      "answered": "Answer sent",
+      "solved": "Solved",
+      "tellUs": "Tell us if it helped",
+      "thanks": "Thank you for telling us",
+      "done": "done",
+      "notYet": "not yet",
+      "answer": "Answer",
+      "waitingNote": "Your officer will answer soon. If it takes long, MoFA's help desk steps in.",
+      "helped": "Yes, this helped",
+      "stillNeed": "I still need help",
+      "backWithOfficer": "Sent back to your officer. They will contact you again.",
+      "solvedNote": "Glad it helped."
     }
   },
   "install": {
@@ -761,7 +824,8 @@
       "takePhoto": "Take a photo",
       "removePhoto": "Remove the photo",
       "yourPhoto": "Your leaf photo",
-      "askOfficer": "Ask my officer to confirm"
+      "askOfficer": "Ask my officer to confirm",
+      "askText": "Check my crop: {{crop}}. Signs: {{signs}}."
     },
     "harvest": {
       "title": "Harvest forecast",
@@ -1137,14 +1201,30 @@
     "answered": "Answered",
     "guess": "The app thinks: {{guess}}",
     "yourAdvice": "Your advice",
-    "sent": "Advice sent to {{farmer}} by SMS",
+    "sent": "Advice sent to {{farmer}}",
     "addVisit": "Add a farm visit",
     "sendAdvice": "Send advice",
     "loanText": "{{farmer}} needs help with a seed loan application.",
     "openLoans": "Open loans",
     "orderText": "The cooperative wants your approval for a group order.",
     "orderApproved": "Order approved",
-    "approveOrder": "Approve order"
+    "approveOrder": "Approve order",
+    "none": "No questions from your farmers yet. They ask from Help in their app, or from Check my crop.",
+    "cropLine": "{{crop}}: {{problem}}",
+    "voiceOnly": "Voice question",
+    "status": {
+      "new": "New",
+      "overdue": "Overdue",
+      "answered": "Answered",
+      "solved": "Solved",
+      "still_needs_help": "Asked again"
+    },
+    "playVoice": "Play {{name}}'s voice note · {{length}}",
+    "stillNeeds": "The farmer said your last answer did not solve it. Advise again, or add a farm visit.",
+    "adviceRequired": "Write your advice before sending.",
+    "adviceTooLong": "Keep it under 2,000 letters: it goes by SMS.",
+    "sending": "Sending…",
+    "solved": "{{farmer}} said this helped"
   },
   "officerMoney": {
     "title": "Money and farm health",
@@ -1344,10 +1424,24 @@
       "adviceFrom": "Advice comes from the farmer's officer, not the help desk:",
       "reassign": "Reassign to {{officer}}",
       "remind": "Remind {{officer}}",
-      "reassigned": "Given to {{officer}}. The farmer gets an SMS with their new officer.",
+      "reassigned": "Given to {{officer}}. The farmer's question is now with them.",
       "remindedOfficer": "Reminder sent to {{officer}}.",
       "waitingLower": "waiting",
-      "answeredLower": "answered"
+      "answeredLower": "answered",
+      "none": "No questions from farmers in your area yet.",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "hours_one": "{{count}} hour",
+      "hours_other": "{{count}} hours",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "officerWaiting": "Officer: {{officer}} · waiting {{waited}}",
+      "officerAnswered": "Officer: {{officer}} · answered",
+      "assignedTo": "assigned to {{officer}} (extension officer)",
+      "unassignedShort": "no officer assigned",
+      "answer": "Answer sent: {{answer}}",
+      "suggest": "{{officer}} has {{open}} open questions. {{other}} ({{district}}) has {{otherOpen}}. Remind {{officer}}, or give this question to {{other}}.",
+      "suggestNoOfficer": "This farmer has no officer. {{other}} has {{otherOpen}} open questions."
     },
     "impact": {
       "title": "Impact report",

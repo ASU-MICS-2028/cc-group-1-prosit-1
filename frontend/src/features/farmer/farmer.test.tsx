@@ -280,18 +280,82 @@ describe("my details and changes", () => {
 })
 
 describe("farm services", () => {
-  it("prices: every crop, the week's change, the farmer's own crops marked, and sample data said", async () => {
-    farmerServer()
-    renderRoute("/farmer/prices", { as: "farmer" })
+  it("prices: the farmer's crops first, filters, and a page per crop with SMS alerts", async () => {
+    let saved: unknown = null
+    farmerServer({
+      "GET /api/farmer/alerts": () =>
+        json(200, {
+          priceCrops: [],
+          heavyRain: true,
+          drySpell: true,
+          hasPhone: true,
+        }),
+      "PUT /api/farmer/alerts": (body) => {
+        saved = body
+        return json(200, { ...(body as object), hasPhone: true })
+      },
+    })
+    const { router } = renderRoute("/farmer/prices", { as: "farmer" })
 
     expect(await screen.findByText("Sample data")).toBeInTheDocument()
-    expect(screen.getAllByText("+4%").length).toBeGreaterThan(0)
-    expect(screen.getAllByText("-2%").length).toBeGreaterThan(0)
-    expect(screen.getByText("Maize · Tamale · 30 days")).toBeInTheDocument()
-    expect(screen.getAllByText("Your crop").length).toBeGreaterThan(0)
+    expect(screen.getByText("+4%")).toBeInTheDocument()
+    // My crops (maize, groundnut) by default: rice is not one of them
+    expect(screen.queryByRole("link", { name: /Rice/ })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole("radio", { name: "Grains" }))
+    expect(screen.getByRole("link", { name: /Rice/ })).toHaveAttribute(
+      "href",
+      "/farmer/prices/rice"
+    )
 
-    await userEvent.click(screen.getAllByRole("button", { name: /Rice/ })[0])
-    expect(screen.getByText("Rice · Tamale · 30 days")).toBeInTheDocument()
+    await userEvent.click(screen.getByRole("link", { name: /Rice/ }))
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/farmer/prices/rice")
+    )
+    expect(
+      await screen.findByText(/Down GH₵ 0.24 \(2%\) this week/)
+    ).toBeInTheDocument()
+    expect(screen.getByText("Other markets near you")).toBeInTheDocument()
+    expect(screen.getByText("Savelugu")).toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole("button", { name: "SMS me when the price changes" })
+    )
+    expect(
+      await screen.findByText(/We will SMS you when the Rice price moves/)
+    ).toBeInTheDocument()
+    expect(saved).toEqual({
+      priceCrops: ["rice"],
+      heavyRain: true,
+      drySpell: true,
+    })
+  })
+
+  it("SMS alerts: each switch is saved at once", async () => {
+    const saves: unknown[] = []
+    farmerServer({
+      "GET /api/farmer/alerts": () =>
+        json(200, {
+          priceCrops: ["maize"],
+          heavyRain: true,
+          drySpell: false,
+          hasPhone: true,
+        }),
+      "PUT /api/farmer/alerts": (body) => {
+        saves.push(body)
+        return json(200, { ...(body as object), hasPhone: true })
+      },
+    })
+    renderRoute("/farmer/alerts", { as: "farmer" })
+    const maize = await screen.findByRole("switch", {
+      name: /Maize price changes/,
+    })
+    expect(maize).toBeChecked()
+    await userEvent.click(screen.getByRole("switch", { name: /Dry spell/ }))
+    await waitFor(() =>
+      expect(saves).toEqual([
+        { priceCrops: ["maize"], heavyRain: true, drySpell: true },
+      ])
+    )
+    expect(screen.getByRole("switch", { name: /Dry spell/ })).toBeChecked()
   })
 
   it("weather: today, the advice and the next 7 days", async () => {
@@ -367,6 +431,57 @@ describe("farm services", () => {
     expect(
       screen.getByRole("checkbox", { name: "Holes in leaves" })
     ).not.toBeChecked()
+  })
+
+  it("crop check: Ask my officer to confirm sends the check to the officer", async () => {
+    const sent: unknown[] = []
+    farmerServer({
+      "POST /api/farmer/crop-check": () =>
+        json(200, {
+          source: "sample",
+          likelyProblem: "fall_armyworm",
+          urgent: false,
+          advice: ["check_under_leaves"],
+        }),
+      "POST /api/help/requests": (body) => {
+        sent.push(body)
+        return json(200, {
+          id: "q1",
+          category: "crops",
+          text: "x",
+          crop: "maize",
+          problem: "fall_armyworm",
+          hasVoiceNote: false,
+          voiceSeconds: null,
+          status: "waiting",
+          officerName: "Fuseini Alhassan",
+          answer: null,
+          answeredAt: null,
+          createdAt: "2026-10-08T09:00:00Z",
+        })
+      },
+      "GET /api/help/requests": () => json(200, []),
+    })
+    const { router } = renderRoute("/farmer/crop-check", { as: "farmer" })
+    await userEvent.click(await screen.findByRole("radio", { name: "Maize" }))
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "Holes in leaves" })
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Check" }))
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Ask my officer to confirm" })
+    )
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/farmer/help/requests/q1")
+    )
+    expect(sent).toEqual([
+      expect.objectContaining({
+        category: "crops",
+        crop: "maize",
+        problem: "fall_armyworm",
+        text: "Check my crop: Maize. Signs: Holes in leaves.",
+      }),
+    ])
   })
 
   it("harvest, cooperative and lessons", async () => {

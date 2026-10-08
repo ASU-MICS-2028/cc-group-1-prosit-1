@@ -42,7 +42,12 @@ export function Picture({
 }) {
   const online = useOnline()
   const [failed, setFailed] = useState(false)
-  const usePhoto = !failed && !wantsToSaveData() && (online || hasTried(source))
+  // No photo at all (an emoji-only choice, e.g. "Something else"): the emoji, without trying a file.
+  const usePhoto =
+    source.photo !== "" &&
+    !failed &&
+    !wantsToSaveData() &&
+    (online || hasTried(source))
 
   if (!usePhoto) {
     return (

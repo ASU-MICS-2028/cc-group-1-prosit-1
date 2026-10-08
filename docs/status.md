@@ -116,11 +116,18 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 **Frontend only, no backend yet** (labelled "Coming in a later phase"):
 - Money: seed loan, insurance, get paid, delivery tracking;
 - cooperative savings, meeting attendance, group order, selling together;
-- officer Requests (advice to farmers), Money and farm health, loan review, officer Market;
-- admin Regions, Agents (invites, access, phone reports), Cooperatives, Help desk, Impact, System, and the Overview map, trend, channels and money tiles;
+- officer Money and farm health, loan review, officer Market;
+- admin Regions, Agents (invites, access, phone reports), Cooperatives, Impact, System, and the Overview map, trend, channels and money tiles;
 - lost or stolen phone reports from Profile;
 - Nigeria and Kenya, Yorùbá and Kiswahili;
-- the help desk voice note (read by the device voice), Download report (PDF), Call the driver.
+- Download report (PDF), Call the driver.
+
+**Made real on 2026-10-08 (ADR 0035, 0036):**
+- Get help and Ask my officer to confirm, with voice notes;
+- officer Requests;
+- admin Help desk;
+- SMS alert settings (saved; sending waits for the SMS provider);
+- speech in Twi, Ewe and Dagbani (waits for the Khaya key).
 
 **No recordings yet:**
 - speaker buttons and lessons use the phone's own voice until the recorded prompts (ADR 0014) exist.
