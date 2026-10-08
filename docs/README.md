@@ -51,5 +51,7 @@ Still to write: `architecture.md` (diagram), `ussd-menu.md`, `consent-form.md`, 
 | [0030](adr/0030-desktop-top-bar-and-account-menu.md) | A top bar and an account menu on computers | Superseded by its 2026-10-07 amendment (Figma sidebar) |
 | [0031](adr/0031-farmer-services-with-sample-providers.md) | The farmer's app and farm services, built now with sample providers | Accepted |
 | [0032](adr/0032-sync-service.md) | The sync service: how the server stores what officers saved offline | Accepted |
+| [0033](adr/0033-mofa-admin-accounts-and-overview.md) | MoFA admin accounts, their area, and the Overview | Accepted |
+| [0034](adr/0034-mobile-money-with-paystack.md) | Mobile money through Paystack | Accepted |
 
 **Proposed** means recommended but waiting for the owning team member to confirm.

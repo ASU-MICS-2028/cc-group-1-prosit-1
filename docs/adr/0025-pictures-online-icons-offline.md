@@ -28,6 +28,8 @@ Every picture therefore needs a matching icon, which the tiles already have.
 - **Icons only, no pictures:** lightest, but the team reviewed the icon-only design and found it dull and harder to recognise.
 - **Inline pictures as data URLs in the bundle:** the same weight as precaching, and it breaks the JavaScript budget.
 
+**Amended 2026-10-07: the team's source files, unchanged.** The drawings and crop photos come straight from the design team's source files, kept by the designers and in Figma; only their CREDITS files are in Git, under `design/assets/` (the working files are 24 MB and the app does not need them). Files exported from Figma frames are no longer used: some were distorted. Each drawing is copied byte for byte (SVG with its own `viewBox`, so it scales without stretching; the server gzips it on the way). Crop photos are the original JPGs, not re-encoded, so no detail is lost; they are larger than WebP (44 to 377 KB) but load once and are then kept on the phone. Cards fit a picture inside (`object-contain`) or crop the edges of a photo (`object-cover`); nothing is ever stretched. The "Hello, Akwaaba! Choose your language" banner is real text beside the people drawing. The source folders stay out of `frontend/public/`, so they are not shipped with the app or saved on install.
+
 ## Consequences
 - The first time a farmer or officer sees a screen offline, they get icons; once they have been online, they get pictures.
 - Designers keep an icon for every picture. A new picture without an icon is not allowed.

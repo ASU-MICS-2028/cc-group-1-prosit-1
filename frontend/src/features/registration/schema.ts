@@ -123,11 +123,11 @@ export const STEPS = [
     illustration: "registration-form",
     fields: ["fullName", "phone", "hasNoPhone"],
   },
-  { key: "farm", illustration: "welcome", fields: ["crops", "farmSize"] },
+  { key: "farm", illustration: "farmer-home", fields: ["crops", "farmSize"] },
   { key: "location", illustration: "gps-location", fields: [] },
   { key: "contact", illustration: "audio-prompts", fields: [] },
   { key: "money", illustration: "registration-form", fields: [] },
-  { key: "help", illustration: "welcome", fields: [] },
+  { key: "help", illustration: "farmer-home", fields: [] },
 ] as const satisfies readonly {
   key: string
   illustration: string

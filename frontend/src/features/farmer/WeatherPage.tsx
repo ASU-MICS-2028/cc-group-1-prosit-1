@@ -15,7 +15,10 @@ function weekday(date: string) {
   }).format(new Date(`${date}T12:00:00Z`))
 }
 
-/** Weather (Figma P2 · D2): today with the farm advice, then the next 7 days. */
+/**
+ * Weather (Figma P2 · D2): today with the farm advice, then the next 7 days as a list, one row per day
+ * (day, sky, chance of rain, high and low), so every day is visible on a phone without scrolling sideways.
+ */
 export function Component() {
   const { t } = useTranslation()
   const state = useServerData("weather", getWeather)
@@ -48,6 +51,12 @@ export function Component() {
                   {t(`farmerApp.weather.conditions.${weather.today.condition}`)}
                 </p>
                 <p className="text-sm text-muted-foreground">
+                  {t("farmerApp.weather.highLow", {
+                    max: weather.today.maxC,
+                    min: weather.today.minC,
+                  })}
+                </p>
+                <p className="text-sm text-muted-foreground">
                   {t("farmerApp.weather.rain", {
                     percent: weather.today.rainChancePercent,
                   })}{" "}
@@ -60,27 +69,61 @@ export function Component() {
             </p>
           </section>
 
-          <section aria-labelledby="weather-next" className="space-y-3">
+          <section
+            aria-labelledby="weather-next"
+            className="space-y-3 md:max-w-2xl"
+          >
             <SectionTitle id="weather-next">
               {t("farmerApp.weather.next")}
             </SectionTitle>
-            <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-7 md:overflow-visible md:px-0">
+            <ul className="divide-y rounded-[20px] border bg-card">
               {weather.nextDays.map((day) => (
                 <li
                   key={day.date}
-                  className="flex w-24 shrink-0 snap-start flex-col items-center gap-2 rounded-[20px] border bg-card px-2 py-4 md:w-auto"
+                  className="flex items-center gap-3 px-4 py-3"
                 >
-                  <span className="text-sm text-muted-foreground">
+                  <span className="w-10 shrink-0 text-base font-medium text-foreground">
                     {weekday(day.date)}
                   </span>
                   <WeatherIcon condition={day.condition} />
-                  <span className="text-xl font-medium text-foreground">
-                    {day.maxC}°
+                  <span className="min-w-0 flex-1 space-y-1.5">
+                    <span className="block text-sm text-foreground">
+                      {t(`farmerApp.weather.conditions.${day.condition}`)}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="h-1.5 w-full max-w-28 overflow-hidden rounded-full bg-secondary"
+                      >
+                        <span
+                          className="block h-full rounded-full bg-primary"
+                          style={{ width: `${day.rainChancePercent}%` }}
+                        />
+                      </span>
+                      <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                        {t("farmerApp.weather.rain", {
+                          percent: day.rainChancePercent,
+                        })}
+                      </span>
+                    </span>
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {t("farmerApp.weather.rain", {
-                      percent: day.rainChancePercent,
+                  <span className="sr-only">
+                    {t("farmerApp.weather.highLow", {
+                      max: day.maxC,
+                      min: day.minC,
                     })}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-right tabular-nums"
+                  >
+                    <span className="text-lg font-medium text-foreground">
+                      {day.maxC}°
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {" "}
+                      / {day.minC}°
+                    </span>
                   </span>
                 </li>
               ))}

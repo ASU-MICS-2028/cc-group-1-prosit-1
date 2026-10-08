@@ -17,6 +17,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<Photo> Photos => Set<Photo>();
 
+    public DbSet<Wallet> Wallets => Set<Wallet>();
+
+    public DbSet<Payment> Payments => Set<Payment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AppUser>(user =>
@@ -72,6 +76,29 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             photo.Property(p => p.ContentType).HasMaxLength(50);
             photo.HasOne<Farmer>().WithMany().HasForeignKey(p => p.FarmerId).OnDelete(DeleteBehavior.Restrict);
             photo.HasOne<AppUser>().WithMany().HasForeignKey(p => p.UploadedById).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Wallet>(wallet =>
+        {
+            wallet.ToTable("wallets");
+            wallet.Property(w => w.Id).ValueGeneratedNever();
+            wallet.Property(w => w.PhoneE164).HasMaxLength(16);
+            wallet.Property(w => w.RecipientCode).HasMaxLength(50);
+            wallet.HasIndex(w => w.FarmerId).IsUnique();
+            wallet.HasOne<Farmer>().WithMany().HasForeignKey(w => w.FarmerId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Payment>(payment =>
+        {
+            payment.ToTable("payments");
+            payment.Property(p => p.Id).ValueGeneratedNever();
+            payment.Property(p => p.Description).HasMaxLength(100);
+            payment.Property(p => p.PhoneE164).HasMaxLength(16);
+            payment.Property(p => p.Reference).HasMaxLength(50);
+            payment.Property(p => p.ProviderMessage).HasMaxLength(300);
+            payment.HasIndex(p => p.Reference).IsUnique();
+            payment.HasIndex(p => new { p.FarmerId, p.CreatedAt });
+            payment.HasOne<Farmer>().WithMany().HasForeignKey(p => p.FarmerId).OnDelete(DeleteBehavior.Restrict);
         });
 
         UseSnakeCaseNames(modelBuilder);

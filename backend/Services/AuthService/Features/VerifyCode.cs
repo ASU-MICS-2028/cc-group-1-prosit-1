@@ -88,7 +88,8 @@ public sealed class VerifyCode : IFeature
         AppDbContext db, PhoneNumber phone, UserRole role, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var user = await db.Users.FirstOrDefaultAsync(u => u.PhoneE164 == phone.E164 && u.Role == role, cancellationToken);
-        if (user is not null || role == UserRole.Officer)
+        // Officer and admin accounts are made by an admin (or the seed); only a farmer account is made here.
+        if (user is not null || role != UserRole.Farmer)
         {
             return user;
         }

@@ -12,7 +12,7 @@ import {
 
 export interface NavItem {
   to: string
-  key: `nav.${"home" | "farmers" | "visits" | "requests" | "market" | "money" | "profile" | "help"}`
+  key: `nav.${"home" | "farmers" | "visits" | "requests" | "market" | "money" | "profile" | "help" | "overview"}`
   icon: LucideIcon
   end: boolean
 }

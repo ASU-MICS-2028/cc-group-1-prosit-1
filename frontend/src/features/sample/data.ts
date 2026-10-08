@@ -65,7 +65,7 @@ export const inputs: readonly InputProduct[] = [
     name: "Maize seed (certified)",
     unit: "10 kg bag",
     price: 185,
-    picture: { photo: "crops/maize", emoji: "ear-of-corn" },
+    picture: { photo: "crops/maize.jpg", emoji: "ear-of-corn" },
   },
   {
     code: "npk",
@@ -86,7 +86,7 @@ export const inputs: readonly InputProduct[] = [
     name: "Sorghum seed",
     unit: "5 kg bag",
     price: 60,
-    picture: { photo: "crops/sorghum", emoji: "sheaf-of-rice" },
+    picture: { photo: "crops/sorghum.jpg", emoji: "sheaf-of-rice" },
   },
 ]
 
@@ -221,7 +221,7 @@ export const requests: readonly FarmerRequest[] = [
     guess: "Nitrogen shortage, about 6 in 10 chance",
     advice:
       "Side-dress with urea, one bottle cap per plant, after the next rain.",
-    picture: { photo: "crops/maize", emoji: "ear-of-corn" },
+    picture: { photo: "crops/maize.jpg", emoji: "ear-of-corn" },
   },
   {
     id: "r3",
@@ -329,42 +329,42 @@ export const loans: readonly LoanApplication[] = [
 export const marketPrices = [
   {
     crop: "Maize",
-    picture: { photo: "crops/maize", emoji: "ear-of-corn" },
+    picture: { photo: "crops/maize.jpg", emoji: "ear-of-corn" },
     tamale: 6.77,
     savelugu: 6.62,
     change: 0,
   },
   {
     crop: "Groundnut",
-    picture: { photo: "crops/groundnut", emoji: "peanuts" },
+    picture: { photo: "crops/groundnut.jpg", emoji: "peanuts" },
     tamale: 14.57,
     savelugu: 14.23,
     change: 2,
   },
   {
     crop: "Sorghum",
-    picture: { photo: "crops/sorghum", emoji: "sheaf-of-rice" },
+    picture: { photo: "crops/sorghum.jpg", emoji: "sheaf-of-rice" },
     tamale: 6.81,
     savelugu: 7.52,
     change: 1,
   },
   {
     crop: "Rice",
-    picture: { photo: "crops/rice", emoji: "sheaf-of-rice" },
+    picture: { photo: "crops/rice.jpg", emoji: "sheaf-of-rice" },
     tamale: 12.21,
     savelugu: 11.53,
     change: 0,
   },
   {
     crop: "Yam",
-    picture: { photo: "crops/yam", emoji: "sweet-potato" },
+    picture: { photo: "crops/yam.jpg", emoji: "sweet-potato" },
     tamale: 5.66,
     savelugu: 6.09,
     change: 0,
   },
   {
     crop: "Cassava",
-    picture: { photo: "crops/cassava", emoji: "potato" },
+    picture: { photo: "crops/cassava.jpg", emoji: "potato" },
     tamale: 3.23,
     savelugu: 3.3,
     change: 2,

@@ -44,7 +44,9 @@ export function Component() {
   const roles = desktop ? [officer, admin] : [officer, farmer]
 
   return (
-    <ScreenShell brand={{ tagline: t("start.brand"), illustration: "welcome" }}>
+    <ScreenShell
+      brand={{ tagline: t("start.brand"), illustration: "farmer-home" }}
+    >
       <BackButton to="/language" />
       <div className="space-y-1">
         <QuestionTitle title={t("who.title")} audioKey="who" size="page" />

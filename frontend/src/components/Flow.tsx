@@ -273,7 +273,7 @@ export function CountStepper({
  * your phone"), what happened, the receipt rows, and the next actions.
  */
 export function Confirmation({
-  illustration = "receipt.webp",
+  illustration = "receipt",
   badge,
   title,
   text,

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 
 /** A picture from public/pictures and the emoji that stands in for it (public/emoji). */
 export interface PictureSource {
-  /** Path under public/pictures without the extension, e.g. "crops/maize" */
+  /** Path under public/pictures: "crops/maize.jpg", or without an extension for a .webp file ("options/goat") */
   photo: string
   /** File in public/emoji without .svg, e.g. "ear-of-corn" */
   emoji: string
@@ -56,7 +56,7 @@ export function Picture({
   }
   return (
     <img
-      src={`/pictures/${source.photo}.webp`}
+      src={`/pictures/${source.photo.includes(".") ? source.photo : `${source.photo}.webp`}`}
       alt={alt}
       loading="lazy"
       decoding="async"

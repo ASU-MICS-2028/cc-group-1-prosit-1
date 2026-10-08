@@ -285,7 +285,8 @@ describe("log-in helpers", () => {
   it("reads the role from the address", () => {
     expect(roleFrom("farmer")).toBe("farmer")
     expect(roleFrom("officer")).toBe("officer")
-    expect(roleFrom("admin")).toBe("officer")
+    expect(roleFrom("admin")).toBe("admin")
+    expect(roleFrom("superuser")).toBe("officer")
     expect(roleFrom(undefined)).toBe("officer")
   })
 

@@ -26,7 +26,7 @@ export function Component() {
   if (desktop) {
     return (
       <ScreenShell
-        brand={{ tagline: t("start.brand"), illustration: "welcome" }}
+        brand={{ tagline: t("start.brand"), illustration: "farmer-home" }}
       >
         <FarmerOnComputer
           actions={

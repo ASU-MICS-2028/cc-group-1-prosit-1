@@ -66,6 +66,18 @@ public sealed class RequestCodeTests(PostgresFixture database) : AuthTestBase(da
     }
 
     [Fact]
+    public async Task Texts_a_known_admin_but_not_an_officer_asking_as_admin()
+    {
+        await AddOfficerAsync(AdminPhone, UserRole.Admin);
+        await AddOfficerAsync();
+
+        await SendAsync(AdminPhone, UserRole.Admin);
+        await SendAsync(OfficerPhone, UserRole.Admin);
+
+        await Sms.Received(1).SendAsync(PhoneNumber.Parse(AdminPhone), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Rejects_a_number_that_is_not_a_Ghana_number() =>
         await ApiAssert.FailsAsync(StatusCodes.Status400BadRequest, "INVALID_PHONE", () => SendAsync("12345", UserRole.Officer));
 

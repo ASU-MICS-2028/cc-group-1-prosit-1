@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { getHarvestForecast } from "@/api/farmer"
+import { RangeChart } from "@/components/Charts"
 import i18n from "@/i18n"
 import { NoDataYet } from "./DataStatus"
 import { FarmerPage } from "./FarmerPage"
@@ -34,29 +35,34 @@ export function Component() {
           {t("farmerApp.harvest.none")}
         </p>
       ) : (
-        <ul className="grid gap-4 md:grid-cols-2">
-          {forecast.crops.map((c) => (
-            <li
-              key={c.crop}
-              className="space-y-1 rounded-[20px] border bg-card p-5"
-            >
-              <p className="text-base font-medium text-foreground">
-                {t(`register.crops.${c.crop}`)}
-              </p>
-              <p className="text-2xl font-semibold text-primary">
-                {t("farmerApp.harvest.bags", {
-                  low: c.lowBags,
-                  high: c.highBags,
-                })}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {t("farmerApp.harvest.ready", {
-                  month: monthName(c.harvestMonth),
-                })}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <section
+          aria-labelledby="harvest-chart"
+          className="space-y-3 rounded-[20px] border bg-card p-5 md:max-w-2xl"
+        >
+          <h2
+            id="harvest-chart"
+            className="text-base font-medium text-foreground"
+          >
+            {t("farmerApp.harvest.chartTitle")}
+          </h2>
+          <RangeChart
+            title={t("farmerApp.harvest.chartTitle")}
+            unit={t("farmerApp.harvest.axis")}
+            lowLabel={t("farmerApp.harvest.atLeast")}
+            highLabel={t("farmerApp.harvest.couldReach")}
+            rowHeader={t("farmerApp.harvest.crop")}
+            noteHeader={t("farmerApp.harvest.when")}
+            format={(low, high) => t("farmerApp.harvest.range", { low, high })}
+            rows={forecast.crops.map((c) => ({
+              label: t(`register.crops.${c.crop}`),
+              note: t("farmerApp.harvest.ready", {
+                month: monthName(c.harvestMonth),
+              }),
+              low: c.lowBags,
+              high: c.highBags,
+            }))}
+          />
+        </section>
       )}
     </FarmerPage>
   )

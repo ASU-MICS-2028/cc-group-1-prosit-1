@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
+using AgroConnect.AdminService;
 using AgroConnect.Api.OpenApi;
 using AgroConnect.AuthService;
 using AgroConnect.Data;
 using AgroConnect.FarmerService;
+using AgroConnect.MoneyService;
 using AgroConnect.PlatformService;
 using AgroConnect.SharedLibrary;
 using AgroConnect.SharedLibrary.Features;
@@ -60,7 +62,9 @@ builder.Services
     .AddPlatformService()
     .AddAuthService(builder.Configuration)
     .AddFarmerService()
-    .AddSyncService();
+    .AddSyncService()
+    .AddAdminService()
+    .AddMoneyService(builder.Configuration);
 
 var app = builder.Build();
 

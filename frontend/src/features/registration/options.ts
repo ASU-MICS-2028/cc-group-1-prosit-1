@@ -6,18 +6,24 @@
 export const GENDERS = ["female", "male", "other", "prefer_not_to_say"] as const
 export const AGE_BANDS = ["18-25", "26-35", "36-50", "over_50"] as const
 export const CROPS = [
-  { code: "maize", picture: { photo: "crops/maize", emoji: "ear-of-corn" } },
+  {
+    code: "maize",
+    picture: { photo: "crops/maize.jpg", emoji: "ear-of-corn" },
+  },
   {
     code: "sorghum",
-    picture: { photo: "crops/sorghum", emoji: "sheaf-of-rice" },
+    picture: { photo: "crops/sorghum.jpg", emoji: "sheaf-of-rice" },
   },
-  { code: "rice", picture: { photo: "crops/rice", emoji: "sheaf-of-rice" } },
+  {
+    code: "rice",
+    picture: { photo: "crops/rice.jpg", emoji: "sheaf-of-rice" },
+  },
   {
     code: "groundnut",
-    picture: { photo: "crops/groundnut", emoji: "peanuts" },
+    picture: { photo: "crops/groundnut.jpg", emoji: "peanuts" },
   },
-  { code: "yam", picture: { photo: "crops/yam", emoji: "sweet-potato" } },
-  { code: "cassava", picture: { photo: "crops/cassava", emoji: "potato" } },
+  { code: "yam", picture: { photo: "crops/yam.jpg", emoji: "sweet-potato" } },
+  { code: "cassava", picture: { photo: "crops/cassava.jpg", emoji: "potato" } },
 ] as const
 export const AREA_UNITS = ["acres", "hectares"] as const
 export const SOILS = ["sandy", "clay", "loamy", "not_sure"] as const

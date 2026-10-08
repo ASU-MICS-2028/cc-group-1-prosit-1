@@ -24,7 +24,8 @@
     "requests": "Requests",
     "money": "Money",
     "collapse": "Close the menu",
-    "expand": "Open the menu"
+    "expand": "Open the menu",
+    "overview": "Overview"
   },
   "welcome": {
     "hello": "Hello,",
@@ -441,7 +442,6 @@
     "adminTitle": "Admin sign in",
     "adminSms": "Use the phone number MoFA registered for you. We will send a 6-digit code by SMS.",
     "adminHint": "Not an admin? Go back and choose Extension officer.",
-    "adminNotYet": "Admin accounts are not switched on yet. The AgroConnect team is setting them up.",
     "adminPhoneTitle": "Admin works on a computer",
     "adminPhoneText": "The MoFA admin pages need a big screen. Open AgroConnect on a computer and choose MoFA admin.",
     "adminPhoneNote": "Extension officer or farmer? Go back and choose who you are.",
@@ -576,10 +576,19 @@
     "offlineNothingSaved": "No network, and nothing is saved on this device yet. Try again when you have network.",
     "tryAgain": "Try again",
     "home": {
-      "registeredBy": "Registered {{date}} by {{officer}}",
       "services": "Farm services",
-      "mine": "My details and help",
-      "todayWeather": "Today in {{place}}"
+      "openDetails": "{{name}}, saved with MoFA. Open my details",
+      "priceLine": "{{crop}} ₵{{price}}",
+      "priceUp": ", up this week",
+      "priceDown": ", down this week",
+      "weatherLine": "{{max}}° · {{condition}}",
+      "snapLeaf": "Snap a leaf",
+      "harvestLine_one": "About {{count}} bag",
+      "harvestLine_other": "About {{count}} bags",
+      "membersLine_one": "{{count}} member",
+      "membersLine_other": "{{count}} members",
+      "lessonsLine_one": "{{count}} lesson",
+      "lessonsLine_other": "{{count}} lessons"
     },
     "tiles": {
       "prices": "Prices",
@@ -587,24 +596,14 @@
       "cropCheck": "Check my crop",
       "harvest": "Harvest forecast",
       "cooperative": "My cooperative",
-      "lessons": "Lessons",
-      "pricesHint": "What crops sell for today",
-      "weatherHint": "Rain and sun this week",
-      "cropCheckHint": "Something wrong with a plant?",
-      "harvestHint": "How much you may get",
-      "cooperativeHint": "Save, buy and sell together",
-      "lessonsHint": "Short videos and audio",
-      "money": "Money",
-      "moneyHint": "Pay for inputs, loans, insurance and get paid"
+      "lessons": "Lessons"
     },
     "rows": {
       "listen": "Listen to my details",
       "listenHint": "Hear what is saved about you",
-      "details": "My details",
-      "detailsHint": "My farm, my officer, my visits",
       "change": "Change my details",
       "changeHint": "Phone, farm, crops",
-      "call": "Call my officer"
+      "call": "Call my agent"
     },
     "details": {
       "title": "My details",
@@ -661,7 +660,9 @@
         "rain_soon_dont_spray": "Rain is coming. Don't spray today or tomorrow, the rain will wash it off.",
         "dry_spell_water": "A dry week. Water young plants early in the morning and cover the soil.",
         "storm_protect_harvest": "A storm is coming. Bring in or cover any harvest drying outside."
-      }
+      },
+      "highLow": "High {{max}}° · Low {{min}}°",
+      "today": "Today"
     },
     "cropCheck": {
       "title": "Check my crop",
@@ -716,7 +717,14 @@
       "intro": "What your farm could give this season, from its size and crops.",
       "bags": "{{low}} to {{high}} bags of 100 kg",
       "ready": "Usually ready in {{month}}",
-      "none": "Your officer has not recorded your crops yet."
+      "none": "Your officer has not recorded your crops yet.",
+      "chartTitle": "Expected harvest per crop",
+      "axis": "Bags of 100 kg",
+      "atLeast": "At least",
+      "couldReach": "Could reach",
+      "range": "{{low}} to {{high}} bags",
+      "crop": "Crop",
+      "when": "When"
     },
     "cooperative": {
       "title": "My cooperative",
@@ -800,8 +808,6 @@
     "reference": "Reference",
     "link": {
       "title": "Link mobile money",
-      "step1": "Step 1 of 2",
-      "step2": "Step 2 of 2",
       "which": "Which mobile money do you use?",
       "linkNumber": "Link {{number}}",
       "pinNote": "You will approve with your mobile money PIN on your phone. We never ask for it here.",
@@ -809,7 +815,6 @@
       "lookNow": "Look at your phone now. The message closes after 2 minutes.",
       "noPrompt": "No message came?",
       "noPromptHow": "Dial *170# and choose My Approvals.",
-      "approved": "I have approved it",
       "linkedBadge": "Linked",
       "linkedTitle": "{{provider}} is linked",
       "linkedText": "You can now pay shops, take a loan and get paid from this app.",
@@ -919,6 +924,26 @@
       "payTo": "Pay to",
       "waiting": "Waiting for the buyer",
       "another": "Ask another buyer"
+    },
+    "linkFirst": "No mobile money linked yet",
+    "linkFirstHint": "Link your mobile money",
+    "noPayments": "No payments yet.",
+    "status": {
+      "paid": "Paid",
+      "failed": "Did not go through"
+    },
+    "pay": {
+      "title": "Approve the payment",
+      "amountTitle": "{{amount}} to {{to}}",
+      "yourWallet": "Your mobile money",
+      "noPromptOther": "Open your {{network}} menu and look for payments waiting for approval.",
+      "codeHint": "Your network sent you a code by SMS.",
+      "codeLabel": "Code from your network",
+      "sendCode": "Send code",
+      "failedTitle": "The payment did not go through",
+      "failedHow": "No money was taken. Check you have enough in your wallet, then try again.",
+      "needWallet": "Link your mobile money first.",
+      "linkNow": "Link mobile money"
     }
   },
   "coop": {
@@ -1066,11 +1091,43 @@
     "farmer": "Farmer",
     "approvedBy": "Approved by",
     "you": "You",
-    "backToLoans": "Back to loans"
+    "backToLoans": "Back to loans",
+    "axis": "GH₵",
+    "weekHeader": "Week"
   },
   "officerMarket": {
     "title": "Market prices",
     "subtitle": "Price per kg this week",
     "line": "Tamale {{tamale}} · Savelugu {{savelugu}}"
+  },
+  "speech": {
+    "playingIn": "Playing in {{language}}",
+    "pause": "Pause",
+    "resume": "Play again",
+    "stop": "Stop reading"
+  },
+  "admin": {
+    "role": "MoFA admin",
+    "areaRegion": "MoFA, {{region}} Region",
+    "areaDistrict": "MoFA, {{district}} District",
+    "areaNational": "MoFA, all regions",
+    "title": "Overview",
+    "subtitleRegion": "{{region}} Region",
+    "subtitleDistrict": "{{district}} District, {{region}} Region",
+    "subtitleNational": "All regions",
+    "officers": "Extension officers",
+    "farmers": "Farmers registered",
+    "newThisMonth": "Registered this month",
+    "visitsThisMonth": "Visits this month",
+    "officerList": "Extension officers in your area",
+    "colOfficer": "Officer",
+    "colDistrict": "District",
+    "colFarmers": "Farmers",
+    "colThisMonth": "This month",
+    "colVisits": "Visits",
+    "colLastSync": "Last sync",
+    "never": "Not yet",
+    "none": "No extension officers in your area yet.",
+    "accountMenu": "Your account"
   }
 }

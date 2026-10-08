@@ -53,7 +53,8 @@ public static class AuthServiceExtension
 
         services.AddAuthorizationBuilder()
             .AddPolicy(AuthPolicies.Officer, policy => policy.RequireRole(AuthPolicies.Officer))
-            .AddPolicy(AuthPolicies.Farmer, policy => policy.RequireRole(AuthPolicies.Farmer));
+            .AddPolicy(AuthPolicies.Farmer, policy => policy.RequireRole(AuthPolicies.Farmer))
+            .AddPolicy(AuthPolicies.Admin, policy => policy.RequireRole(AuthPolicies.Admin));
 
         services.AddRateLimiter(limiter =>
         {

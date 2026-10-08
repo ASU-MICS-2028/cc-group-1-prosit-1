@@ -737,10 +737,489 @@
           }
         ]
       }
+    },
+    "/api/admin/overview": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "GetAdminOverview",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/money": {
+      "get": {
+        "tags": [
+          "Money"
+        ],
+        "operationId": "GetMoney",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoneyOverview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/money/wallet": {
+      "put": {
+        "tags": [
+          "Money"
+        ],
+        "operationId": "LinkWallet",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkWalletRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/money/payments": {
+      "post": {
+        "tags": [
+          "Money"
+        ],
+        "operationId": "StartPayment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/money/payments/{reference}": {
+      "get": {
+        "tags": [
+          "Money"
+        ],
+        "operationId": "GetPayment",
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/money/payments/{reference}/code": {
+      "post": {
+        "tags": [
+          "Money"
+        ],
+        "operationId": "SendPaymentCode",
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
     }
   },
   "components": {
     "schemas": {
+      "AdminArea": {
+        "required": [
+          "region",
+          "district"
+        ],
+        "type": "object",
+        "properties": {
+          "region": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "district": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AdminOverview": {
+        "required": [
+          "area",
+          "officers",
+          "farmers",
+          "farmersThisMonth",
+          "visitsThisMonth",
+          "officerList"
+        ],
+        "type": "object",
+        "properties": {
+          "area": {
+            "$ref": "#/components/schemas/AdminArea"
+          },
+          "officers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "farmers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "farmersThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "visitsThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "officerList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OfficerSummary"
+            }
+          }
+        }
+      },
       "AgeBand": {
         "enum": [
           "18-25",
@@ -1353,6 +1832,17 @@
           }
         }
       },
+      "LinkWalletRequest": {
+        "required": [
+          "network"
+        ],
+        "type": "object",
+        "properties": {
+          "network": {
+            "$ref": "#/components/schemas/MobileNetwork"
+          }
+        }
+      },
       "MarketPrice": {
         "required": [
           "market",
@@ -1423,6 +1913,42 @@
           null
         ]
       },
+      "MobileNetwork": {
+        "enum": [
+          "mtn",
+          "telecel",
+          "airteltigo"
+        ]
+      },
+      "MoneyOverview": {
+        "required": [
+          "sample",
+          "wallet",
+          "payments"
+        ],
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "boolean"
+          },
+          "wallet": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/WalletInfo"
+              }
+            ]
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentInfo"
+            }
+          }
+        }
+      },
       "MyFarmResponse": {
         "required": [
           "farmer",
@@ -1473,6 +1999,147 @@
             ]
           }
         }
+      },
+      "OfficerSummary": {
+        "required": [
+          "id",
+          "fullName",
+          "phoneE164",
+          "district",
+          "farmers",
+          "farmersThisMonth",
+          "visitsThisMonth",
+          "lastSyncAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phoneE164": {
+            "type": "string"
+          },
+          "district": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "farmers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "farmersThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "visitsThisMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastSyncAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "PayRequest": {
+        "required": [
+          "purpose",
+          "description",
+          "amount"
+        ],
+        "type": "object",
+        "properties": {
+          "purpose": {
+            "$ref": "#/components/schemas/PaymentPurpose"
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "PaymentCodeRequest": {
+        "required": [
+          "code"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "PaymentInfo": {
+        "required": [
+          "reference",
+          "purpose",
+          "description",
+          "amount",
+          "network",
+          "status",
+          "message",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/PaymentPurpose"
+          },
+          "description": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "network": {
+            "$ref": "#/components/schemas/MobileNetwork"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PaymentPurpose": {
+        "enum": [
+          "inputs",
+          "insurance",
+          "loan_repayment",
+          "savings"
+        ]
+      },
+      "PaymentStatus": {
+        "enum": [
+          "waiting",
+          "needs_code",
+          "paid",
+          "failed"
+        ]
       },
       "PhoneType": {
         "enum": [
@@ -1979,7 +2646,8 @@
       "UserRole": {
         "enum": [
           "officer",
-          "farmer"
+          "farmer",
+          "admin"
         ]
       },
       "VerifyCodeRequest": {
@@ -2067,6 +2735,29 @@
           "loans",
           "storage"
         ]
+      },
+      "WalletInfo": {
+        "required": [
+          "network",
+          "phoneE164",
+          "nameOnWallet",
+          "canReceive"
+        ],
+        "type": "object",
+        "properties": {
+          "network": {
+            "$ref": "#/components/schemas/MobileNetwork"
+          },
+          "phoneE164": {
+            "type": "string"
+          },
+          "nameOnWallet": {
+            "type": "string"
+          },
+          "canReceive": {
+            "type": "boolean"
+          }
+        }
       },
       "WeatherAdvice": {
         "enum": [
@@ -2173,6 +2864,12 @@
     },
     {
       "name": "Sync"
+    },
+    {
+      "name": "Admin"
+    },
+    {
+      "name": "Money"
     }
   ]
 }

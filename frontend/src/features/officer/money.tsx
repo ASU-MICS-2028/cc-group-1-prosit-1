@@ -15,6 +15,7 @@ import {
   InfoCard,
   SampleBadge,
 } from "@/components/Flow"
+import { ColumnChart } from "@/components/Charts"
 import { Picture } from "@/components/Picture"
 import {
   cedis,
@@ -32,7 +33,6 @@ import { cn } from "@/lib/utils"
 export function MoneyHealth() {
   const { t } = useTranslation()
   const s = moneySummary
-  const peak = Math.max(...s.weeks)
   const tiles = [
     [cedis(s.paidToDealers), t("officerMoney.paid"), "bg-secondary"],
     [String(s.activeLoans), t("officerMoney.loans"), "bg-secondary"],
@@ -72,27 +72,19 @@ export function MoneyHealth() {
           className="space-y-3 rounded-[20px] border bg-card p-4"
         >
           <SectionTitle id="weeks">{t("officerMoney.byWeek")}</SectionTitle>
-          <div className="flex h-44 items-end gap-4" role="list">
-            {s.weeks.map((w, i) => (
-              <div
-                key={i}
-                role="listitem"
-                className="flex flex-1 flex-col items-center gap-1.5"
-                aria-label={`${t("officerMoney.week", { n: i + 1 })}: ${cedis(w)}`}
-              >
-                <span className="text-xs text-muted-foreground">
-                  {(w / 1000).toFixed(1)}k
-                </span>
-                <span
-                  className="w-full rounded-t-lg bg-primary"
-                  style={{ height: `${(w / peak) * 120}px` }}
-                />
-                <span className="text-xs text-muted-foreground">
-                  {t("officerMoney.week", { n: i + 1 })}
-                </span>
-              </div>
-            ))}
-          </div>
+          <ColumnChart
+            title={t("officerMoney.byWeek")}
+            unit={t("officerMoney.axis")}
+            itemHeader={t("officerMoney.weekHeader")}
+            items={s.weeks.map((value, i) => ({
+              label: t("officerMoney.week", { n: i + 1 }),
+              value,
+            }))}
+            format={cedis}
+            short={(v) =>
+              v % 1000 === 0 ? `${v / 1000}k` : `${(v / 1000).toFixed(1)}k`
+            }
+          />
         </section>
         <section
           aria-labelledby="problems"

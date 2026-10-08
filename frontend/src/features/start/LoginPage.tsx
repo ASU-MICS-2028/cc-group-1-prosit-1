@@ -16,8 +16,7 @@ import { roleFrom, type CodeScreenState } from "./login"
 
 /**
  * 02a / 02c / D02 / P4 · D0 Log in: the phone number gets a 6-digit SMS code. Officers, farmers and
- * MoFA admins use the same screen with their own words. Admin sign-in is computer only (ADR 0024);
- * the API has no admin accounts yet, so that form says so instead of sending a code.
+ * MoFA admins use the same screen with their own words. Admin sign-in is computer only (ADR 0024).
  */
 export function Component() {
   const { t } = useTranslation()
@@ -26,7 +25,6 @@ export function Component() {
   const admin = param === "admin"
   const role = roleFrom(param)
   const desktop = useIsDesktop()
-  const [notice, setNotice] = useState<string | null>(null)
   const [typed, setTyped] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
@@ -39,10 +37,6 @@ export function Component() {
       return
     }
     setError(null)
-    if (admin) {
-      setNotice(t("login.adminNotYet"))
-      return
-    }
     setSending(true)
     try {
       const sent = await requestCode(phone, role)
@@ -176,14 +170,13 @@ export function Component() {
               id="phone-hint"
               className="px-3 text-sm font-medium text-muted-foreground"
             >
-              {notice ??
-                t(
-                  admin
-                    ? "login.adminHint"
-                    : role === "farmer"
-                      ? "login.shared"
-                      : "login.officerHint"
-                )}
+              {t(
+                admin
+                  ? "login.adminHint"
+                  : role === "farmer"
+                    ? "login.shared"
+                    : "login.officerHint"
+              )}
             </p>
           )}
         </div>

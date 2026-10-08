@@ -1,7 +1,9 @@
 import { Phone, Smartphone, Truck } from "lucide-react"
 import { useState } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
+import { ApiError } from "@/api/client"
+import { startPayment } from "@/api/money"
 import {
   ButtonLink,
   Confirmation,
@@ -12,12 +14,17 @@ import {
 } from "@/components/Flow"
 import { IllustrationCard } from "@/components/IllustrationCard"
 import { Picture } from "@/components/Picture"
-import { cedis, inputs, shops, wallet, type Shop } from "@/features/sample/data"
+import { Button } from "@/components/ui/button"
+import { cedis, inputs, shops, type Shop } from "@/features/sample/data"
+import type { AfterPayment } from "./pay"
+import { useMoney, walletText } from "./wallet"
 
 /** What the buy-inputs steps hand to each other (React Router location state). */
 interface Basket {
   qty: Record<string, number>
   shop?: string
+  /** Set once paid: the payment's reference */
+  reference?: string
 }
 
 const START: Basket = { qty: { maize_seed: 1, npk: 2 } }
@@ -160,14 +167,46 @@ export function ChooseShop() {
   )
 }
 
-/** P3 · 03 Buy inputs, step 3: check the order and pay with mobile money. */
+/**
+ * P3 · 03 Buy inputs, step 3: check the order and pay with mobile money. The products and shops are sample
+ * data until agro-dealers are connected; the payment itself is real (Paystack, ADR 0034), approved on the
+ * farmer's phone on the next screen.
+ */
 export function PayForInputs() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const basket = useBasket()
   const shop = shopById(basket.shop)
   const lines = inputs.filter((p) => (basket.qty[p.code] ?? 0) > 0)
   const fee = shop.fee ?? 0
   const total = itemsTotal(basket.qty) + fee
+  const wallet = useMoney().data?.wallet
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function pay() {
+    setBusy(true)
+    setError(null)
+    try {
+      const payment = await startPayment({
+        purpose: "inputs",
+        description: shop.name,
+        amount: total,
+      })
+      const after: AfterPayment = {
+        next: "/farmer/money/buy/paid",
+        nextState: { ...basket },
+      }
+      void navigate(`/farmer/money/pay/${payment.reference}`, {
+        state: after,
+      })
+    } catch (failure) {
+      setError(
+        failure instanceof ApiError ? failure.message : t("errors.generic")
+      )
+      setBusy(false)
+    }
+  }
 
   return (
     <FlowPage
@@ -175,9 +214,20 @@ export function PayForInputs() {
       step={t("money.buy.step3")}
       sample
       footer={
-        <ButtonLink to="/farmer/money/buy/paid" state={basket}>
-          {t("money.buy.pay", { amount: cedis(total) })}
-        </ButtonLink>
+        wallet ? (
+          <Button
+            size="xl"
+            className="w-full"
+            disabled={busy}
+            onClick={() => void pay()}
+          >
+            {t("money.buy.pay", { amount: cedis(total) })}
+          </Button>
+        ) : (
+          <ButtonLink to="/farmer/money/link">
+            {t("money.pay.linkNow")}
+          </ButtonLink>
+        )
       }
     >
       <InfoCard
@@ -209,12 +259,17 @@ export function PayForInputs() {
       </h2>
       <InfoCard
         tone="cream"
-        title={`${wallet.provider} · ${wallet.number}`}
+        title={wallet ? walletText(wallet) : t("money.pay.needWallet")}
         icon={<Smartphone className="size-5.5" />}
       />
       <p className="text-sm text-muted-foreground">
         {t("money.buy.approvePin")}
       </p>
+      {error ? (
+        <p role="alert" className="text-sm font-medium text-destructive">
+          {error}
+        </p>
+      ) : null}
     </FlowPage>
   )
 }
@@ -225,6 +280,7 @@ export function InputsPaid() {
   const basket = useBasket()
   const shop = shopById(basket.shop)
   const total = itemsTotal(basket.qty) + (shop.fee ?? 0)
+  const wallet = useMoney().data?.wallet
   return (
     <Confirmation
       sample
@@ -239,8 +295,12 @@ export function InputsPaid() {
       )}
       rows={[
         [t("money.buy.paidTo"), shop.name],
-        [t("money.buy.from"), `${wallet.provider} · ${wallet.number}`],
-        [t("money.reference"), "AGC-26-104772"],
+        ...(wallet
+          ? [[t("money.buy.from"), walletText(wallet)] as [string, string]]
+          : []),
+        ...(basket.reference
+          ? [[t("money.reference"), basket.reference] as [string, string]]
+          : []),
       ]}
       total={[t("money.buy.total"), cedis(total)]}
       primary={{ to: "/farmer/money/delivery", label: t("money.buy.track") }}
@@ -273,7 +333,7 @@ export function TrackDelivery() {
         </a>
       }
     >
-      <IllustrationCard name="delivery.webp" className="h-40 py-2" />
+      <IllustrationCard name="delivery" className="h-40 py-2" />
       <InfoCard
         tone="cream"
         title={t("money.delivery.arrives")}

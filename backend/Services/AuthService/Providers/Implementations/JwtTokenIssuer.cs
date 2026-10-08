@@ -24,7 +24,7 @@ public sealed class JwtTokenIssuer(IOptions<AuthOptions> options, IClock clock) 
         var claims = new List<Claim>
         {
             new(AuthClaims.UserId, user.Id.ToString()),
-            new(AuthClaims.Role, user.Role == UserRole.Officer ? AuthPolicies.Officer : AuthPolicies.Farmer),
+            new(AuthClaims.Role, AuthPolicies.For(user.Role)),
         };
         if (user.FarmerId is { } farmerId)
         {

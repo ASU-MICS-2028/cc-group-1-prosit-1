@@ -22,6 +22,7 @@ public sealed class SeededApiFixture : IAsyncLifetime
 {
     public const string OfficerPhone = "+233240000001";
     public const string FarmerPhone = "+233240001234";
+    public const string AdminPhone = "+233240000009";
     public static readonly Guid SampleFarmerId = Guid.Parse("0192f0a0-0000-7000-8000-000000000001");
 
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -42,6 +43,11 @@ public sealed class SeededApiFixture : IAsyncLifetime
             ["Seed:Officers:0:District"] = "Savelugu",
             ["Seed:Officers:1:FullName"] = "Not a phone number",
             ["Seed:Officers:1:Phone"] = "12345",
+            ["Seed:Officers:2:FullName"] = "Abena Mensah",
+            ["Seed:Officers:2:Phone"] = "024 000 0002",
+            ["Seed:Admins:0:FullName"] = "Esi Owusu",
+            ["Seed:Admins:0:Phone"] = AdminPhone,
+            ["Seed:Admins:0:Region"] = "Northern",
             ["Seed:SampleFarmer"] = "true",
             // Tests sign in many times from one address and phone; the limits themselves are tested elsewhere.
             ["Auth:RateLimitPerWindow"] = "1000",

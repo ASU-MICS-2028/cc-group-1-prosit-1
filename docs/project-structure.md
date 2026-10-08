@@ -8,6 +8,7 @@ cc-group-1-prosit-1/
 │   ├── public/  src/  index.html  package.json  vite.config.ts  tsconfig*.json  eslint.config.js ...
 │   ├── Dockerfile  .dockerignore  .nginx/nginx.conf
 │   └── .env.example    (to add)
+├── design/assets/      the licence CREDITS of the design team's pictures; the source files stay with the designers (ignored by Git), the app uses copies in frontend/public
 ├── backend/            the ASP.NET Core 10 solution, C# (section 4)
 │   ├── APIs/  Services/  tests/  openapi/  AgroConnect.sln
 │   └── Dockerfile
@@ -74,7 +75,10 @@ Vite + React + TypeScript. Each screen from the Figma design is one file in `src
 frontend/
 ├── public/
 │   ├── app-icon.svg          the app icon source; pwa-*.png, maskable-icon-512x512.png, apple-touch-icon-180x180.png and favicon.ico are made from it
-│   ├── illustrations/        pictures from Figma, optimised SVG (welcome, language-banner, phone-login, consent, registration-form, gps-location, audio-prompts, saved-waiting), loaded only when shown
+│   ├── illustrations/        the design team's drawings, unchanged SVG copies from design/assets (farmer-home, language-people, phone-login, consent, registration-form, gps-location,
+│   │                         audio-prompts, saved-waiting, all-synced, empty-farmers, agent-home, help-community, cooperative, delivery, link-wallet, receipt, yield-growth); loaded only when shown
+│   ├── pictures/             crops/: the original crop photos (JPG); options/: choice tile pictures (WebP). Shown online, emoji offline (ADR 0025)
+│   ├── emoji/                the offline stand-ins for pictures (Fluent Emoji, bundled with the app)
 │   ├── icons/                small icons from Figma (sprout, user-check, monitor, crops, money, map-pin...)
 │   └── audio/ (next)         en/ tw/ ee/ dag/: one short recorded prompt per question key, e.g. who.mp3
 ├── src/
@@ -114,6 +118,7 @@ frontend/
 │   │   ├── sync/             15 / D18 Sync; sync.ts sends the queue to POST /api/sync in batches of 100 (ADR 0029, 0032)
 │   │   ├── account/          shared by officers and farmers: Profile view, Log out? sheet (25), Change language, Help (24), Install the app (22)
 │   │   ├── profile/          16 / D19 the officer's Profile
+│   │   ├── admin/            the MoFA admin's pages (ADR 0033): AdminLayout (Figma admin sidebar; phone: "Admin works on a computer"), Overview
 │   │   ├── farmer/           the farmer's app (ADR 0031): Home (23), My details, Change my details, Market prices, Weather,
 │   │   │                     Check my crop, Harvest forecast, My cooperative, Lessons, My Profile; useServerData.ts keeps the
 │   │   │                     last answers on the device so the screens open offline
@@ -138,6 +143,10 @@ frontend/
 │   │   ├── PhoneField.tsx    the "+233" phone box; CodeInput.tsx the six code boxes (one real input underneath)
 │   │   ├── AudioButton.tsx   speaker button that plays /audio/<lang>/<key>.mp3
 │   │   ├── Blocks.tsx        shared pieces: section title, back header, list row, offline note, card, label/value facts
+│   │   ├── Charts.tsx        ColumnChart (weekly payments) and RangeChart (harvest per crop): axes, units, gridlines, values, a table for screen readers
+│   │   ├── SpeechOverlay.tsx  Overlay · Playing Audio (Figma): "Playing in Twi", a waveform that fills as the phone reads, the time, pause/play;
+│   │   │                      tap outside or Escape stops. Mounted once in App.tsx, it follows speak() in lib/speech.ts
+│   │   ├── LanguageBanner.tsx "Hello, Akwaaba! Choose your language": real text beside the people drawing
 │   │   ├── FarmerSearch.tsx  "Search farmers" (Home on phones, the top bar on computers)
 │   │   ├── Sheet.tsx         the question that slides up (21 new version, 25 log out); a centred box on computers
 │   │   ├── SyncBadge.tsx     "3 waiting" / "1 to fix" / "All synced", opens Sync
@@ -201,6 +210,13 @@ backend/
 │   │   ├── Providers/Samples/         the stand-ins used today; a live provider replaces one with a line in the extension
 │   │   ├── Langs/en.json              the farmer error messages
 │   │   └── FarmerServiceExtension.cs  AddFarmerService(): registers the providers and endpoints
+│   ├── MoneyService/                  the farmer's mobile money through Paystack (ADR 0034)
+│   │   ├── Features/MoneyEndpoints.cs GET /api/money, PUT /api/money/wallet, POST /api/money/payments, GET and POST .../{reference}(/code)
+│   │   ├── Providers/PaymentGateway.cs IPaymentGateway: PaystackGateway (with a key) or SamplePaymentGateway (without)
+│   │   └── MoneyServiceExtension.cs   AddMoneyService(): picks the provider from "Paystack:SecretKey"
+│   ├── AdminService/                  the MoFA admin's pages (ADR 0033)
+│   │   ├── Features/GetOverview.cs    GET /api/admin/overview: officers, farmers, visits and last sync for the admin's region or district
+│   │   └── AdminServiceExtension.cs   AddAdminService(): registers the endpoint
 │   ├── SyncService/                   stores what officers saved offline (ADR 0032; the contract in ADR 0029)
 │   │   ├── Features/SyncRecords.cs    POST /api/sync: reads each record on its own, owner from the sign-in, newest change wins,
 │   │   │                              one answer per record, one transaction per batch
@@ -229,7 +245,7 @@ backend/
 │           └── DatabaseOptions.cs     the "Database" and "Seed" settings
 ├── tests/                             one test project per code project; CI requires 70% line coverage in each
 │   ├── Shared/                        [UnitTest]/[IntegrationTest] traits, ApiAssert, PostgresFixture (real PostgreSQL in Docker), TestClock
-│   ├── SharedLibrary.Tests/  PlatformService.Tests/  AuthService.Tests/  FarmerService.Tests/  SyncService.Tests/
+│   ├── SharedLibrary.Tests/  PlatformService.Tests/  AuthService.Tests/  FarmerService.Tests/  SyncService.Tests/  AdminService.Tests/  MoneyService.Tests/
 │   └── Api.Tests/                     the whole API in memory: health, errors, sign-in, sync and the farmer app over HTTP against a migrated, seeded database
 ├── openapi/agroconnect.json           GENERATED on dotnet build; committed, the contract the frontend reads
 ├── dotnet-tools.json                  local tools: dotnet-ef (run `dotnet tool restore` once)

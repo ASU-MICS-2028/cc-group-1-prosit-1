@@ -212,7 +212,7 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 | Column | Type | Required | Meaning | Example |
 |---|---|---|---|---|
 | `id` | uuid | yes | The account's unique ID; it goes into the sign-in token | `01a10ac0-450d-7b2c-...` |
-| `role` | integer (code list `UserRole`) | yes | `0` officer, `1` farmer. Decides what the person may see and do | `0` |
+| `role` | integer (code list `UserRole`) | yes | `0` officer, `1` farmer, `2` MoFA admin (ADR 0033). Decides what the person may see and do | `0` |
 | `phone_e164` 🔒 | varchar(16) | yes | Phone number in international form (`+233` + 9 digits), however it was typed ("024 000 0001") | `+233240000001` |
 | `full_name` 🔒 | varchar(100) | yes | Name shown on Home and Profile. For a farmer, copied from their farmer record | `Fuseini Alhassan` |
 | `region` | varchar(100) | no | The officer's region. For a farmer, their region and district | `Northern` |
@@ -359,6 +359,41 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 
 **Rules and indexes:**
 - **Index on `farmer_id`:** all photos of one farmer.
+
+### 4.5a `wallets`: a farmer's linked mobile money (ADR 0034)
+
+**What a row is:** the mobile money wallet a farmer linked, one per farmer. The PIN is never seen or stored: the network asks for it on the phone.
+
+| Column | Type | Required | Meaning | Example |
+|---|---|---|---|---|
+| `id` | uuid | yes | The wallet's ID | |
+| `farmer_id` | uuid | yes | Whose wallet (`farmers.id`); unique, one wallet per farmer | |
+| `network` | integer (`MobileNetwork`) | yes | `0` MTN, `1` Telecel, `2` AirtelTigo | `0` |
+| `phone_e164` 🔒 | varchar(16) | yes | The wallet number; today always the farmer's registered phone | `+233241000001` |
+| `recipient_code` | varchar(50) | no | Paystack's ID for the wallet as a payout recipient, used to send the farmer money | `RCP_1a2b3c` |
+| `created_at`, `updated_at` | timestamptz | yes | When linked, and when last changed (e.g. a new network) | |
+
+### 4.5b `payments`: mobile money payments by farmers (ADR 0034)
+
+**What a row is:** one payment from a farmer's wallet through Paystack, from the moment it starts until it is paid or fails.
+
+| Column | Type | Required | Meaning | Example |
+|---|---|---|---|---|
+| `id` | uuid | yes | The payment's ID | |
+| `farmer_id` | uuid | yes | Who pays (`farmers.id`) | |
+| `purpose` | integer (`PaymentPurpose`) | yes | `0` inputs, `1` insurance, `2` loan repayment, `3` savings | `0` |
+| `description` | varchar(100) | yes | What the farmer sees in their history | `Tolon Agro Inputs` |
+| `amount_pesewas` | bigint | yes | The amount in pesewas (GH₵ 1 = 100), never a rounded decimal | `54550` (GH₵ 545.50) |
+| `network` | integer (`MobileNetwork`) | yes | The wallet's network at the time | `0` |
+| `phone_e164` 🔒 | varchar(16) | yes | The wallet charged | |
+| `reference` | varchar(50) | yes | Our reference, sent to Paystack; unique, so a retry never charges twice | `agc_0192…` |
+| `status` | integer (`PaymentStatus`) | yes | `0` waiting for approval on the phone, `1` needs the code the network texted, `2` paid, `3` failed | `2` |
+| `provider_message` | varchar(300) | no | Paystack's last message, for support | `Approved` |
+| `created_at`, `updated_at` | timestamptz | yes | When started, and last checked | |
+
+**Rules and indexes:**
+- **Unique `reference`.**
+- **Index (`farmer_id`, `created_at`):** a farmer's latest payments.
 
 ### 4.6 `__EFMigrationsHistory`: which database changes are applied
 

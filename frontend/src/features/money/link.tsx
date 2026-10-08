@@ -1,32 +1,64 @@
 import { Check, Lock } from "lucide-react"
 import { useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { ButtonLink, Confirmation, FlowPage, InfoCard } from "@/components/Flow"
+import { ApiError } from "@/api/client"
+import { linkWallet, type MobileNetwork, type WalletInfo } from "@/api/money"
+import { useSession } from "@/auth/session"
+import { Confirmation, FlowPage } from "@/components/Flow"
 import { IllustrationCard } from "@/components/IllustrationCard"
-import { providers, wallet } from "@/features/sample/data"
+import { Button } from "@/components/ui/button"
+import { maskPhone } from "@/lib/phone"
 import { cn } from "@/lib/utils"
+import { NETWORKS, networkLabel, useMoney } from "./wallet"
 
-/** P3 · 02 Link mobile money, step 1: which provider. */
+/**
+ * P3 · 02 Link mobile money: which network the farmer's registered number is on. Linking charges nothing
+ * and asks for no PIN: the wallet is registered with the payment provider, and each payment is approved on
+ * the phone later (ADR 0034).
+ */
 export function LinkWallet() {
   const { t } = useTranslation()
-  const [chosen, setChosen] = useState<string>(providers[0])
+  const navigate = useNavigate()
+  const phone = useSession()?.user.phone ?? ""
+  const money = useMoney()
+  const [chosen, setChosen] = useState<MobileNetwork | null>(null)
+  const network = chosen ?? money.data?.wallet?.network ?? "mtn"
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function link() {
+    setBusy(true)
+    setError(null)
+    try {
+      const wallet = await linkWallet(network)
+      money.reload()
+      void navigate("/farmer/money/link/done", { state: wallet })
+    } catch (failure) {
+      setError(
+        failure instanceof ApiError ? failure.message : t("errors.generic")
+      )
+      setBusy(false)
+    }
+  }
 
   return (
     <FlowPage
       title={t("money.link.title")}
-      step={t("money.link.step1")}
       back="/farmer/money"
-      sample
+      sample={money.data?.sample}
       footer={
-        <ButtonLink
-          to="/farmer/money/link/approve"
-          state={{ provider: chosen }}
+        <Button
+          size="xl"
+          className="w-full"
+          disabled={busy || !phone}
+          onClick={() => void link()}
         >
-          {t("money.link.linkNumber", { number: wallet.number })}
-        </ButtonLink>
+          {t("money.link.linkNumber", { number: maskPhone(phone) })}
+        </Button>
       }
     >
-      <IllustrationCard name="link-wallet.webp" className="h-40 py-2" />
+      <IllustrationCard name="link-wallet" className="h-40 py-2" />
       <h2 className="text-2xl leading-9 font-medium text-foreground">
         {t("money.link.which")}
       </h2>
@@ -35,15 +67,15 @@ export function LinkWallet() {
         aria-label={t("money.link.which")}
         className="space-y-3"
       >
-        {providers.map((p) => {
-          const on = p === chosen
+        {NETWORKS.map((n) => {
+          const on = n.code === network
           return (
             <button
-              key={p}
+              key={n.code}
               type="button"
               role="radio"
               aria-checked={on}
-              onClick={() => setChosen(p)}
+              onClick={() => setChosen(n.code)}
               className={cn(
                 "flex w-full items-center justify-between rounded-full px-5 py-3.5 text-left text-base font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                 on
@@ -51,7 +83,7 @@ export function LinkWallet() {
                   : "bg-secondary text-foreground"
               )}
             >
-              {p}
+              {n.label}
               <span
                 aria-hidden
                 className={cn(
@@ -71,55 +103,35 @@ export function LinkWallet() {
         <Lock aria-hidden className="mt-0.5 size-4 shrink-0" />
         {t("money.link.pinNote")}
       </p>
+      {error ? (
+        <p role="alert" className="text-sm font-medium text-destructive">
+          {error}
+        </p>
+      ) : null}
     </FlowPage>
   )
 }
 
-/** P3 · 02b Approve on your phone: the provider's prompt asks for the PIN, never the app. */
-export function ApproveOnPhone() {
-  const { t } = useTranslation()
-  return (
-    <FlowPage
-      title={t("money.link.title")}
-      step={t("money.link.step2")}
-      sample
-      footer={
-        <ButtonLink to="/farmer/money/link/done">
-          {t("money.link.approved")}
-        </ButtonLink>
-      }
-    >
-      <InfoCard
-        tone="selected"
-        title={`${wallet.provider} · ${wallet.number}`}
-        text={t("money.link.prompt")}
-        picture={{ photo: "options/phone", emoji: "mobile-phone" }}
-      />
-      <p className="text-sm text-muted-foreground">{t("money.link.lookNow")}</p>
-      <InfoCard
-        tone="cream"
-        title={t("money.link.noPrompt")}
-        text={t("money.link.noPromptHow")}
-        picture={{ photo: "options/nokia", emoji: "input-numbers" }}
-      />
-    </FlowPage>
-  )
-}
-
-/** P3 · 02c Mobile money linked. */
+/** P3 · 02c Mobile money linked: the wallet the server registered. */
 export function WalletLinked() {
   const { t } = useTranslation()
+  const fromLink = useLocation().state as WalletInfo | null
+  const money = useMoney()
+  const wallet = fromLink ?? money.data?.wallet
+  if (!wallet) return null
   return (
     <Confirmation
-      illustration="link-wallet.webp"
-      sample
+      illustration="link-wallet"
+      sample={money.data?.sample}
       badge={t("money.link.linkedBadge")}
-      title={t("money.link.linkedTitle", { provider: wallet.provider })}
+      title={t("money.link.linkedTitle", {
+        provider: networkLabel(wallet.network),
+      })}
       text={t("money.link.linkedText")}
       rows={[
-        [t("money.link.provider"), wallet.provider],
-        [t("money.link.number"), wallet.number],
-        [t("money.link.nameOnWallet"), wallet.name],
+        [t("money.link.provider"), networkLabel(wallet.network)],
+        [t("money.link.number"), maskPhone(wallet.phoneE164)],
+        [t("money.link.nameOnWallet"), wallet.nameOnWallet],
         [t("money.link.pin"), t("money.link.neverStored")],
       ]}
       primary={{ to: "/farmer/money", label: t("money.backToMoney") }}

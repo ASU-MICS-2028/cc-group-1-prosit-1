@@ -1,9 +1,15 @@
 import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 import { db, type LocalFarmer } from "@/db/local"
 import { renderRoute, testOfficer } from "@/test/renderRoute"
 import { emptyRegistration, type Registration } from "./schema"
+
+// Pages are lazy chunks compiled on first use. Load them once here, with time to spare on a busy
+// machine, so each test measures the screen and not the compiler.
+beforeAll(async () => {
+  await import("./RegisterPage")
+}, 60_000)
 
 // These tests click through whole registrations (dozens of steps each), and the first one also
 // waits for the form's code to compile; 5 s is too short on a busy machine or a CI runner.
