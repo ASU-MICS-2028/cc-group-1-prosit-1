@@ -147,7 +147,11 @@ export function Component() {
       })
       await navigate("/register/saved", {
         replace: true,
-        state: { name: farmer.fullName, gender: farmer.gender },
+        state: {
+          id: farmer.id,
+          name: farmer.fullName,
+          gender: farmer.gender,
+        },
       })
     } catch {
       closed.current = false

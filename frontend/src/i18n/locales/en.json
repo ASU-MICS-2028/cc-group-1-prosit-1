@@ -280,7 +280,17 @@
       "text_male": "{{name}} is registered. We will send his details to MoFA automatically when you have network. You can keep working.",
       "another": "Register another farmer",
       "home": "Go to home",
-      "someone": "The farmer"
+      "someone": "The farmer",
+      "sending": "Sending {{name}} to MoFA…",
+      "sentBadge": "Sent to MoFA",
+      "sentTitle": "{{name}} is registered",
+      "sentText": "Their details are with MoFA now.",
+      "sentText_female": "Her details are with MoFA now.",
+      "sentText_male": "His details are with MoFA now.",
+      "failedBadge": "Needs fixing",
+      "failedTitle": "{{name}} needs a fix",
+      "failedText": "MoFA could not accept these details. Open the farmer to see what to change.",
+      "fix": "Fix the details"
     },
     "errors": {
       "name": "Enter the farmer’s full name.",
