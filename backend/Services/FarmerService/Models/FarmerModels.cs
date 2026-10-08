@@ -162,9 +162,9 @@ public sealed record CooperativeResponse(
     string Community,
     int Members,
     string ChairName,
-    string ChairPhoneE164,
-    DateOnly NextMeeting,
-    string MeetingPlace);
+    string? ChairPhoneE164,
+    DateOnly? NextMeeting,
+    string? MeetingPlace);
 
 // ---- Lessons ----
 

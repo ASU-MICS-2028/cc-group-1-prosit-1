@@ -36,6 +36,12 @@ const requests: NavItem = {
   icon: MessageSquareText,
   end: false,
 }
+const cooperatives: NavItem = {
+  to: "/cooperatives",
+  key: "nav.cooperatives",
+  icon: Users,
+  end: false,
+}
 const market: NavItem = {
   to: "/market",
   key: "nav.market",
@@ -76,6 +82,7 @@ export const sideNavItems: readonly NavItem[] = [
   farmers,
   visits,
   requests,
+  cooperatives,
   market,
   money,
   profile,

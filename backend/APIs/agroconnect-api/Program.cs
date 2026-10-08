@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using AgroConnect.AdminService;
 using AgroConnect.Api.OpenApi;
 using AgroConnect.AuthService;
+using AgroConnect.CooperativeService;
 using AgroConnect.Data;
 using AgroConnect.FarmerService;
 using AgroConnect.HelpService;
@@ -69,6 +70,7 @@ builder.Services
     .AddFarmerService()
     .AddSyncService()
     .AddAdminService()
+    .AddCooperativeService()
     .AddMoneyService(builder.Configuration)
     .AddHelpService()
     .AddSpeechService(builder.Configuration)

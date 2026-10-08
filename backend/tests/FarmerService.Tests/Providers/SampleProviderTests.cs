@@ -95,19 +95,6 @@ public sealed class SampleProviderTests
         Assert.Empty(nothing.Crops);
     }
 
-    [Theory]
-    [InlineData(2026, 10, 1, 2026, 10, 3)] // Thursday: this Saturday
-    [InlineData(2026, 10, 3, 2026, 10, 10)] // Saturday: next week
-    public async Task The_cooperative_meets_on_the_next_saturday(int y, int m, int d, int my, int mm, int md)
-    {
-        _clock.UtcNow = new DateTimeOffset(y, m, d, 9, 0, 0, TimeSpan.Zero);
-
-        var coop = await new SampleCooperativeDirectory(_clock).FindForAsync(null, null, CancellationToken.None);
-
-        Assert.Equal(new DateOnly(my, mm, md), coop.NextMeeting);
-        Assert.Equal("Tolon Farmers Cooperative", coop.Name);
-    }
-
     [Fact]
     public async Task Lessons_and_change_requests_answer_as_samples()
     {

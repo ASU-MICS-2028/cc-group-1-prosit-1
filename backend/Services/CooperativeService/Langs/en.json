@@ -1,0 +1,77 @@
+[
+  {
+    "Lang": "en",
+    "Key": "NOT_IN_A_COOPERATIVE",
+    "Text": "You are not in a cooperative yet. Ask your extension officer."
+  },
+  {
+    "Lang": "en",
+    "Key": "COOPERATIVE_NOT_FOUND",
+    "Text": "We could not find that cooperative."
+  },
+  {
+    "Lang": "en",
+    "Key": "COOPERATIVE_FORBIDDEN",
+    "Text": "You can only manage your own cooperative."
+  },
+  {
+    "Lang": "en",
+    "Key": "ORDER_NOT_FOUND",
+    "Text": "We could not find that group order."
+  },
+  {
+    "Lang": "en",
+    "Key": "ORDER_CLOSED",
+    "Text": "This group order has closed."
+  },
+  {
+    "Lang": "en",
+    "Key": "SALE_NOT_FOUND",
+    "Text": "We could not find that group sale."
+  },
+  {
+    "Lang": "en",
+    "Key": "MEETING_NOT_FOUND",
+    "Text": "We could not find that meeting."
+  },
+  {
+    "Lang": "en",
+    "Key": "BAGS_INVALID",
+    "Text": "Enter a whole number of bags, up to 500."
+  },
+  {
+    "Lang": "en",
+    "Key": "COOPERATIVE_DETAILS_REQUIRED",
+    "Text": "Fill in every detail: names, prices above zero, and a date that has not passed."
+  },
+  {
+    "Lang": "en",
+    "Key": "MEMBER_NOT_OWNED",
+    "Text": "You can only add farmers registered by you."
+  },
+  {
+    "Lang": "en",
+    "Key": "MEMBER_ALREADY_IN_COOPERATIVE",
+    "Text": "This farmer is already in a cooperative."
+  },
+  {
+    "Lang": "en",
+    "Key": "NOT_A_FARMER_ACCOUNT",
+    "Text": "This account is not linked to a farm. Ask your extension officer."
+  },
+  {
+    "Lang": "en",
+    "Key": "FARMER_NOT_FOUND",
+    "Text": "We could not find your farm record. Ask your extension officer."
+  },
+  {
+    "Lang": "en",
+    "Key": "NOT_AN_OFFICER_ACCOUNT",
+    "Text": "Only extension officers can do this."
+  },
+  {
+    "Lang": "en",
+    "Key": "NOT_AN_ADMIN_ACCOUNT",
+    "Text": "Only MoFA admins can do this."
+  }
+]

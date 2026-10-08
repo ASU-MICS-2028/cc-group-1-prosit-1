@@ -966,6 +966,984 @@
         ]
       }
     },
+    "/api/cooperative": {
+      "get": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "GetMyCooperative",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CooperativeDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/cooperative/savings": {
+      "post": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "AddCooperativeSavings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSavingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/cooperative/orders/{id}": {
+      "put": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "UpdateCooperativeOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBagsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/cooperative/sales/{id}": {
+      "put": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "UpdateCooperativeSale",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBagsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/cooperative/meetings/{id}/rsvp": {
+      "put": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "UpdateMeetingRsvp",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RsvpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/officer/cooperatives": {
+      "get": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "GetOfficerCooperatives",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CooperativeDetails"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "CreateCooperative",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCooperativeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CooperativeDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/officer/cooperatives/{id}/members": {
+      "post": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "AddCooperativeMember",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/officer/cooperatives/{id}/orders": {
+      "post": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "CreateCooperativeOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/officer/cooperatives/{id}/sales": {
+      "post": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "CreateCooperativeSale",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSaleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/officer/cooperatives/{id}/meetings": {
+      "post": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "CreateCooperativeMeeting",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMeetingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/admin/cooperatives": {
+      "get": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "GetAdminCooperatives",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminCooperative"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/admin/cooperatives/{id}/remind-pledges": {
+      "post": {
+        "tags": [
+          "Cooperatives"
+        ],
+        "operationId": "RemindPledges",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemindResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/money": {
       "get": {
         "tags": [
@@ -2089,6 +3067,30 @@
   },
   "components": {
     "schemas": {
+      "AddMemberRequest": {
+        "required": [
+          "farmerId"
+        ],
+        "type": "object",
+        "properties": {
+          "farmerId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "AddSavingsRequest": {
+        "required": [
+          "amount"
+        ],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
       "AdminArea": {
         "required": [
           "region",
@@ -2107,6 +3109,83 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "AdminCooperative": {
+        "required": [
+          "cooperative",
+          "orders",
+          "soldKg"
+        ],
+        "type": "object",
+        "properties": {
+          "cooperative": {
+            "$ref": "#/components/schemas/CooperativeDetails"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminOrder"
+            }
+          },
+          "soldKg": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AdminOrder": {
+        "required": [
+          "id",
+          "product",
+          "dealer",
+          "unitPrice",
+          "alonePrice",
+          "targetBags",
+          "orderedBags",
+          "members",
+          "closesOn",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product": {
+            "type": "string"
+          },
+          "dealer": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "alonePrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "targetBags": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderedBags": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "members": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "closesOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GroupOrderStatus"
           }
         }
       },
@@ -2416,6 +3495,105 @@
           "app"
         ]
       },
+      "CooperativeDetails": {
+        "required": [
+          "id",
+          "name",
+          "community",
+          "district",
+          "leaderName",
+          "leaderPhoneE164",
+          "members",
+          "savings",
+          "openOrder",
+          "openSale",
+          "nextMeeting"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "community": {
+            "type": "string"
+          },
+          "district": {
+            "type": "string"
+          },
+          "leaderName": {
+            "type": "string"
+          },
+          "leaderPhoneE164": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CooperativeMemberInfo"
+            }
+          },
+          "savings": {
+            "$ref": "#/components/schemas/SavingsInfo"
+          },
+          "openOrder": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/GroupOrderInfo"
+              }
+            ]
+          },
+          "openSale": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/GroupSaleInfo"
+              }
+            ]
+          },
+          "nextMeeting": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/MeetingInfo"
+              }
+            ]
+          }
+        }
+      },
+      "CooperativeMemberInfo": {
+        "required": [
+          "farmerId",
+          "fullName",
+          "isLeader"
+        ],
+        "type": "object",
+        "properties": {
+          "farmerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "isLeader": {
+            "type": "boolean"
+          }
+        }
+      },
       "CooperativeResponse": {
         "required": [
           "source",
@@ -2446,14 +3624,135 @@
             "type": "string"
           },
           "chairPhoneE164": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "nextMeeting": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "date"
           },
           "meetingPlace": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CreateCooperativeRequest": {
+        "required": [
+          "name",
+          "community",
+          "leaderFarmerId"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
             "type": "string"
+          },
+          "community": {
+            "type": "string"
+          },
+          "leaderFarmerId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "CreateMeetingRequest": {
+        "required": [
+          "startsAt",
+          "place",
+          "topic",
+          "bring"
+        ],
+        "type": "object",
+        "properties": {
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "place": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "bring": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CreateOrderRequest": {
+        "required": [
+          "product",
+          "dealer",
+          "unitPrice",
+          "alonePrice",
+          "targetBags",
+          "closesOn"
+        ],
+        "type": "object",
+        "properties": {
+          "product": {
+            "type": "string"
+          },
+          "dealer": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "alonePrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "targetBags": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "closesOn": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "CreateSaleRequest": {
+        "required": [
+          "crop",
+          "buyer",
+          "pricePerKg",
+          "marketPricePerKg",
+          "targetKg"
+        ],
+        "type": "object",
+        "properties": {
+          "crop": {
+            "type": "string"
+          },
+          "buyer": {
+            "type": "string"
+          },
+          "pricePerKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "marketPricePerKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "targetKg": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -2820,6 +4119,133 @@
           null
         ]
       },
+      "GroupOrderInfo": {
+        "required": [
+          "id",
+          "product",
+          "dealer",
+          "unitPrice",
+          "alonePrice",
+          "targetBags",
+          "orderedBags",
+          "closesOn",
+          "status",
+          "myBags"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product": {
+            "type": "string"
+          },
+          "dealer": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "alonePrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "targetBags": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderedBags": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "closesOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GroupOrderStatus"
+          },
+          "myBags": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "GroupOrderStatus": {
+        "enum": [
+          "open",
+          "closed",
+          "delivered"
+        ]
+      },
+      "GroupSaleInfo": {
+        "required": [
+          "id",
+          "crop",
+          "buyer",
+          "pricePerKg",
+          "marketPricePerKg",
+          "targetKg",
+          "pledgedKg",
+          "status",
+          "myBags",
+          "kgPerBag",
+          "pledgers"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "crop": {
+            "type": "string"
+          },
+          "buyer": {
+            "type": "string"
+          },
+          "pricePerKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "marketPricePerKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "targetKg": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pledgedKg": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GroupSaleStatus"
+          },
+          "myBags": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "kgPerBag": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pledgers": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "GroupSaleStatus": {
+        "enum": [
+          "open",
+          "closed",
+          "delivered"
+        ]
+      },
       "HarvestForecastResponse": {
         "required": [
           "source",
@@ -3164,6 +4590,47 @@
               "string"
             ],
             "format": "uuid"
+          }
+        }
+      },
+      "MeetingInfo": {
+        "required": [
+          "id",
+          "startsAt",
+          "place",
+          "topic",
+          "bring",
+          "coming",
+          "comingCount"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "place": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "bring": {
+            "type": "string"
+          },
+          "coming": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "comingCount": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -3546,6 +5013,18 @@
           }
         }
       },
+      "RemindResult": {
+        "required": [
+          "members"
+        ],
+        "type": "object",
+        "properties": {
+          "members": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "RequestCodeRequest": {
         "required": [
           "phone",
@@ -3695,6 +5174,34 @@
               "string"
             ],
             "format": "date-time"
+          }
+        }
+      },
+      "RsvpRequest": {
+        "required": [
+          "coming"
+        ],
+        "type": "object",
+        "properties": {
+          "coming": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SavingsInfo": {
+        "required": [
+          "group",
+          "mine"
+        ],
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "number",
+            "format": "double"
+          },
+          "mine": {
+            "type": "number",
+            "format": "double"
           }
         }
       },
@@ -4123,6 +5630,18 @@
           }
         }
       },
+      "UpdateBagsRequest": {
+        "required": [
+          "bags"
+        ],
+        "type": "object",
+        "properties": {
+          "bags": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "UserRole": {
         "enum": [
           "officer",
@@ -4347,6 +5866,9 @@
     },
     {
       "name": "Admin"
+    },
+    {
+      "name": "Cooperatives"
     },
     {
       "name": "Money"

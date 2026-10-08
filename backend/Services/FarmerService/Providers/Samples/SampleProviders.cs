@@ -186,27 +186,6 @@ public sealed class SampleHarvestForecaster : IHarvestForecaster
     }
 }
 
-public sealed class SampleCooperativeDirectory(IClock clock) : ICooperativeDirectory
-{
-    public Task<CooperativeResponse> FindForAsync(string? community, string? regionDistrict, CancellationToken cancellationToken)
-    {
-        var place = string.IsNullOrWhiteSpace(community) ? "Tolon" : community.Trim();
-        var today = DateOnly.FromDateTime(clock.UtcNow.UtcDateTime);
-        // Meetings are on the next Saturday (a week ahead when today is Saturday).
-        var daysToSaturday = ((int)DayOfWeek.Saturday - (int)today.DayOfWeek + 7) % 7;
-        var nextMeeting = today.AddDays(daysToSaturday == 0 ? 7 : daysToSaturday);
-        return Task.FromResult(new CooperativeResponse(
-            DataSource.Sample,
-            $"{place} Farmers Cooperative",
-            place,
-            42,
-            "Alhassan Mahama",
-            "+233200000000",
-            nextMeeting,
-            $"{place} community centre"));
-    }
-}
-
 public sealed class SampleLessonCatalogue : ILessonCatalogue
 {
     private static readonly Lesson[] Lessons =
