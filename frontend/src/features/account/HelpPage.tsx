@@ -67,6 +67,7 @@ export function Component() {
               <AudioButton
                 src={promptAudio(`help.${topic}`)}
                 label={t(`help.topics.${topic}.title`)}
+                text={`${t(`help.topics.${topic}.title`)}. ${t(`help.topics.${topic}.text`)}`}
                 className="size-10 bg-secondary"
               />
             </div>

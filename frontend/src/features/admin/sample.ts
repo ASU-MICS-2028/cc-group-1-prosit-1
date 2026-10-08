@@ -157,7 +157,8 @@ export interface HelpRequest {
   via: "call" | "message" | "ussd"
   place: string
   sent: string
-  voiceNote?: string
+  /** A voice note (sample: read by the device voice until recordings are stored) */
+  voiceNote?: { length: string; transcript: string }
   suggestion?: { text: string; reassignTo: string }
 }
 
@@ -173,7 +174,11 @@ export const helpRequests: readonly HelpRequest[] = [
     via: "call",
     place: "Tolon",
     sent: "crop photo and voice note",
-    voiceNote: "0:18",
+    voiceNote: {
+      length: "0:18",
+      transcript:
+        "Good morning. My maize leaves have holes and there is something like sawdust in the middle of the plant. I sent a photo two days ago. Please, can someone come and look?",
+    },
     suggestion: {
       text: "Kofi has 6 open requests this week. Fuseini (Savelugu, 4 km away) has 2. Remind Kofi, or give this request to Fuseini.",
       reassignTo: "Fuseini",

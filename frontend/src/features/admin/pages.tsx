@@ -21,6 +21,7 @@ import { LaterPhaseButton, SampleBadge } from "@/components/Flow"
 import { Sheet } from "@/components/Sheet"
 import { Button } from "@/components/ui/button"
 import { cedis } from "@/features/sample/data"
+import { listen } from "@/lib/speech"
 import { cn } from "@/lib/utils"
 import {
   adminCooperative,
@@ -877,15 +878,20 @@ export function HelpDesk() {
               : t("adminPages.help.unassigned", { place: open.place })}
           </p>
           {open.voiceNote ? (
-            <LaterPhaseButton className="gap-3 self-start pl-2">
+            <Button
+              size="xl"
+              variant="secondary"
+              className="gap-3 self-start pl-2 text-primary"
+              onClick={() => listen(open.voiceNote!.transcript)}
+            >
               <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Play aria-hidden className="size-5" />
               </span>
               {t("adminPages.help.play", {
                 farmer: open.farmer.split(" ")[0],
-                length: open.voiceNote,
+                length: open.voiceNote.length,
               })}
-            </LaterPhaseButton>
+            </Button>
           ) : null}
           <p className="text-sm text-muted-foreground">
             {t("adminPages.help.adviceFrom")}
