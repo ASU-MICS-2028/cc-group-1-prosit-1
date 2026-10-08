@@ -30,12 +30,6 @@ public interface IHarvestForecaster
     Task<HarvestForecastResponse> ForecastAsync(IReadOnlyList<Crop> crops, decimal? farmSize, AreaUnit unit, CancellationToken cancellationToken);
 }
 
-/// <summary>The farmer's cooperative (live later: the cooperatives register).</summary>
-public interface ICooperativeDirectory
-{
-    Task<CooperativeResponse> FindForAsync(string? community, string? regionDistrict, CancellationToken cancellationToken);
-}
-
 /// <summary>The short audio lessons available (live later: a lessons catalogue with recordings per language).</summary>
 public interface ILessonCatalogue
 {

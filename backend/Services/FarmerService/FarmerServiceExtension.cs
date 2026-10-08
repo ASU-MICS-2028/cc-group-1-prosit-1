@@ -19,7 +19,6 @@ public static class FarmerServiceExtension
         services.AddSingleton<IWeatherProvider, SampleWeatherProvider>();
         services.AddSingleton<ICropAdviser, SampleCropAdviser>();
         services.AddSingleton<IHarvestForecaster, SampleHarvestForecaster>();
-        services.AddSingleton<ICooperativeDirectory, SampleCooperativeDirectory>();
         services.AddSingleton<ILessonCatalogue, SampleLessonCatalogue>();
         services.AddSingleton<IChangeRequestInbox, LogOnlyChangeRequestInbox>();
 

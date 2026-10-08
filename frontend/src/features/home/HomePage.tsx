@@ -1,4 +1,4 @@
-import { ChevronRight, MessageSquareText, Wallet } from "lucide-react"
+import { ChevronRight, MessageSquareText, Users, Wallet } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { useSession } from "@/auth/session"
@@ -198,6 +198,13 @@ function MoreWork() {
       text: t("home.loansToReview", {
         count: loans.filter((l) => l.status === "review").length,
       }),
+      tone: "bg-secondary",
+    },
+    {
+      to: "/cooperatives",
+      icon: Users,
+      title: t("nav.cooperatives"),
+      text: t("home.cooperativesHint"),
       tone: "bg-secondary",
     },
   ]
