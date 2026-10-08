@@ -1,0 +1,953 @@
+import { Dialog } from "@base-ui/react/dialog"
+import {
+  AlertCircle,
+  Check,
+  CheckCheck,
+  Clock,
+  Hash,
+  KeyRound,
+  MessageSquare,
+  Phone,
+  Play,
+  Server,
+  X,
+} from "lucide-react"
+import { useId, useState, type ReactNode } from "react"
+import { useTranslation } from "react-i18next"
+import { ChoiceChips } from "@/components/form/ChoiceChips"
+import { TextField } from "@/components/form/TextField"
+import { SampleBadge } from "@/components/Flow"
+import { Button } from "@/components/ui/button"
+import { cedis } from "@/features/sample/data"
+import { cn } from "@/lib/utils"
+import {
+  adminCooperative,
+  agents,
+  agentTotal,
+  helpCounts,
+  helpRequests,
+  impact,
+  regionReport,
+  systemHealth,
+  type Access,
+  type HelpStatus,
+  type OrderStatus,
+} from "./sample"
+
+// The MoFA admin pages from Figma P4 · D2 to D6 (and D20 under Regions), on sample data until
+// AdminService has an endpoint for each. Overview (AdminOverviewPage) is the live one.
+
+function PageHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string
+  subtitle: string
+  action?: ReactNode
+}) {
+  return (
+    <header className="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 className="text-2xl leading-9 font-semibold text-primary">
+          {title}
+        </h1>
+        <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          {subtitle}
+          <SampleBadge />
+        </p>
+      </div>
+      {action}
+    </header>
+  )
+}
+
+/** The four numbers along the top: two green, two cream (Figma). */
+function StatTiles({ tiles }: { tiles: readonly [string, string][] }) {
+  return (
+    <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {tiles.map(([value, label], i) => (
+        <li
+          key={label}
+          className={cn(
+            "space-y-1 rounded-[20px] p-5",
+            i < 2 ? "bg-secondary" : "bg-cream"
+          )}
+        >
+          <p
+            className={cn(
+              "text-2xl font-semibold tabular-nums",
+              i < 2 ? "text-primary" : "text-foreground"
+            )}
+          >
+            {value}
+          </p>
+          <p className="text-sm text-foreground">{label}</p>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function Card({
+  title,
+  children,
+  className,
+}: {
+  title: string
+  children: ReactNode
+  className?: string
+}) {
+  const id = useId()
+  return (
+    <section
+      aria-labelledby={id}
+      className={cn("space-y-3 rounded-[20px] border bg-card p-5", className)}
+    >
+      <h2 id={id} className="text-base font-medium text-foreground">
+        {title}
+      </h2>
+      {children}
+    </section>
+  )
+}
+
+type Tone = "green" | "amber" | "red" | "grey"
+const toneClass: Record<Tone, string> = {
+  green: "bg-secondary text-primary",
+  amber: "bg-warning-soft text-warning",
+  red: "bg-destructive-soft text-destructive",
+  grey: "bg-muted text-muted-foreground",
+}
+const toneIcon: Record<Tone, typeof CheckCheck> = {
+  green: CheckCheck,
+  amber: Clock,
+  red: AlertCircle,
+  grey: X,
+}
+
+function Pill({ tone, children }: { tone: Tone; children: ReactNode }) {
+  const Icon = toneIcon[tone]
+  return (
+    <span
+      className={cn(
+        "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap",
+        toneClass[tone]
+      )}
+    >
+      <Icon aria-hidden className="size-4" />
+      {children}
+    </span>
+  )
+}
+
+/** A label, a bar and the number (Figma "Farmers by district", "Good practices"). */
+function BarRow({
+  label,
+  value,
+  max,
+  shown,
+}: {
+  label: string
+  value: number
+  max: number
+  shown: string
+}) {
+  return (
+    <li className="grid grid-cols-[minmax(0,12.5rem)_minmax(0,1fr)_3rem] items-center gap-3 text-sm">
+      <span className="truncate text-foreground">{label}</span>
+      <span
+        role="meter"
+        aria-label={label}
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={max}
+        className="h-4 overflow-hidden rounded-full bg-secondary"
+      >
+        <span
+          className="block h-full rounded-full bg-primary"
+          style={{ width: `${(value / max) * 100}%` }}
+        />
+      </span>
+      <span className="text-muted-foreground tabular-nums">{shown}</span>
+    </li>
+  )
+}
+
+/** Regions (Figma P1 · D20 MoFA Reports): totals only, no personal details. */
+export function Regions() {
+  const { t } = useTranslation()
+  const r = regionReport
+  const top = Math.max(...r.districts.map((d) => d.farmers))
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={t("adminPages.regions.title", { region: r.region })}
+        subtitle={t("adminPages.regions.subtitle")}
+      />
+      <StatTiles
+        tiles={[
+          [
+            r.registered.toLocaleString("en-GH"),
+            t("adminPages.regions.registered"),
+          ],
+          [
+            `${r.womenPercent}%`,
+            t("adminPages.regions.women", { target: r.womenTarget }),
+          ],
+          [`${r.ussdPercent}%`, t("adminPages.regions.ussd")],
+          [String(r.newThisWeek), t("adminPages.regions.newThisWeek")],
+        ]}
+      />
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,930fr)_minmax(0,420fr)]">
+        <Card title={t("adminPages.regions.byDistrict")}>
+          <ul className="space-y-3">
+            {r.districts.map((d) => (
+              <BarRow
+                key={d.name}
+                label={d.name}
+                value={d.farmers}
+                max={top}
+                shown={String(d.farmers)}
+              />
+            ))}
+          </ul>
+        </Card>
+        <Card title={t("adminPages.regions.byLanguage")}>
+          <ul className="divide-y">
+            {r.languages.map((l) => (
+              <li
+                key={l.name}
+                className="flex items-center justify-between py-3"
+              >
+                <span>
+                  <span className="block text-base text-foreground">
+                    {l.name}
+                  </span>
+                  <span className="block text-sm text-muted-foreground">
+                    {t("adminPages.regions.channel", {
+                      app: l.app,
+                      ussd: 100 - l.app,
+                    })}
+                  </span>
+                </span>
+                <span className="text-xl text-primary tabular-nums">
+                  {l.farmers}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {t("adminPages.regions.privacy")}
+      </p>
+    </div>
+  )
+}
+
+const accessTone: Record<Access, Tone> = {
+  active: "green",
+  checkIn: "amber",
+  phoneLost: "red",
+  off: "grey",
+}
+
+/** Agents and Access (Figma P4 · D2) with Add a person (D2b). */
+export function Agents() {
+  const { t } = useTranslation()
+  const [adding, setAdding] = useState(false)
+  const [invited, setInvited] = useState<string | null>(null)
+  const [turnedOff, setTurnedOff] = useState<string[]>([])
+  const lost = agents.find(
+    (a) => a.access === "phoneLost" && !turnedOff.includes(a.id)
+  )
+  const access = (id: string, a: Access): Access =>
+    turnedOff.includes(id) ? "off" : a
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={t("adminPages.agents.title")}
+        subtitle={t("adminPages.agents.subtitle", {
+          region: regionReport.region,
+          count: agentTotal,
+        })}
+        action={
+          <Button size="xl" className="px-8" onClick={() => setAdding(true)}>
+            {t("adminPages.agents.add")}
+          </Button>
+        }
+      />
+      {invited ? (
+        <p
+          role="status"
+          className="flex items-center gap-2 rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-primary"
+        >
+          <CheckCheck aria-hidden className="size-4" />
+          {t("adminPages.agents.invited", { name: invited })}
+        </p>
+      ) : null}
+      <div className="overflow-x-auto rounded-[20px] border bg-card">
+        <table className="w-full min-w-200 text-left text-sm">
+          <thead className="bg-secondary text-primary">
+            <tr>
+              {(
+                [
+                  "colAgent",
+                  "colDistrict",
+                  "colFarmers",
+                  "colLastSync",
+                  "colRole",
+                  "colAccess",
+                ] as const
+              ).map((c) => (
+                <th key={c} scope="col" className="px-5 py-3.5 font-medium">
+                  {t(`adminPages.agents.${c}`)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {agents.map((a) => (
+              <tr key={a.id}>
+                <th
+                  scope="row"
+                  className="px-5 py-4 text-base font-normal text-foreground"
+                >
+                  {a.name}
+                </th>
+                <td className="px-5 py-4 text-foreground">{a.district}</td>
+                <td className="px-5 py-4 text-foreground tabular-nums">
+                  {a.farmers ?? "—"}
+                </td>
+                <td className="px-5 py-4 text-foreground">{a.lastSync}</td>
+                <td className="px-5 py-4 text-foreground">
+                  {t(`adminPages.agents.role.${a.role}`)}
+                </td>
+                <td className="px-5 py-3">
+                  <Pill tone={accessTone[access(a.id, a.access)]}>
+                    {t(`adminPages.agents.access.${access(a.id, a.access)}`)}
+                  </Pill>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <section className="flex flex-wrap items-center gap-4 rounded-[20px] border bg-card p-5">
+        <span
+          aria-hidden
+          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"
+        >
+          <KeyRound className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1 basis-80">
+          <h2 className="text-base font-medium text-foreground">
+            {t("adminPages.agents.lostTitle")}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t("adminPages.agents.lostText")}
+          </p>
+        </div>
+        {lost ? (
+          <Button
+            size="xl"
+            variant="secondary"
+            className="px-7 text-primary"
+            onClick={() => setTurnedOff((ids) => [...ids, lost.id])}
+          >
+            {t("adminPages.agents.turnOff", {
+              name: lost.name.split(" ")[0],
+            })}
+          </Button>
+        ) : null}
+      </section>
+      <AddPerson
+        open={adding}
+        onClose={() => setAdding(false)}
+        onInvite={(name) => {
+          setInvited(name)
+          setAdding(false)
+        }}
+      />
+    </div>
+  )
+}
+
+/** Figma P4 · D2b: the panel that slides in from the right. */
+function AddPerson({
+  open,
+  onClose,
+  onInvite,
+}: {
+  open: boolean
+  onClose: () => void
+  onInvite: (name: string) => void
+}) {
+  const { t } = useTranslation()
+  const [role, setRole] = useState<"officer" | "admin">("officer")
+  const [name, setName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [region, setRegion] = useState("Northern")
+  const [district, setDistrict] = useState("")
+  const [tried, setTried] = useState(false)
+  const missing = name.trim() === "" || phone.replace(/\D/g, "").length < 9
+
+  const field = (
+    id: string,
+    label: string,
+    value: string,
+    set: (v: string) => void,
+    extra: { inputMode?: "tel"; autoComplete?: string } = {}
+  ) => (
+    <div className="space-y-2">
+      <label htmlFor={id} className="block text-base text-foreground">
+        {label}
+      </label>
+      <TextField
+        id={id}
+        value={value}
+        onChange={(e) => set(e.target.value)}
+        invalid={tried && value.trim() === "" && id !== "person-district"}
+        {...extra}
+      />
+    </div>
+  )
+
+  return (
+    <Dialog.Root open={open} onOpenChange={(next) => (next ? null : onClose())}>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-40 bg-foreground/30" />
+        <Dialog.Popup className="fixed inset-y-0 right-0 z-50 flex w-full max-w-120 flex-col gap-4 overflow-y-auto bg-card p-8 outline-none">
+          <Dialog.Title className="text-2xl font-medium text-foreground">
+            {t("adminPages.person.title")}
+          </Dialog.Title>
+          <Dialog.Description className="text-sm text-muted-foreground">
+            {t("adminPages.person.text")}
+          </Dialog.Description>
+          <div className="space-y-2">
+            <p id="person-role" className="text-base text-foreground">
+              {t("adminPages.person.role")}
+            </p>
+            <ChoiceChips
+              labelledBy="person-role"
+              options={[
+                { value: "officer", label: t("who.officer") },
+                { value: "admin", label: t("who.admin") },
+              ]}
+              value={role}
+              onChange={(v) => setRole(v)}
+            />
+          </div>
+          {field("person-name", t("adminPages.person.name"), name, setName, {
+            autoComplete: "off",
+          })}
+          {field(
+            "person-phone",
+            t("adminPages.person.phone"),
+            phone,
+            setPhone,
+            {
+              inputMode: "tel",
+            }
+          )}
+          {field(
+            "person-region",
+            t("adminPages.person.region"),
+            region,
+            setRegion
+          )}
+          {role === "officer"
+            ? field(
+                "person-district",
+                t("adminPages.person.district"),
+                district,
+                setDistrict
+              )
+            : null}
+          <p className="rounded-2xl bg-secondary px-4 py-3 text-sm text-primary">
+            {t("adminPages.person.note")}
+          </p>
+          {tried && missing ? (
+            <p role="alert" className="text-sm font-medium text-destructive">
+              {t("adminPages.person.missing")}
+            </p>
+          ) : null}
+          <div className="mt-auto grid grid-cols-2 gap-3 pt-4">
+            <Button
+              size="xl"
+              variant="secondary"
+              className="text-primary"
+              onClick={onClose}
+            >
+              {t("adminPages.person.cancel")}
+            </Button>
+            <Button
+              size="xl"
+              onClick={() => {
+                setTried(true)
+                if (!missing) onInvite(name.trim())
+              }}
+            >
+              {t("adminPages.person.send")}
+            </Button>
+          </div>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
+  )
+}
+
+/** Cooperatives (Figma P4 · D5). */
+export function Cooperatives() {
+  const { t } = useTranslation()
+  const c = adminCooperative
+  const [reminded, setReminded] = useState(false)
+  const orderTone: Record<OrderStatus, Tone> = {
+    open: "amber",
+    delivered: "green",
+    quote: "amber",
+  }
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={c.name}
+        subtitle={t("adminPages.coop.subtitle", {
+          members: c.members,
+          leader: c.leader,
+        })}
+      />
+      <StatTiles
+        tiles={[
+          [String(c.members), t("adminPages.coop.members")],
+          [cedis(c.saved), t("adminPages.coop.saved")],
+          [String(c.ordersThisSeason), t("adminPages.coop.orders")],
+          [`${c.soldTonnes} t`, t("adminPages.coop.sold")],
+        ]}
+      />
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,664fr)_minmax(0,440fr)]">
+        <Card title={t("adminPages.coop.groupOrders")}>
+          <ul className="divide-y border-t">
+            {c.orders.map((o) => (
+              <li key={o.id} className="flex items-center gap-3 py-4">
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base text-foreground">
+                    {o.title}
+                  </span>
+                  <span className="block text-sm text-muted-foreground">
+                    {o.detail}
+                  </span>
+                </span>
+                <Pill tone={orderTone[o.status]}>
+                  {t(`adminPages.coop.status.${o.status}`)}
+                </Pill>
+              </li>
+            ))}
+          </ul>
+        </Card>
+        <Card title={t("adminPages.coop.selling")}>
+          <p className="text-base text-foreground">
+            {t("adminPages.coop.offer", {
+              buyer: c.sale.buyer,
+              price: cedis(c.sale.price),
+              tonnes: c.sale.tonnes,
+              market: cedis(c.sale.market),
+            })}
+          </p>
+          <span
+            role="meter"
+            aria-label={t("adminPages.coop.selling")}
+            aria-valuenow={c.sale.pledged}
+            aria-valuemin={0}
+            aria-valuemax={c.sale.tonnes}
+            className="block h-3.5 overflow-hidden rounded-full bg-secondary"
+          >
+            <span
+              className="block h-full rounded-full bg-primary"
+              style={{ width: `${(c.sale.pledged / c.sale.tonnes) * 100}%` }}
+            />
+          </span>
+          <p className="text-sm text-muted-foreground">
+            {t("adminPages.coop.pledged", {
+              pledged: c.sale.pledged,
+              tonnes: c.sale.tonnes,
+              members: c.sale.pledgedBy,
+            })}
+          </p>
+          {reminded ? (
+            <p role="status" className="text-sm font-medium text-primary">
+              {t("adminPages.coop.reminded")}
+            </p>
+          ) : (
+            <Button
+              size="xl"
+              variant="secondary"
+              className="w-full text-primary"
+              onClick={() => setReminded(true)}
+            >
+              {t("adminPages.coop.remind")}
+            </Button>
+          )}
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+const helpTone: Record<HelpStatus, Tone> = {
+  waiting: "amber",
+  overdue: "amber",
+  answered: "green",
+}
+const viaIcon = { call: Phone, message: MessageSquare, ussd: Hash } as const
+
+/** Help desk (Figma P4 · D4): the admin steps in when a farmer waits too long for their officer. */
+export function HelpDesk() {
+  const { t } = useTranslation()
+  const [filter, setFilter] = useState<HelpStatus | "all">("all")
+  const [openId, setOpenId] = useState(helpRequests[0].id)
+  const [done, setDone] = useState<Record<string, string>>({})
+  const shown = helpRequests.filter(
+    (r) => filter === "all" || r.status === filter
+  )
+  const open = helpRequests.find((r) => r.id === openId) ?? helpRequests[0]
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={t("adminPages.help.title")}
+        subtitle={t("adminPages.help.subtitle")}
+        action={
+          <div
+            role="group"
+            aria-label={t("adminPages.help.filter")}
+            className="flex gap-2"
+          >
+            {(["waiting", "overdue", "answered"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={filter === s}
+                onClick={() => setFilter(filter === s ? "all" : s)}
+                className={cn(
+                  "h-12 rounded-full px-5 text-base outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  filter === s
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-foreground"
+                )}
+              >
+                {t(`adminPages.help.count.${s}`, { count: helpCounts[s] })}
+              </button>
+            ))}
+          </div>
+        }
+      />
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,640fr)_minmax(0,464fr)]">
+        <ul className="divide-y rounded-[20px] border bg-card px-5 py-2">
+          {shown.map((r) => {
+            const Icon = viaIcon[r.via]
+            return (
+              <li key={r.id}>
+                <button
+                  type="button"
+                  onClick={() => setOpenId(r.id)}
+                  aria-current={r.id === open.id ? "true" : undefined}
+                  className="flex w-full items-center gap-3 py-3.5 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <span
+                    aria-hidden
+                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"
+                  >
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span
+                      className={cn(
+                        "block text-base text-foreground",
+                        r.id === open.id && "font-medium"
+                      )}
+                    >
+                      {r.farmer}: {r.title}
+                    </span>
+                    <span className="block text-sm text-muted-foreground">
+                      {r.officer
+                        ? t("adminPages.help.officerLine", {
+                            officer: r.officer,
+                            waited: r.waited,
+                            status: t(
+                              r.status === "answered"
+                                ? "adminPages.help.answeredLower"
+                                : "adminPages.help.waitingLower"
+                            ),
+                          })
+                        : t("adminPages.help.noOfficer")}
+                    </span>
+                  </span>
+                  <Pill tone={helpTone[r.status]}>
+                    {t(`adminPages.help.status.${r.status}`)}
+                  </Pill>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+        <section className="space-y-4 rounded-[20px] border bg-card p-5">
+          <h2 className="text-xl font-medium text-foreground">
+            {t("adminPages.help.waited", {
+              farmer: open.farmer,
+              waited: open.waited,
+            })}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {open.officer
+              ? t("adminPages.help.assigned", {
+                  place: open.place,
+                  officer: open.officer,
+                  sent: open.sent,
+                })
+              : t("adminPages.help.unassigned", { place: open.place })}
+          </p>
+          {open.voiceNote ? (
+            <Button
+              size="xl"
+              variant="secondary"
+              className="gap-3 pl-2 text-primary"
+            >
+              <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Play aria-hidden className="size-5" />
+              </span>
+              {t("adminPages.help.play", {
+                farmer: open.farmer.split(" ")[0],
+                length: open.voiceNote,
+              })}
+            </Button>
+          ) : null}
+          <p className="text-sm text-muted-foreground">
+            {t("adminPages.help.adviceFrom")}
+          </p>
+          {done[open.id] ? (
+            <p
+              role="status"
+              className="flex items-center gap-2 rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-primary"
+            >
+              <Check aria-hidden className="size-4" />
+              {done[open.id]}
+            </p>
+          ) : open.suggestion ? (
+            <>
+              <p className="rounded-2xl bg-cream px-4 py-3 text-sm text-foreground">
+                {open.suggestion.text}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button
+                  size="xl"
+                  variant="secondary"
+                  className="text-primary"
+                  onClick={() =>
+                    setDone((d) => ({
+                      ...d,
+                      [open.id]: t("adminPages.help.reassigned", {
+                        officer: open.suggestion!.reassignTo,
+                      }),
+                    }))
+                  }
+                >
+                  {t("adminPages.help.reassign", {
+                    officer: open.suggestion.reassignTo,
+                  })}
+                </Button>
+                {open.officer ? (
+                  <Button
+                    size="xl"
+                    onClick={() =>
+                      setDone((d) => ({
+                        ...d,
+                        [open.id]: t("adminPages.help.remindedOfficer", {
+                          officer: open.officer,
+                        }),
+                      }))
+                    }
+                  >
+                    {t("adminPages.help.remind", { officer: open.officer })}
+                  </Button>
+                ) : null}
+              </div>
+            </>
+          ) : null}
+        </section>
+      </div>
+    </div>
+  )
+}
+
+/** Impact and SDG report (Figma P4 · D6). */
+export function Impact() {
+  const { t } = useTranslation()
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={t("adminPages.impact.title")}
+        subtitle={t("adminPages.impact.subtitle", { season: impact.season })}
+        action={
+          <Button
+            size="xl"
+            variant="secondary"
+            className="px-8 text-primary"
+            onClick={() => window.print()}
+          >
+            {t("adminPages.impact.download")}
+          </Button>
+        }
+      />
+      <StatTiles
+        tiles={impact.tiles.map((x) => [x.value, x.label] as [string, string])}
+      />
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <Card title={t("adminPages.impact.practices")}>
+          <ul className="space-y-3">
+            {impact.practices.map((p) => (
+              <BarRow
+                key={p.name}
+                label={p.name}
+                value={p.percent}
+                max={100}
+                shown={`${p.percent}%`}
+              />
+            ))}
+          </ul>
+        </Card>
+        <Card title={t("adminPages.impact.handover")}>
+          <ul className="space-y-3">
+            {impact.handover.map((h) => (
+              <li key={h.name} className="flex items-center gap-3 text-sm">
+                <span
+                  className={cn(
+                    "flex size-6.5 shrink-0 items-center justify-center rounded-full",
+                    h.done
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  <Check aria-hidden className="size-3.5" />
+                  <span className="sr-only">
+                    {t(
+                      h.done
+                        ? "adminPages.impact.done"
+                        : "adminPages.impact.notYet"
+                    )}
+                  </span>
+                </span>
+                <span
+                  className={
+                    h.done ? "text-foreground" : "text-muted-foreground"
+                  }
+                >
+                  {h.name}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+/** System health (Figma P4 · D3). */
+export function System() {
+  const { t } = useTranslation()
+  const s = systemHealth
+  const allOk = s.services.every((x) => x.ok)
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={t("adminPages.system.title")}
+        subtitle={s.environment}
+        action={
+          <Pill tone={allOk ? "green" : "amber"}>
+            {t(
+              allOk ? "adminPages.system.allOk" : "adminPages.system.someSlow"
+            )}
+          </Pill>
+        }
+      />
+      <StatTiles
+        tiles={[
+          [
+            `${s.uptime}%`,
+            t("adminPages.system.uptime", { target: s.uptimeTarget }),
+          ],
+          [`${s.p95Ms} ms`, t("adminPages.system.p95")],
+          [
+            s.waitingOnPhones.toLocaleString("en-GH"),
+            t("adminPages.system.waiting"),
+          ],
+          [String(s.failedDeploys), t("adminPages.system.failed")],
+        ]}
+      />
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,644fr)_minmax(0,460fr)]">
+        <Card title={t("adminPages.system.services")}>
+          <ul className="divide-y border-t">
+            {s.services.map((x) => (
+              <li key={x.name} className="flex items-center gap-3 py-4">
+                <span
+                  aria-hidden
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary"
+                >
+                  <Server className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base text-foreground">
+                    {x.name}
+                  </span>
+                  <span className="block text-sm text-muted-foreground">
+                    {x.detail}
+                  </span>
+                </span>
+                <Pill tone={x.ok ? "green" : "amber"}>
+                  {t(
+                    x.ok
+                      ? "adminPages.system.healthy"
+                      : "adminPages.system.slow"
+                  )}
+                </Pill>
+              </li>
+            ))}
+          </ul>
+        </Card>
+        <Card title={t("adminPages.system.alerts")}>
+          <ul className="divide-y border-t">
+            {s.alerts.map((a) => (
+              <li key={a.title} className="flex items-center gap-3 py-4">
+                <span
+                  aria-hidden
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-full",
+                    a.open
+                      ? "bg-warning-soft text-warning"
+                      : "bg-secondary text-primary"
+                  )}
+                >
+                  {a.open ? (
+                    <AlertCircle className="size-4.5" />
+                  ) : (
+                    <Check className="size-4.5" />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base text-foreground">
+                    {a.title}
+                  </span>
+                  <span className="block text-sm text-muted-foreground">
+                    {a.detail}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
+    </div>
+  )
+}

@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils"
 import { toFacts } from "./profile"
 import { useServerData } from "./useServerData"
 
-/** One farm service tile: its colours follow Figma 23 (cream, blue or green, with matching icon and line). */
+/** One farm service tile, as Figma 23: cream, blue or green, a white icon badge, the live line, and the icon as a faint watermark in the corner. */
 function ServiceTile({
   to,
   icon: Icon,
@@ -59,20 +59,30 @@ function ServiceTile({
       <Link
         to={to}
         className={cn(
-          "flex h-full min-h-28 flex-col gap-2 rounded-[20px] p-3 outline-none transition-[filter] hover:brightness-[0.97] focus-visible:ring-3 focus-visible:ring-ring/50",
+          "relative isolate flex h-full min-h-31 flex-col gap-2 overflow-hidden rounded-[20px] p-3 outline-none transition-[filter] hover:brightness-[0.97] focus-visible:ring-3 focus-visible:ring-ring/50",
           tone
         )}
       >
+        {/* Figma "Watermark": the tile's icon, large, tilted and faint, cut off at the bottom right */}
+        <Icon
+          aria-hidden
+          className={cn(
+            "absolute -right-2.5 -bottom-4.5 -z-10 size-17 -rotate-14 opacity-[0.13]",
+            ink
+          )}
+        />
         <span
           aria-hidden
-          className="flex size-9 items-center justify-center rounded-full bg-card"
+          className="flex size-9.5 items-center justify-center rounded-full bg-card"
         >
-          <Icon className={cn("size-4.5", ink)} />
+          <Icon className={cn("size-5", ink)} />
         </span>
-        <span className="mt-auto text-sm leading-5 font-medium text-foreground">
+        <span className="mt-auto text-[13px] leading-[17px] font-semibold text-foreground">
           {title}
         </span>
-        <span className={cn("min-h-4 text-xs leading-4 font-medium", ink)}>
+        <span
+          className={cn("min-h-4 text-[11px] leading-[15px] font-medium", ink)}
+        >
           {line}
         </span>
       </Link>

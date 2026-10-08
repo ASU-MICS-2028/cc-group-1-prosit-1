@@ -1,4 +1,13 @@
-import { LayoutDashboard, LogOut } from "lucide-react"
+import {
+  CircleHelp,
+  LayoutDashboard,
+  Leaf,
+  LogOut,
+  Map,
+  Server,
+  UserPlus,
+  Users,
+} from "lucide-react"
 import { Suspense, useState } from "react"
 import { Outlet } from "react-router-dom"
 import { useTranslation } from "react-i18next"
@@ -16,11 +25,22 @@ import { useAdminArea } from "./area"
 
 /**
  * The admin menu (Figma "Sidebar Nav (Phase 4, MoFA admin)"): Overview, Regions, Agents, Cooperatives,
- * Help desk, Impact, System. Each place joins the menu when its page is built, so no item leads to an
- * empty page.
+ * Help desk, Impact, System. Overview is live; the others run on sample data (features/admin/sample.ts)
+ * until AdminService has their endpoints.
  */
 const adminNavItems: readonly NavItem[] = [
   { to: "/admin", key: "nav.overview", icon: LayoutDashboard, end: true },
+  { to: "/admin/regions", key: "nav.regions", icon: Map, end: false },
+  { to: "/admin/agents", key: "nav.agents", icon: UserPlus, end: false },
+  {
+    to: "/admin/cooperatives",
+    key: "nav.cooperatives",
+    icon: Users,
+    end: false,
+  },
+  { to: "/admin/help-desk", key: "nav.helpDesk", icon: CircleHelp, end: false },
+  { to: "/admin/impact", key: "nav.impact", icon: Leaf, end: false },
+  { to: "/admin/system", key: "nav.system", icon: Server, end: false },
 ]
 
 /** The bottom of the admin sidebar (Figma): who is signed in and their area, and Log out. */
