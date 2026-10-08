@@ -20,7 +20,7 @@ resource "random_password" "auth_signing_key" {
 }
 
 locals {
-  # Staging is the demo: one fixed sign-in code (no SMS provider yet) and seeded demo
+  # Staging is the demo: a backup sign-in code (for when SMS is not working) and seeded demo
   # accounts, as in appsettings.Development.json. Production gets neither.
   demo_settings = {
     staging = [
@@ -46,6 +46,38 @@ locals {
       "ConnectionStrings__Default=Host=${aws_db_instance.main[0].address};Port=5432;Database=agroconnect;Username=agroconnect;Password=${random_password.db[0].result};SSL Mode=Require",
     ] : []
   }
+
+  # Extra .env lines per environment from /agroconnect/extra/<env> (see the data source below).
+  extra          = zipmap(data.aws_ssm_parameters_by_path.extra.names, data.aws_ssm_parameters_by_path.extra.values)
+  extra_settings = { for env, _ in var.environments : env => compact(split("\n", trimspace(lookup(local.extra, "/agroconnect/extra/${env}", "")))) }
+
+  # Arkesel SMS (ADR 0037), only once /agroconnect/sms/api_key exists. Staging texts just the
+  # numbers in /agroconnect/sms/staging_only_to (the demo accounts' numbers are made up and may
+  # belong to real people); production texts everyone (sign-in codes have no backup there).
+  sms         = zipmap(data.aws_ssm_parameters_by_path.sms.names, data.aws_ssm_parameters_by_path.sms.values)
+  sms_key     = lookup(local.sms, "/agroconnect/sms/api_key", "")
+  sms_sender  = "Sms__SenderId=${lookup(local.sms, "/agroconnect/sms/sender_id", "AgroConnect")}"
+  sms_only_to = compact(split(",", replace(lookup(local.sms, "/agroconnect/sms/staging_only_to", ""), " ", "")))
+  sms_settings = local.sms_key == "" ? { staging = [], production = [] } : {
+    staging    = concat(["Sms__ApiKey=${local.sms_key}", local.sms_sender], [for i, phone in local.sms_only_to : "Sms__OnlyTo__${i}=${phone}"])
+    production = ["Sms__ApiKey=${local.sms_key}", local.sms_sender, "Sms__TextEveryone=true"]
+  }
+}
+
+# Extra .env lines per environment, kept out of git (e.g. real team members' numbers as
+# Seed__Admins__0__Phone=+233...): /agroconnect/extra/<env>, one KEY=value per line.
+data "aws_ssm_parameters_by_path" "extra" {
+  path            = "/agroconnect/extra"
+  with_decryption = true
+}
+
+# The SMS settings are set by hand, outside Terraform and git:
+#   aws ssm put-parameter --type SecureString --name /agroconnect/sms/api_key --value <key>
+#   aws ssm put-parameter --type String --name /agroconnect/sms/sender_id --value AgroConnect
+#   aws ssm put-parameter --type String --name /agroconnect/sms/staging_only_to --value +233...,+233...
+data "aws_ssm_parameters_by_path" "sms" {
+  path            = "/agroconnect/sms"
+  with_decryption = true
 }
 
 resource "aws_ssm_parameter" "dotenv" {
@@ -58,7 +90,7 @@ resource "aws_ssm_parameter" "dotenv" {
     "PHOTOS_BUCKET=${aws_s3_bucket.photos[each.key].bucket}",
     "Auth__SigningKey=${random_password.auth_signing_key[each.key].result}",
     "Database__MigrateOnStartup=true",
-  ], local.db_settings[each.key], lookup(local.demo_settings, each.key, [])))}\n"
+  ], local.db_settings[each.key], lookup(local.demo_settings, each.key, []), lookup(local.sms_settings, each.key, []), local.extra_settings[each.key]))}\n"
 }
 
 # Last image tag deployed to each environment. The deploy workflow writes it after a
