@@ -349,6 +349,23 @@ Swagger UI is a web page made from the API contract, built into the API on lapto
 
 **Swagger or Postman?** Swagger needs nothing installed and always shows the latest endpoints, which suits a quick check. Postman keeps saved requests, the sign-in steps and examples, and can run a whole folder, which suits repeating a flow.
 
+### 5.15 Test the USSD menu
+
+The USSD menu answers at `POST /api/ussd/arkesel` (ADR 0038). Arkesel calls it for every key a person presses.
+
+**On the laptop, with Postman:** folder *USSD (as Arkesel calls it)*. Run *1. Dial the code*, then any *Press* request. Each answer's `message` is what the phone shows; `continueSession: false` ends the session. The sample farmer's number is `233240001234`.
+
+**In Arkesel's emulator:** Arkesel needs a public HTTPS address for the callback.
+- **A deployed server:** `https://<server address>/api/ussd/arkesel` (staging's CloudFront address works once this code is deployed).
+- **Your laptop, for a test session only:** a temporary tunnel gives the local API a public address.
+  ```
+  winget install Cloudflare.cloudflared
+  cloudflared tunnel --url http://localhost:8000
+  ```
+  It prints an address like `https://random-words.trycloudflare.com`. In the Arkesel USSD settings, set the callback URL to that address plus `/api/ussd/arkesel`. Stop the tunnel (`Ctrl+C`) when you finish: while it runs, anyone with the address can reach your local API.
+- **Only our USSD app:** put the app id Arkesel shows in the secret store, `dotnet user-secrets set "Ussd:UserId" "<id>" --project APIs/agroconnect-api`. Requests with another id are then refused. Left empty, any request is answered.
+- The number you dial from must belong to a registered farmer, otherwise the menu says the number is not registered.
+
 ### 5.9 Stop things
 
 | Command | Effect | Data |
@@ -582,3 +599,5 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | `POST /api/admin/sms/test` as the MoFA admin (port 8001 copy of the new API) | First live SMS through Arkesel, sender ID AgroConnect: answer `sent`, message received; the demo admin's own sign-in code went to the log (not on the list) |
 | `node` script writing `backend/postman/AgroConnect.postman_collection.json` | A Postman collection of every endpoint (26 requests), with sign-in steps that save the token |
 | `Auth:MaxCodesPerHour` 20 for laptops and servers, `Auth:ResendCooldownSeconds` 15 on laptops | The team tests sign-in many times an hour; the servers keep a 45 s wait against SMS abuse |
+| `dotnet ef migrations add AddUssdSessions ...` | The `ussd_sessions` table: where each USSD dial is in the menu (ADR 0038) |
+| `dotnet test tests/UssdService.Tests`, `dotnet test tests/Api.Tests` | 16 USSD tests (every menu path, wrong keys, back and exit, old sessions, the app id check) and 2 end-to-end; 289 backend tests in all |

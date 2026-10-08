@@ -395,6 +395,21 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 - **Unique `reference`.**
 - **Index (`farmer_id`, `created_at`):** a farmer's latest payments.
 
+### 4.5c `ussd_sessions`: where each USSD dial is in the menu (ADR 0038)
+
+**What a row is:** one USSD session while it is open. The gateway sends only the last key pressed and the next key can reach another server, so the place in the menu is kept here. The row is deleted when the session ends; rows older than 10 minutes are cleared when someone dials.
+
+| Column | Type | Required | Meaning | Example |
+|---|---|---|---|---|
+| `session_id` | varchar(64) | yes | The gateway's session id (the key) | `2005506191900168` |
+| `phone_e164` 🔒 | varchar(16) | yes | The caller | `+233241000001` |
+| `farmer_id` | uuid | no | The farmer on that phone (no foreign key: a session is short-lived) | |
+| `screen` | varchar(30) | yes | The screen on show: `main`, `prices` or `ask` | `prices` |
+| `data` | varchar(200) | no | What the screen listed, e.g. the crops in order | `Groundnut,Maize` |
+| `created_at`, `updated_at` | timestamptz | yes | When the dial started, and the last key | |
+
+**Rules and indexes:** index on `updated_at` to clear old sessions.
+
 ### 4.6 `__EFMigrationsHistory`: which database changes are applied
 
 Written by the migration tool, never by hand. One row per applied migration (`MigrationId` such as `20261005010519_InitialSchema`, and `ProductVersion`, the EF Core version). On start-up the API compares it with the migrations in the code and applies any that are missing.

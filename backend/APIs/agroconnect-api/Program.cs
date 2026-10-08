@@ -12,6 +12,7 @@ using AgroConnect.SharedLibrary.Features;
 using AgroConnect.SharedLibrary.Sms;
 using AgroConnect.SpeechService;
 using AgroConnect.SyncService;
+using AgroConnect.UssdService;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -70,7 +71,8 @@ builder.Services
     .AddAdminService()
     .AddMoneyService(builder.Configuration)
     .AddHelpService()
-    .AddSpeechService(builder.Configuration);
+    .AddSpeechService(builder.Configuration)
+    .AddUssdService(builder.Configuration);
 
 var app = builder.Build();
 

@@ -26,6 +26,10 @@
     {
       "key": "reference",
       "value": ""
+    },
+    {
+      "key": "ussdSession",
+      "value": ""
     }
   ],
   "item": [
@@ -822,6 +826,233 @@
               }
             },
             "description": "Leave phone empty to text the admin's own phone. On a laptop only numbers in Sms:OnlyTo get a real SMS; others go to the log (outcome logged)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "USSD (as Arkesel calls it)",
+      "description": "The USSD menu, step by step, the way Arkesel calls our server (no sign-in). Run 1, then any next step; each answer's \"message\" is what the phone shows and \"continueSession\": false ends the session. The farmer is known by msisdn (233240001234 is the sample farmer). ADR 0038.",
+      "item": [
+        {
+          "name": "1. Dial the code (new session)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": true,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"*928*1#\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"ussdSession\", \"postman-\" + Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Press 1: Market prices",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"1\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Press 2: Weather (from the main menu)",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"2\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Press 3: Ask my officer",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"3\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Press 4: My officer's number",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"4\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Press 0: Back or Exit",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ussd/arkesel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ussd",
+                "arkesel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionID\": \"{{ussdSession}}\",\n  \"userID\": \"agroconnect\",\n  \"newSession\": false,\n  \"msisdn\": \"233240001234\",\n  \"userData\": \"0\",\n  \"network\": \"MTN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         }
       ]

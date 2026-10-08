@@ -227,7 +227,10 @@ backend/
 │   │   ├── Langs/en.json              the reasons shown to the officer as "To fix"
 │   │   └── SyncServiceExtension.cs    AddSyncService(): registers the endpoint
 │   ├── (next)  SyncService            GET /api/sync/changes, the duplicate phone check, photo upload
-│   ├── (later) UssdService            POST /api/ussd: Africa's Talking callback, menu state machine, SMS
+│   ├── UssdService/                   AgroConnect on simple phones by dialling a code (ADR 0038)
+│   │   ├── Features/ArkeselUssd.cs    POST /api/ussd/arkesel: Arkesel's callback for every key (no sign-in); checks Ussd:UserId
+│   │   ├── Features/UssdMenu.cs       the menu: prices, weather, ask my officer (a help request), my officer's number; state in ussd_sessions
+│   │   └── Langs/en.json              the menu text, one USSD screen (182 characters) at most
 │   └── Libs/
 │       ├── SharedLibrary/             used by every service
 │       │   ├── ValueObjects/PhoneNumber.cs   "024 000 0001" -> "+233240000001"; rejects non-Ghana numbers

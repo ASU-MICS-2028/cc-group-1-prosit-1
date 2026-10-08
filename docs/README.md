@@ -56,5 +56,6 @@ Still to write: `architecture.md` (diagram), `ussd-menu.md`, `consent-form.md`, 
 | [0035](adr/0035-help-requests.md) | Help requests from farmers to their officer | Accepted |
 | [0036](adr/0036-speech-in-ghanaian-languages.md) | Speaker buttons in Twi, Ewe and Dagbani through GhanaNLP Khaya | Accepted |
 | [0037](adr/0037-sms-through-arkesel.md) | SMS through Arkesel, safe by default | Accepted |
+| [0038](adr/0038-ussd-through-arkesel.md) | USSD for simple phones, through Arkesel | Accepted |
 
 **Proposed** means recommended but waiting for the owning team member to confirm.

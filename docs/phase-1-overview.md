@@ -9,7 +9,7 @@ _Last updated: Monday 5 October 2026, midday._
 ## 0. Where we are now
 
 ### Done
-- **Decisions:** 37 ADRs (short decision notes), including one repository (0017), the backend structure (0020), the UI from Figma (0021), sign-in rules (0022), database naming and links (0023), roles and devices (0024), pictures online and icons offline (0025), the private network (0026, proposed) how the registration form works (0027) and the installable app (0028) the app screens with the sync contract (0029), the computer top bar with the account menu (0030), the farmer's app with sample providers (0031), the sync service (0032), MoFA admin accounts with the Overview (0033), mobile money through Paystack (0034), help requests (0035), speech in Ghanaian languages through Khaya (0036), and SMS through Arkesel (0037).
+- **Decisions:** 38 ADRs (short decision notes), including one repository (0017), the backend structure (0020), the UI from Figma (0021), sign-in rules (0022), database naming and links (0023), roles and devices (0024), pictures online and icons offline (0025), the private network (0026, proposed) how the registration form works (0027) and the installable app (0028) the app screens with the sync contract (0029), the computer top bar with the account menu (0030), the farmer's app with sample providers (0031), the sync service (0032), MoFA admin accounts with the Overview (0033), mobile money through Paystack (0034), help requests (0035), speech in Ghanaian languages through Khaya (0036), SMS through Arkesel (0037), and USSD through Arkesel (0038).
 - **Repository and checks:** branch rules, pre-commit hooks, secret scanning, the CI pipeline (frontend, backend, Docker) with the 70% coverage gate, and the deploy pipeline (not tried on a server yet).
 - **Backend base:** a thin API host plus services, shared tools, structured logs, standard error answers in the caller's language, and the OpenAPI contract written on every build.
 - **Database:** five tables (users, login_codes, farmers, visits, photos) and the first migration, with PostgreSQL-style names (`full_name`) and six enforced links (foreign keys), so the database itself refuses, for example, a visit for a farmer that does not exist. The API creates the tables when it starts and adds a demo officer and a sample farmer on a laptop.
@@ -36,7 +36,7 @@ _Last updated: Monday 5 October 2026, midday._
 1. **Sync, second half (backend and app, Bernard and Liza):** `GET /api/sync/changes`, so a phone or laptop also receives what the officer saved on another device; then the duplicate phone check across phones and the photo upload with its link check.
 2. **Planned visits and the MoFA side (ADR 0024):** visit plans from the server ("Tomorrow", "Start visit"), the admin role, sign-in and *Add a person*, and the MoFA reports page (D20).
 3. **Install on a real phone:** try the installed app on a cheap Android phone over USB (port forwarding), then from staging once it has HTTPS (DevOps lead).
-4. **USSD** for feature phones; SMS delivery reports (SMS itself works through Arkesel, ADR 0037).
+4. **USSD in Arkesel's emulator** (the menu is built, ADR 0038) once the callback URL is public; SMS delivery reports (SMS works through Arkesel, ADR 0037).
 5. **Translations and recordings (Germain and the community):** Twi, Ewe and Dagbani texts and the voice prompts.
 
 ### What we test on a laptop (automatic, on every change)
@@ -70,7 +70,7 @@ What we are building:
 |---|---|---|---|
 | 1 | Where we host | AWS, Cape Town | The team knows it (a stated bias). Faster for Ghana than Ireland (116 to 136 ms against 166 to 178 ms). Price within 1% of Azure. |
 | 2 | The app | One installable web app (React, TypeScript, Vite) | No app store, one codebase, works on old Android phones. |
-| 3 | Simple phones | USSD and SMS through Africa's Talking | Work on any phone, with no data. |
+| 3 | Simple phones | USSD and SMS through Arkesel | Work on any phone, with no data. |
 | 4 | Backend language | C# (.NET 10) | Safe code, little memory on a small server, good tools. |
 | 5 | Database | PostgreSQL on the server, IndexedDB on the phone | Farmer records are linked data, so SQL fits. The phone needs a box that works offline. |
 | 6 | Sync | Save on the phone first, send later, never duplicate | Each record gets its ID on the phone, so sending it twice does no harm. |
