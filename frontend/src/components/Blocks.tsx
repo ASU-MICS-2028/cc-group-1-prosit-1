@@ -54,8 +54,8 @@ export function BackHeader({
 }: {
   title: string
   subtitle?: string
-  /** Where Back goes; without it, the previous screen */
-  to?: string
+  /** Where Back goes; without it, the previous screen; false for a tab page (no Back button) */
+  to?: string | false
   action?: ReactNode
   /** "green" for top-level titles such as Sync */
   tone?: "default" | "green"
@@ -65,14 +65,16 @@ export function BackHeader({
 
   return (
     <header className="flex items-center gap-3">
-      <button
-        type="button"
-        aria-label={t("common.back")}
-        onClick={() => void (to ? navigate(to) : navigate(-1))}
-        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95"
-      >
-        <ChevronLeft aria-hidden className="size-5.5" />
-      </button>
+      {to === false ? null : (
+        <button
+          type="button"
+          aria-label={t("common.back")}
+          onClick={() => void (to ? navigate(to) : navigate(-1))}
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95"
+        >
+          <ChevronLeft aria-hidden className="size-5.5" />
+        </button>
+      )}
       <div className="min-w-0 flex-1">
         <h1
           className={cn(

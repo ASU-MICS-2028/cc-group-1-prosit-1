@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils"
 /** P3 · D1 / P3 · 13 Money and farm health for the officer's district. */
 export function MoneyHealth() {
   const { t } = useTranslation()
+  const desktop = useIsDesktop()
   const s = moneySummary
   const tiles = [
     [cedis(s.paidToDealers), t("officerMoney.paid"), "bg-secondary"],
@@ -48,13 +49,13 @@ export function MoneyHealth() {
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl leading-9 font-semibold text-primary">
-            {t("officerMoney.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {s.district} · {s.month}
-          </p>
+        <div className="min-w-0 flex-1">
+          <BackHeader
+            title={t("officerMoney.title")}
+            subtitle={`${s.district} · ${s.month}`}
+            to={desktop ? false : "/"}
+            tone="green"
+          />
         </div>
         <SampleBadge />
       </header>

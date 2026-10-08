@@ -839,13 +839,13 @@
     "pinSafe": "Your PIN stays on your phone. The app never sees it.",
     "actions": {
       "buy": "Buy inputs",
-      "buyHint": "Seed and fertiliser from approved shops",
-      "loan": "Seed loan",
-      "loanHint": "Pay back after harvest",
-      "insure": "Crop insurance",
-      "insureHint": "Get paid if the rain fails",
+      "buyHint": "Seeds, fertiliser",
+      "loan": "Get a loan",
+      "loanHint": "For seeds and tools",
+      "insure": "Insure crops",
+      "insureHint": "Against bad rain",
       "getPaid": "Get paid",
-      "getPaidHint": "Ask a buyer to pay you"
+      "getPaidHint": "From buyers"
     },
     "recent": "Recent",
     "waitingNetwork": "Waiting for network",

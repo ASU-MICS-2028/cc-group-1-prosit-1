@@ -29,6 +29,7 @@ export function Component() {
 
   return (
     <FarmerPage
+      tab
       title={t("farmerApp.prices.title")}
       subtitle={updated}
       source={prices?.source}

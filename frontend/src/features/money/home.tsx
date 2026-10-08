@@ -1,9 +1,16 @@
-import { Clock, Lock } from "lucide-react"
+import {
+  ArrowDown,
+  Clock,
+  HandCoins,
+  Lock,
+  ShieldCheck,
+  ShoppingCart,
+  type LucideIcon,
+} from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { SectionTitle } from "@/components/Blocks"
 import { SampleBadge } from "@/components/Flow"
-import { Picture, type PictureSource } from "@/components/Picture"
 import { NoDataYet } from "@/features/farmer/DataStatus"
 import { cedis } from "@/features/sample/data"
 import { formatShortDate } from "@/lib/dates"
@@ -13,28 +20,12 @@ import { useMoney, walletText } from "./wallet"
 const actions: {
   to: string
   key: "buy" | "loan" | "insure" | "getPaid"
-  picture: PictureSource
+  icon: LucideIcon
 }[] = [
-  {
-    to: "/farmer/money/buy",
-    key: "buy",
-    picture: { photo: "options/fertiliser", emoji: "bucket" },
-  },
-  {
-    to: "/farmer/money/loan",
-    key: "loan",
-    picture: { photo: "options/cedi", emoji: "money-bag" },
-  },
-  {
-    to: "/farmer/money/insurance",
-    key: "insure",
-    picture: { photo: "options/umbrella", emoji: "sun-behind-rain-cloud" },
-  },
-  {
-    to: "/farmer/money/get-paid",
-    key: "getPaid",
-    picture: { photo: "options/coins", emoji: "chart-increasing" },
-  },
+  { to: "/farmer/money/buy", key: "buy", icon: ShoppingCart },
+  { to: "/farmer/money/loan", key: "loan", icon: HandCoins },
+  { to: "/farmer/money/insurance", key: "insure", icon: ShieldCheck },
+  { to: "/farmer/money/get-paid", key: "getPaid", icon: ArrowDown },
 ]
 
 /** P3 · 01 Money: the linked wallet (or a card to link one), the four money services and recent payments. */
@@ -81,14 +72,15 @@ export function MoneyHome() {
           <li key={a.key}>
             <Link
               to={a.to}
-              className="flex h-full flex-col gap-3 rounded-[20px] border bg-card p-4 outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="flex h-full flex-col gap-4 rounded-[20px] border bg-card p-4 outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
             >
-              <Picture
-                source={a.picture}
-                fit="contain"
-                className="h-20 w-full rounded-2xl bg-cream p-2"
-                emojiClassName="mx-auto h-20 w-14"
-              />
+              {/* Figma P3 · 01: a green icon in a soft green circle, no picture */}
+              <span
+                aria-hidden
+                className="flex size-11 items-center justify-center rounded-full bg-secondary text-primary"
+              >
+                <a.icon className="size-5" />
+              </span>
               <span>
                 <span className="block text-base font-medium text-foreground">
                   {t(`money.actions.${a.key}`)}

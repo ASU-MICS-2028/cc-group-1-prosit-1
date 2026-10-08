@@ -60,9 +60,9 @@ describe("farmer money", () => {
     ).toBeInTheDocument()
     for (const service of [
       /Buy inputs/,
-      /Seed loan/,
-      /Crop insurance/,
-      /Ask a buyer/,
+      /Get a loan/,
+      /Insure crops/,
+      /From buyers/,
     ])
       expect(screen.getByRole("link", { name: service })).toBeInTheDocument()
     expect(await screen.findByText("Tolon Agro Inputs")).toBeInTheDocument()
