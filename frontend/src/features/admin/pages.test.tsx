@@ -201,13 +201,89 @@ describe("admin pages on sample data", () => {
     )
   })
 
-  it("Cooperatives shows orders and texts members who haven't pledged", async () => {
+  it("Cooperatives shows the area's cooperatives and reminds members who have not pledged", async () => {
+    const reminded: string[] = []
+    fakeServer({
+      "GET /api/admin/cooperatives": () =>
+        json(200, [
+          {
+            cooperative: {
+              id: "c1",
+              name: "Tolon Women Farmers",
+              community: "Tolon",
+              district: "Tolon",
+              leaderName: "Mariama Alhassan",
+              leaderPhoneE164: null,
+              members: [
+                {
+                  farmerId: "f1",
+                  fullName: "Mariama Alhassan",
+                  isLeader: true,
+                },
+              ],
+              savings: { group: 12400, mine: 0 },
+              openOrder: null,
+              openSale: {
+                id: "s1",
+                crop: "Maize",
+                buyer: "Savelugu Grain Traders",
+                pricePerKg: 6.8,
+                marketPricePerKg: 6.5,
+                targetKg: 20000,
+                pledgedKg: 18000,
+                status: "open",
+                myBags: 0,
+                kgPerBag: 100,
+                pledgers: 41,
+              },
+              nextMeeting: null,
+            },
+            orders: [
+              {
+                id: "o1",
+                product: "NPK fertiliser",
+                dealer: "Tolon Agro Inputs",
+                unitPrice: 150,
+                alonePrice: 170,
+                targetBags: 120,
+                orderedBags: 64,
+                members: 12,
+                closesOn: "2026-10-18",
+                status: "open",
+              },
+            ],
+            soldKg: 18000,
+          },
+        ]),
+      "POST /api/admin/cooperatives/c1/remind-pledges": () => {
+        reminded.push("c1")
+        return json(200, { members: 45 })
+      },
+    })
     renderRoute("/admin/cooperatives", admin)
-    expect(await screen.findByText("Tarpaulins · 40")).toBeInTheDocument()
+    expect(
+      await screen.findByRole("heading", { name: "Tolon Women Farmers" })
+    ).toBeInTheDocument()
+    expect(screen.getByText("GH₵ 12,400")).toBeInTheDocument()
+    expect(screen.getByText("18 t")).toBeInTheDocument()
+    expect(
+      screen.getByText(/12 members joined · cheaper by 12%/)
+    ).toBeInTheDocument()
     await userEvent.click(
       screen.getByRole("button", { name: "SMS members who haven't pledged" })
     )
-    expect(screen.getByRole("status")).toHaveTextContent("SMS sent")
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "SMS will reach 45 members"
+    )
+    expect(reminded).toEqual(["c1"])
+  })
+
+  it("Cooperatives says when the area has none", async () => {
+    fakeServer({ "GET /api/admin/cooperatives": () => json(200, []) })
+    renderRoute("/admin/cooperatives", admin)
+    expect(
+      await screen.findByText(/No cooperatives in your area yet/)
+    ).toBeInTheDocument()
   })
 
   it("Impact shows practices and the handover checklist", async () => {

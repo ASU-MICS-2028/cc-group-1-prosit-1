@@ -35,9 +35,14 @@ import {
   type RequestItem,
 } from "@/api/help"
 import { NoDataYet } from "@/features/farmer/DataStatus"
+import {
+  getAdminCooperatives,
+  remindPledges,
+  type AdminCooperative,
+} from "@/api/cooperative"
+import { formatShortDate } from "@/lib/dates"
 import { useServerData } from "@/features/farmer/useServerData"
 import {
-  adminCooperative,
   agents,
   agentTotal,
   impact,
@@ -46,11 +51,12 @@ import {
   phoneReports,
   type Access,
   type Agent,
-  type OrderStatus,
   type PhoneProblem,
   type PhoneReport,
   type ReportedVia,
 } from "./sample"
+
+type AdminOrder = AdminCooperative["orders"][number]
 
 // The MoFA admin pages from Figma P4 · D2 to D6 (and D20 under Regions), on sample data until
 // AdminService has an endpoint for each. Overview (AdminOverviewPage) is the live one.
@@ -700,95 +706,201 @@ function AddPerson({
   )
 }
 
-/** Cooperatives (Figma P4 · D5). */
+/**
+ * Cooperatives (Figma P4 · D5, CooperativeService): the cooperatives run by officers in the admin's area.
+ * Savings count once paid; orders, sale pledges and members are live.
+ */
 export function Cooperatives() {
   const { t } = useTranslation()
-  const c = adminCooperative
-  const [reminded, setReminded] = useState(false)
-  const orderTone: Record<OrderStatus, Tone> = {
+  const state = useServerData("admin-cooperatives", getAdminCooperatives)
+  const [pickedId, setPickedId] = useState<string | null>(null)
+  const [reminded, setReminded] = useState<Record<string, number>>({})
+  const [failed, setFailed] = useState<string | null>(null)
+  const all = state.data ?? []
+  const picked = all.find((c) => c.cooperative.id === pickedId) ?? all[0]
+  const orderTone: Record<AdminOrder["status"], Tone> = {
     open: "amber",
+    closed: "grey",
     delivered: "green",
-    quote: "amber",
   }
+
+  async function remind(id: string) {
+    setFailed(null)
+    try {
+      const result = await remindPledges(id)
+      setReminded((r) => ({ ...r, [id]: result.members }))
+    } catch (error) {
+      setFailed(error instanceof ApiError ? error.message : t("errors.generic"))
+    }
+  }
+
+  if (!picked)
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl leading-9 font-semibold text-primary">
+          {t("adminPages.coop.titleNone")}
+        </h1>
+        {state.data ? (
+          <p className="rounded-[20px] border border-dashed p-6 text-center text-muted-foreground">
+            {t("adminPages.coop.none")}
+          </p>
+        ) : (
+          <NoDataYet state={state} />
+        )}
+      </div>
+    )
+
+  const c = picked.cooperative
+  const sale = c.openSale
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={c.name}
-        subtitle={t("adminPages.coop.subtitle", {
-          members: c.members,
-          leader: c.leader,
-        })}
-      />
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl leading-9 font-semibold text-primary">
+            {c.name}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t("adminPages.coop.subtitleLive", {
+              count: c.members.length,
+              leader: c.leaderName,
+              place: [c.community, c.district].filter(Boolean).join(", "),
+            })}
+          </p>
+        </div>
+        {all.length > 1 ? (
+          <div
+            role="group"
+            aria-label={t("adminPages.coop.pick")}
+            className="flex flex-wrap gap-2"
+          >
+            {all.map((x) => (
+              <button
+                key={x.cooperative.id}
+                type="button"
+                aria-pressed={x.cooperative.id === c.id}
+                onClick={() => setPickedId(x.cooperative.id)}
+                className={cn(
+                  "h-10 rounded-full px-4 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  x.cooperative.id === c.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-foreground"
+                )}
+              >
+                {x.cooperative.name}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </header>
       <StatTiles
         tiles={[
-          [String(c.members), t("adminPages.coop.members")],
-          [cedis(c.saved), t("adminPages.coop.saved")],
-          [String(c.ordersThisSeason), t("adminPages.coop.orders")],
-          [`${c.soldTonnes} t`, t("adminPages.coop.sold")],
+          [String(c.members.length), t("adminPages.coop.members")],
+          [cedis(c.savings.group), t("adminPages.coop.saved")],
+          [String(picked.orders.length), t("adminPages.coop.ordersAll")],
+          [
+            `${(picked.soldKg / 1000).toLocaleString("en-GH")} t`,
+            t("adminPages.coop.soldAll"),
+          ],
         ]}
       />
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,664fr)_minmax(0,440fr)]">
         <Card title={t("adminPages.coop.groupOrders")}>
-          <ul className="divide-y border-t">
-            {c.orders.map((o) => (
-              <li key={o.id} className="flex items-center gap-3 py-4">
-                <span className="min-w-0 flex-1">
-                  <span className="block text-base text-foreground">
-                    {o.title}
-                  </span>
-                  <span className="block text-sm text-muted-foreground">
-                    {o.detail}
-                  </span>
-                </span>
-                <Pill tone={orderTone[o.status]}>
-                  {t(`adminPages.coop.status.${o.status}`)}
-                </Pill>
-              </li>
-            ))}
-          </ul>
-        </Card>
-        <Card title={t("adminPages.coop.selling")}>
-          <p className="text-base text-foreground">
-            {t("adminPages.coop.offer", {
-              buyer: c.sale.buyer,
-              price: cedis(c.sale.price),
-              tonnes: c.sale.tonnes,
-              market: cedis(c.sale.market),
-            })}
-          </p>
-          <span
-            role="meter"
-            aria-label={t("adminPages.coop.selling")}
-            aria-valuenow={c.sale.pledged}
-            aria-valuemin={0}
-            aria-valuemax={c.sale.tonnes}
-            className="block h-3.5 overflow-hidden rounded-full bg-secondary"
-          >
-            <span
-              className="block h-full rounded-full bg-primary"
-              style={{ width: `${(c.sale.pledged / c.sale.tonnes) * 100}%` }}
-            />
-          </span>
-          <p className="text-sm text-muted-foreground">
-            {t("adminPages.coop.pledged", {
-              pledged: c.sale.pledged,
-              tonnes: c.sale.tonnes,
-              members: c.sale.pledgedBy,
-            })}
-          </p>
-          {reminded ? (
-            <p role="status" className="text-sm font-medium text-primary">
-              {t("adminPages.coop.reminded")}
+          {picked.orders.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {t("adminPages.coop.noOrders")}
             </p>
           ) : (
-            <Button
-              size="xl"
-              variant="secondary"
-              className="w-full text-primary"
-              onClick={() => setReminded(true)}
-            >
-              {t("adminPages.coop.remind")}
-            </Button>
+            <ul className="divide-y border-t">
+              {picked.orders.map((o) => (
+                <li key={o.id} className="flex items-center gap-3 py-4">
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-base text-foreground">
+                      {t("adminPages.coop.orderLine", {
+                        product: o.product,
+                        bags: o.orderedBags,
+                        target: o.targetBags,
+                      })}
+                    </span>
+                    <span className="block text-sm text-muted-foreground">
+                      {t("adminPages.coop.orderDetail", {
+                        count: o.members,
+                        percent: Math.round(
+                          ((o.alonePrice - o.unitPrice) / o.alonePrice) * 100
+                        ),
+                        closes: formatShortDate(`${o.closesOn}T12:00:00Z`),
+                      })}
+                    </span>
+                  </span>
+                  <Pill tone={orderTone[o.status]}>
+                    {t(`adminPages.coop.status.${o.status}`)}
+                  </Pill>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+        <Card
+          title={t(
+            sale ? "adminPages.coop.sellingCrop" : "adminPages.coop.selling",
+            {
+              crop: sale?.crop ?? "",
+            }
+          )}
+        >
+          {!sale ? (
+            <p className="text-sm text-muted-foreground">
+              {t("adminPages.coop.noSale")}
+            </p>
+          ) : (
+            <>
+              <p className="text-base text-foreground">
+                {t("adminPages.coop.offer", {
+                  buyer: sale.buyer,
+                  price: cedis(sale.pricePerKg),
+                  tonnes: (sale.targetKg / 1000).toLocaleString("en-GH"),
+                  market: cedis(sale.marketPricePerKg),
+                })}
+              </p>
+              <span
+                role="meter"
+                aria-label={t("adminPages.coop.selling")}
+                aria-valuenow={sale.pledgedKg}
+                aria-valuemin={0}
+                aria-valuemax={sale.targetKg}
+                className="block h-3.5 overflow-hidden rounded-full bg-secondary"
+              >
+                <span
+                  className="block h-full rounded-full bg-primary"
+                  style={{
+                    width: `${Math.min(100, (sale.pledgedKg / sale.targetKg) * 100)}%`,
+                  }}
+                />
+              </span>
+              <p className="text-sm text-muted-foreground">
+                {t("adminPages.coop.pledged", {
+                  pledged: (sale.pledgedKg / 1000).toLocaleString("en-GH"),
+                  tonnes: (sale.targetKg / 1000).toLocaleString("en-GH"),
+                  members: sale.pledgers,
+                })}
+              </p>
+              <FieldError id="remind-error" message={failed ?? undefined} />
+              {reminded[c.id] !== undefined ? (
+                <p role="status" className="text-sm font-medium text-primary">
+                  {t("adminPages.coop.remindedCount", {
+                    count: reminded[c.id],
+                  })}
+                </p>
+              ) : (
+                <Button
+                  size="xl"
+                  variant="secondary"
+                  className="w-full text-primary"
+                  onClick={() => void remind(c.id)}
+                >
+                  {t("adminPages.coop.remind")}
+                </Button>
+              )}
+            </>
           )}
         </Card>
       </div>

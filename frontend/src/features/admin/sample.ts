@@ -151,46 +151,6 @@ export const systemHealth = {
   ],
 }
 
-export type OrderStatus = "open" | "delivered" | "quote"
-
-/** P4 · D5 Cooperatives */
-export const adminCooperative = {
-  name: "Tolon Women Farmers Cooperative",
-  members: 86,
-  leader: "Mariama Alhassan",
-  saved: 12400,
-  ordersThisSeason: 3,
-  soldTonnes: 18,
-  orders: [
-    {
-      id: "o1",
-      title: "NPK fertiliser · 120 bags",
-      detail: "64 members joined · cheaper by 12% · closes Friday",
-      status: "open" as OrderStatus,
-    },
-    {
-      id: "o2",
-      title: "Certified maize seed · 900 kg",
-      detail: "Delivered 2 Oct · paid by MoMo",
-      status: "delivered" as OrderStatus,
-    },
-    {
-      id: "o3",
-      title: "Tarpaulins · 40",
-      detail: "Waiting for dealer price",
-      status: "quote" as OrderStatus,
-    },
-  ],
-  sale: {
-    buyer: "Savelugu Grain Traders",
-    price: 6.8,
-    market: 6.5,
-    tonnes: 20,
-    pledged: 18,
-    pledgedBy: 41,
-  },
-}
-
 /** P4 · D6 Impact and SDG report */
 export const impact = {
   season: "2026",

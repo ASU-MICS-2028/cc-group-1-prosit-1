@@ -76,7 +76,8 @@
     "requestsOpen_other": "{{count}} waiting for advice",
     "loansToReview_one": "{{count}} loan to review",
     "loansToReview_other": "{{count}} loans to review",
-    "requestsHint": "Questions from your farmers"
+    "requestsHint": "Questions from your farmers",
+    "cooperativesHint": "Orders, sales and meetings"
   },
   "register": {
     "title": "Register a farmer",
@@ -864,11 +865,12 @@
     },
     "cooperative": {
       "title": "My cooperative",
-      "members": "{{count}} members",
       "chair": "Chair",
       "nextMeeting": "Next meeting",
       "where": "Where",
-      "call": "Call the chair"
+      "call": "Call the chair",
+      "members_one": "{{count}} member",
+      "members_other": "{{count}} members"
     },
     "lessons": {
       "title": "Lessons",
@@ -1124,7 +1126,10 @@
       "how": "Savings come from your mobile money. You approve each one with your PIN.",
       "doneTitle": "{{amount}} added",
       "doneText": "Your savings are now {{amount}}.",
-      "from": "From"
+      "from": "From",
+      "howMuch": "How much do you want to save?",
+      "linkWallet": "Link your mobile money first",
+      "doneTextLive": "It is added to the group's savings."
     },
     "meeting": {
       "title": "Next meeting",
@@ -1138,7 +1143,14 @@
       "doneTitle": "See you there",
       "doneText": "We will remind you by SMS the day before.",
       "coming": "Coming",
-      "comingCount": "{{count}} of {{total}} members"
+      "comingCount": "{{count}} of {{total}} members",
+      "cannot": "I cannot come",
+      "none": "No meeting is planned yet.",
+      "youSaidYes": "You said you are coming.",
+      "youSaidNo": "You said you cannot come.",
+      "notComingBadge": "Not coming",
+      "notComingTitle": "Thank you for telling us",
+      "notComingText": "The leader will share what was decided."
     },
     "order": {
       "title": "Group order",
@@ -1164,7 +1176,14 @@
       "whenCloses": "When the order closes",
       "change": "Change my order",
       "unit_one": "bag",
-      "unit_other": "bags"
+      "unit_other": "bags",
+      "changeTo_one": "Change to {{count}} bag",
+      "changeTo_other": "Change to {{count}} bags",
+      "leave": "Leave this order",
+      "none": "No group order is open right now.",
+      "leftBadge": "Left",
+      "leftTitle": "You left the group order",
+      "leftText": "You can join again until it closes."
     },
     "sale": {
       "title": "Sell together",
@@ -1189,8 +1208,13 @@
       "bagsKg_other": "{{count}} bags · {{kg}} kg",
       "dropOff": "Drop off",
       "store": "Group store",
-      "youGet": "You get about"
-    }
+      "youGet": "You get about",
+      "none": "No group sale is open right now."
+    },
+    "notMember": "You are not in a cooperative yet. Ask your extension officer to add you.",
+    "orderMine_one": "You ordered {{count}} bag · closes {{closes}}",
+    "orderMine_other": "You ordered {{count}} bags · closes {{closes}}",
+    "nothingOpen": "No group order, sale or meeting is open right now."
   },
   "requests": {
     "title": "Requests",
@@ -1392,14 +1416,29 @@
       "groupOrders": "Group orders",
       "status": {
         "open": "Open",
-        "delivered": "Delivered",
-        "quote": "Quote"
+        "closed": "Closed",
+        "delivered": "Delivered"
       },
       "selling": "Selling maize together",
       "offer": "Buyer: {{buyer}} offers {{price}}/kg for {{tonnes}} tonnes, above today's Tamale price of {{market}}.",
       "pledged": "{{pledged}} of {{tonnes}} tonnes pledged by {{members}} members",
       "remind": "SMS members who haven't pledged",
-      "reminded": "SMS sent to members who haven't pledged"
+      "reminded": "SMS sent to members who haven't pledged",
+      "titleNone": "Cooperatives",
+      "none": "No cooperatives in your area yet. Extension officers start them from their app.",
+      "pick": "Choose a cooperative",
+      "ordersAll": "Group orders",
+      "soldAll": "Sold together",
+      "noOrders": "No group orders yet.",
+      "orderLine": "{{product}} · {{bags}} of {{target}} bags",
+      "orderDetail_one": "{{count}} member joined · cheaper by {{percent}}% · closes {{closes}}",
+      "orderDetail_other": "{{count}} members joined · cheaper by {{percent}}% · closes {{closes}}",
+      "sellingCrop": "Selling {{crop}} together",
+      "noSale": "No group sale is open.",
+      "remindedCount_one": "SMS will reach {{count}} member who has not pledged (sent once SMS is connected).",
+      "remindedCount_other": "SMS will reach {{count}} members who have not pledged (sent once SMS is connected).",
+      "subtitleLive_one": "{{count}} member · led by {{leader}} · {{place}}",
+      "subtitleLive_other": "{{count}} members · led by {{leader}} · {{place}}"
     },
     "help": {
       "title": "Help desk",
@@ -1536,6 +1575,64 @@
     "amountMax": "The most at once is GH₵ {{max}}.",
     "whole": "Whole cedis only, numbers only.",
     "fix": "Check the fields marked in red.",
-    "taken": "Someone already signs in with this number."
+    "taken": "Someone already signs in with this number.",
+    "positive": "Enter a number above zero.",
+    "future": "Choose a date that has not passed.",
+    "aloneHigher": "The price alone should be at least the group price."
+  },
+  "officerCoop": {
+    "title": "Cooperatives",
+    "subtitle": "Groups you run with your farmers",
+    "start": "Start one",
+    "none": "You have no cooperatives yet. Start one with a farmer you registered as the leader.",
+    "startTitle": "Start a cooperative",
+    "name": "Name",
+    "community": "Community",
+    "leader": "Leader",
+    "chooseFarmer": "Choose a farmer",
+    "syncFirst": "Only farmers already sent to MoFA can join. Sync first.",
+    "create": "Start the cooperative",
+    "line_one": "{{count}} member · led by {{leader}} · {{community}}",
+    "line_other": "{{count}} members · led by {{leader}} · {{community}}",
+    "saved": "Saved together: {{amount}}",
+    "orderOpen": "Order open: {{product}} · {{bags}} of {{target}} bags",
+    "noOrder": "No group order open",
+    "saleOpen": "Selling {{crop}}: {{kg}} of {{target}} kg pledged",
+    "noSale": "No sale open",
+    "meetingNext": "Next meeting {{when}} · {{coming}} coming",
+    "noMeeting": "No meeting planned",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "leaderTag": "leader",
+    "addMember": "Add a farmer",
+    "newOrder": "Group order",
+    "newSale": "Sell together",
+    "newMeeting": "Meeting",
+    "whichFarmer": "Which farmer?",
+    "add": "Add to the cooperative",
+    "openOrder": "Open the group order",
+    "openSale": "Open the sale",
+    "planMeeting": "Plan the meeting",
+    "order": {
+      "product": "Product",
+      "dealer": "Dealer",
+      "unit": "Group price per bag (GH₵)",
+      "alone": "Price alone per bag (GH₵)",
+      "target": "Target bags",
+      "closes": "Closes on"
+    },
+    "sale": {
+      "crop": "Crop",
+      "buyer": "Buyer",
+      "price": "Buyer's price per kg (GH₵)",
+      "market": "Market price per kg (GH₵)",
+      "target": "Target kg"
+    },
+    "meeting": {
+      "startsAt": "Date and time",
+      "place": "Place",
+      "topic": "Topic",
+      "bring": "What to bring (optional)"
+    }
   }
 }

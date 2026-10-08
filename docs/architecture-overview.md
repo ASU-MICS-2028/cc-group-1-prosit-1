@@ -36,7 +36,7 @@ One app at one address, for three people: **farmers** (phone), **extension offic
 | FarmerService | The farmer's own record; prices, weather, crop check, harvest forecast, lessons; SMS alert settings |
 | HelpService | Farmers' questions (voice or text) go to their officer, who answers; the admin's help desk steps in after 24 h |
 | MoneyService | Mobile money through Paystack: link a wallet, pay, check payments; the PIN never touches the app |
-| CooperativeService | Savings, group orders, selling together, meetings |
+| CooperativeService | Cooperatives: savings by mobile money (counted once paid), group orders, selling together, meetings |
 | AdminService | The MoFA admin's overview for their region |
 | SpeechService | Speaker buttons in Twi, Ewe and Dagbani through GhanaNLP Khaya, each sentence made once and kept |
 
