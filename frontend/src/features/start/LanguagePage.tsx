@@ -6,6 +6,7 @@ import { LanguageOptions } from "@/components/LanguageOptions"
 import { ScreenShell } from "@/components/ScreenShell"
 import { Button } from "@/components/ui/button"
 import { LANGUAGES, setLanguage, type LanguageCode } from "@/i18n"
+import { LaterLanguages } from "@/features/country/LaterLanguages"
 
 /** 01 Choose language: listen to each one, preview it, then continue in it. */
 export function Component() {
@@ -62,6 +63,7 @@ export function Component() {
         </p>
       </div>
       <LanguageOptions value={selected} onChange={preview} />
+      <LaterLanguages />
     </ScreenShell>
   )
 }

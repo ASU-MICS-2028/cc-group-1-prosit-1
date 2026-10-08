@@ -1,8 +1,9 @@
 import { db, type LocalFarmer } from "@/db/local"
+import { getAreaUnit } from "@/lib/country"
 import { toE164 } from "@/lib/phone"
 import { emptyRegistration, type Registration } from "./schema"
 
-/** The saved draft, or a fresh form. */
+/** The saved draft, or a fresh form (farm size in the unit chosen in Country and money). */
 export async function loadDraft(): Promise<{
   data: Registration
   step: number
@@ -10,7 +11,7 @@ export async function loadDraft(): Promise<{
   const draft = await db.drafts.get("registration")
   return draft
     ? { data: { ...emptyRegistration, ...draft.data }, step: draft.step }
-    : { data: emptyRegistration, step: 1 }
+    : { data: { ...emptyRegistration, farmSizeUnit: getAreaUnit() }, step: 1 }
 }
 
 export async function saveDraft(data: Registration, step: number) {

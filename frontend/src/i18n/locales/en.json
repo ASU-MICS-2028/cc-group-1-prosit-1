@@ -1371,5 +1371,21 @@
     "ratio": "Officer to farmers",
     "active": "Farmers active in the last 30 days",
     "channels": "How farmers reach us"
+  },
+  "country": {
+    "question": "Choose your country",
+    "hint": "This sets your money, languages and where your data is kept.",
+    "continue": "Continue",
+    "save": "Save",
+    "settingsTitle": "Country and money",
+    "country": "Country",
+    "money": "Money",
+    "unit": "Farm size in",
+    "unitHint": "New registrations start in this unit. You can still change it for each farm.",
+    "data": "Where your data is kept",
+    "dataWhere": "{{store}} · AWS Cape Town · encrypted",
+    "note": "Changing country moves you to that country's prices, languages and data store. Farmers you registered stay in {{country}}.",
+    "laterLanguages": "Coming in a later phase",
+    "laterLanguage": "{{country}} · coming in a later phase"
   }
 }

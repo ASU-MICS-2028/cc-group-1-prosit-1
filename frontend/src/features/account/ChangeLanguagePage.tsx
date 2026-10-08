@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { BackHeader } from "@/components/Blocks"
 import { LanguageOptions } from "@/components/LanguageOptions"
 import { Button } from "@/components/ui/button"
+import { LaterLanguages } from "@/features/country/LaterLanguages"
 import { LANGUAGES, setLanguage, type LanguageCode } from "@/i18n"
 
 /** Change language (Figma "Shared · Change Language"): preview a language, Save to keep it. */
@@ -45,6 +46,7 @@ export function Component() {
           void setLanguage(code, false) // preview: the screen speaks the new language at once
         }}
       />
+      <LaterLanguages />
       <Button
         size="xl"
         onClick={() => {
