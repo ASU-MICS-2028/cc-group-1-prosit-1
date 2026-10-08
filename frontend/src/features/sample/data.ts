@@ -1,5 +1,5 @@
 // Stand-in data for the screens whose backend is not built yet (mobile money, loans, insurance,
-// the cooperative's savings, orders and sales, the officer's requests and loan reviews). Every
+// the officer's money health and loan reviews). Every
 // screen that uses it shows "Sample data". When an endpoint exists, the screen switches to it and
 // the matching part of this file goes. Shapes follow the Figma screens so the API can mirror them.
 import type { PictureSource } from "@/components/Picture"
@@ -135,45 +135,6 @@ export const insurance = {
   season: "2026 rainy season",
   payout: 600,
   reference: "AGC-INS-26-0418",
-}
-
-// ---------- The farmer's cooperative ----------
-
-export const cooperative = {
-  name: "Tolon Women Farmers Cooperative",
-  members: 86,
-  leader: "Mariama Alhassan",
-  savings: {
-    group: 12400,
-    mine: 240,
-    add: 20,
-    payout: "With the harvest, Feb 2027",
-  },
-  order: {
-    product: "NPK fertiliser 15-15-15",
-    dealer: "Tolon Agro Inputs",
-    price: 150,
-    alonePrice: 170,
-    ordered: 64,
-    target: 120,
-    closes: "Friday",
-  },
-  meeting: {
-    when: "Saturday 11 Oct, 10 am",
-    place: "Tolon community centre",
-    topic: "Selling maize together",
-    bring: "How many bags you can sell",
-    coming: 42,
-  },
-  sale: {
-    crop: "Maize",
-    buyer: "Savelugu Grain Traders",
-    price: 6.8,
-    alonePrice: 6,
-    pledged: 18,
-    target: 20,
-    kgPerBag: 100,
-  },
 }
 
 // ---------- The officer ----------

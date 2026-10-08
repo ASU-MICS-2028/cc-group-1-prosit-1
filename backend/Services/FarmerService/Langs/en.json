@@ -1,6 +1,27 @@
 [
-  { "Lang": "en", "Key": "NOT_A_FARMER_ACCOUNT", "Text": "This account is not linked to a farm. Ask your extension officer." },
-  { "Lang": "en", "Key": "FARMER_NOT_FOUND", "Text": "We could not find your farm record. Ask your extension officer." },
-  { "Lang": "en", "Key": "SYMPTOMS_REQUIRED", "Text": "Choose at least one thing you see on the crop." },
-  { "Lang": "en", "Key": "CHANGE_DETAILS_REQUIRED", "Text": "Say what should change, in a few words." }
+  {
+    "Lang": "en",
+    "Key": "NOT_A_FARMER_ACCOUNT",
+    "Text": "This account is not linked to a farm. Ask your extension officer."
+  },
+  {
+    "Lang": "en",
+    "Key": "FARMER_NOT_FOUND",
+    "Text": "We could not find your farm record. Ask your extension officer."
+  },
+  {
+    "Lang": "en",
+    "Key": "SYMPTOMS_REQUIRED",
+    "Text": "Choose at least one thing you see on the crop."
+  },
+  {
+    "Lang": "en",
+    "Key": "CHANGE_DETAILS_REQUIRED",
+    "Text": "Say what should change, in a few words."
+  },
+  {
+    "Lang": "en",
+    "Key": "NOT_IN_A_COOPERATIVE",
+    "Text": "You are not in a cooperative yet. Ask your extension officer."
+  }
 ]

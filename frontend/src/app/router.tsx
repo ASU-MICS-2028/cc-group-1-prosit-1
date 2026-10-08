@@ -466,6 +466,13 @@ export const routes: RouteObject[] = [
           })),
       },
       {
+        path: "cooperatives",
+        lazy: () =>
+          import("@/features/officer/cooperatives").then((m) => ({
+            Component: m.OfficerCooperatives,
+          })),
+      },
+      {
         path: "market",
         lazy: () =>
           import("@/features/officer/money").then((m) => ({

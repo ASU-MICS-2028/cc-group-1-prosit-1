@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- CooperativeService: cooperatives' savings, group orders, selling together and meetings (ADR 0040).
+       Savings are paid with mobile money through MoneyService's payment flow. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\SharedLibrary\SharedLibrary.csproj" />
+    <ProjectReference Include="..\Libs\Data\Data.csproj" />
+    <ProjectReference Include="..\MoneyService\MoneyService.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Langs\*.json" />
+  </ItemGroup>
+</Project>

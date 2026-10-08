@@ -145,17 +145,45 @@ public sealed class GetHarvestForecast : IFeature
     }
 }
 
-/// <summary>The farmer's cooperative: who leads it and when it meets.</summary>
+/// <summary>
+/// The farmer's cooperative for the Home tile: its name, members, leader and next meeting, from the
+/// cooperatives tables (ADR 0040). 404 when the farmer is not in one yet.
+/// </summary>
 public sealed class GetCooperative : IFeature
 {
     public void MapEndpoint(IEndpointRouteBuilder app) =>
         app.MapGet("/api/farmer/cooperative", Handle).ForFarmers("GetCooperative");
 
     public static async Task<Ok<CooperativeResponse>> Handle(
-        AppDbContext db, ISessionProvider session, ICooperativeDirectory directory, CancellationToken cancellationToken)
+        AppDbContext db, ISessionProvider session, IClock clock, CancellationToken cancellationToken)
     {
         var farmer = await CurrentFarmer.LoadAsync(db, session, cancellationToken);
-        return TypedResults.Ok(await directory.FindForAsync(farmer.Community, farmer.RegionDistrict, cancellationToken));
+        var cooperative = await (
+                from member in db.CooperativeMembers.AsNoTracking()
+                join coop in db.Cooperatives.AsNoTracking() on member.CooperativeId equals coop.Id
+                where member.FarmerId == farmer.Id
+                select coop)
+            .SingleOrDefaultAsync(cancellationToken)
+            ?? throw new ApiException(StatusCodes.Status404NotFound, "NOT_IN_A_COOPERATIVE");
+        var members = await db.CooperativeMembers.CountAsync(m => m.CooperativeId == cooperative.Id, cancellationToken);
+        var leader = await db.Farmers.AsNoTracking()
+            .Where(f => f.Id == cooperative.LeaderFarmerId)
+            .Select(f => new { f.FullName, f.PhoneE164 })
+            .SingleAsync(cancellationToken);
+        var now = clock.UtcNow;
+        var meeting = await db.Meetings.AsNoTracking()
+            .Where(m => m.CooperativeId == cooperative.Id && m.StartsAt >= now)
+            .OrderBy(m => m.StartsAt)
+            .FirstOrDefaultAsync(cancellationToken);
+        return TypedResults.Ok(new CooperativeResponse(
+            DataSource.Live,
+            cooperative.Name,
+            cooperative.Community,
+            members,
+            leader.FullName,
+            leader.PhoneE164,
+            meeting is null ? null : DateOnly.FromDateTime(meeting.StartsAt.UtcDateTime),
+            meeting?.Place));
     }
 }
 
