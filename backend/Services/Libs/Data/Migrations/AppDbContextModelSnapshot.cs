@@ -23,6 +23,35 @@ namespace AgroConnect.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("AgroConnect.Data.Entities.AlertSetting", b =>
+                {
+                    b.Property<Guid>("FarmerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("farmer_id");
+
+                    b.Property<bool>("DrySpell")
+                        .HasColumnType("boolean")
+                        .HasColumnName("dry_spell");
+
+                    b.Property<bool>("HeavyRain")
+                        .HasColumnType("boolean")
+                        .HasColumnName("heavy_rain");
+
+                    b.PrimitiveCollection<int[]>("PriceCrops")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("price_crops");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("FarmerId")
+                        .HasName("pk_alert_settings");
+
+                    b.ToTable("alert_settings", (string)null);
+                });
+
             modelBuilder.Entity("AgroConnect.Data.Entities.AppUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -230,6 +259,113 @@ namespace AgroConnect.Data.Migrations
                     b.ToTable("farmers", (string)null);
                 });
 
+            modelBuilder.Entity("AgroConnect.Data.Entities.HelpRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Answer")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("answer");
+
+                    b.Property<DateTimeOffset?>("AnsweredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("answered_at");
+
+                    b.Property<Guid?>("AnsweredById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("answered_by_id");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer")
+                        .HasColumnName("category");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("Crop")
+                        .HasColumnType("integer")
+                        .HasColumnName("crop");
+
+                    b.Property<Guid>("FarmerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("farmer_id");
+
+                    b.Property<bool>("HasVoiceNote")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_voice_note");
+
+                    b.Property<Guid?>("OfficerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("officer_id");
+
+                    b.Property<string>("Problem")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("problem");
+
+                    b.Property<DateTimeOffset?>("RemindedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reminded_at");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("VoiceSeconds")
+                        .HasColumnType("integer")
+                        .HasColumnName("voice_seconds");
+
+                    b.HasKey("Id")
+                        .HasName("pk_help_requests");
+
+                    b.HasIndex("AnsweredById")
+                        .HasDatabaseName("ix_help_requests_answered_by_id");
+
+                    b.HasIndex("FarmerId", "CreatedAt")
+                        .HasDatabaseName("ix_help_requests_farmer_id_created_at");
+
+                    b.HasIndex("OfficerId", "Status")
+                        .HasDatabaseName("ix_help_requests_officer_id_status");
+
+                    b.ToTable("help_requests", (string)null);
+                });
+
+            modelBuilder.Entity("AgroConnect.Data.Entities.HelpVoiceNote", b =>
+                {
+                    b.Property<Guid>("HelpRequestId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("help_request_id");
+
+                    b.Property<byte[]>("Audio")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("audio");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("content_type");
+
+                    b.HasKey("HelpRequestId")
+                        .HasName("pk_help_voice_notes");
+
+                    b.ToTable("help_voice_notes", (string)null);
+                });
+
             modelBuilder.Entity("AgroConnect.Data.Entities.LoginCode", b =>
                 {
                     b.Property<Guid>("Id")
@@ -388,6 +524,61 @@ namespace AgroConnect.Data.Migrations
                     b.ToTable("photos", (string)null);
                 });
 
+            modelBuilder.Entity("AgroConnect.Data.Entities.SpeechClip", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<byte[]>("Audio")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("audio");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("language");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("text");
+
+                    b.Property<string>("TextHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("text_hash");
+
+                    b.Property<string>("Translated")
+                        .IsRequired()
+                        .HasMaxLength(1500)
+                        .HasColumnType("character varying(1500)")
+                        .HasColumnName("translated");
+
+                    b.HasKey("Id")
+                        .HasName("pk_speech_clips");
+
+                    b.HasIndex("Language", "TextHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_speech_clips_language_text_hash");
+
+                    b.ToTable("speech_clips", (string)null);
+                });
+
             modelBuilder.Entity("AgroConnect.Data.Entities.Visit", b =>
                 {
                     b.Property<Guid>("Id")
@@ -501,6 +692,16 @@ namespace AgroConnect.Data.Migrations
                     b.ToTable("wallets", (string)null);
                 });
 
+            modelBuilder.Entity("AgroConnect.Data.Entities.AlertSetting", b =>
+                {
+                    b.HasOne("AgroConnect.Data.Entities.Farmer", null)
+                        .WithOne()
+                        .HasForeignKey("AgroConnect.Data.Entities.AlertSetting", "FarmerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_alert_settings_farmers_farmer_id");
+                });
+
             modelBuilder.Entity("AgroConnect.Data.Entities.AppUser", b =>
                 {
                     b.HasOne("AgroConnect.Data.Entities.Farmer", null)
@@ -518,6 +719,38 @@ namespace AgroConnect.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_farmers_users_registered_by_id");
+                });
+
+            modelBuilder.Entity("AgroConnect.Data.Entities.HelpRequest", b =>
+                {
+                    b.HasOne("AgroConnect.Data.Entities.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("AnsweredById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_help_requests_users_answered_by_id");
+
+                    b.HasOne("AgroConnect.Data.Entities.Farmer", null)
+                        .WithMany()
+                        .HasForeignKey("FarmerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_help_requests_farmers_farmer_id");
+
+                    b.HasOne("AgroConnect.Data.Entities.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("OfficerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_help_requests_users_officer_id");
+                });
+
+            modelBuilder.Entity("AgroConnect.Data.Entities.HelpVoiceNote", b =>
+                {
+                    b.HasOne("AgroConnect.Data.Entities.HelpRequest", null)
+                        .WithOne()
+                        .HasForeignKey("AgroConnect.Data.Entities.HelpVoiceNote", "HelpRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_help_voice_notes_help_requests_help_request_id");
                 });
 
             modelBuilder.Entity("AgroConnect.Data.Entities.Payment", b =>

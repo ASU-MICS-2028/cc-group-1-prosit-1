@@ -8,7 +8,7 @@ import { SyncIcon } from "@/components/SyncStatus"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { LANGUAGES } from "@/i18n"
 import { formatLongDate, formatShortDate } from "@/lib/dates"
-import { speak } from "@/lib/speech"
+import { listen } from "@/lib/speech"
 import { usePhotoUrl } from "@/lib/usePhotoUrl"
 import { cn } from "@/lib/utils"
 import { farmerFacts, farmerSpeech } from "./describe"
@@ -109,7 +109,7 @@ export function Component() {
                 size="xl"
                 variant="secondary"
                 className="text-primary"
-                onClick={() => speak(farmerSpeech(farmer, t))}
+                onClick={() => listen(farmerSpeech(farmer, t))}
               >
                 {t("farmers.listen")}
               </Button>
@@ -136,7 +136,7 @@ export function Component() {
               size="xl"
               variant="secondary"
               className="flex-1 text-primary"
-              onClick={() => speak(farmerSpeech(farmer, t))}
+              onClick={() => listen(farmerSpeech(farmer, t))}
             >
               {t("farmers.listenProfile")}
             </Button>

@@ -7,7 +7,7 @@ import { SyncBadge } from "@/components/SyncBadge"
 import { SyncIcon } from "@/components/SyncStatus"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { maskPhone } from "@/lib/phone"
-import { speak } from "@/lib/speech"
+import { listen } from "@/lib/speech"
 import { SYNC_STATUSES, type SyncStatus } from "@/lib/syncStatus"
 import { usePhotoUrl } from "@/lib/usePhotoUrl"
 import { useOnline } from "@/lib/useOnline"
@@ -311,7 +311,7 @@ function FarmerPreview({ id }: { id: string }) {
           size="xl"
           variant="secondary"
           className="flex-1 text-primary"
-          onClick={() => speak(farmerSpeech(farmer, t))}
+          onClick={() => listen(farmerSpeech(farmer, t))}
         >
           {t("farmers.listen")}
         </Button>

@@ -34,3 +34,11 @@ export const requestChange = (body: S["ChangeRequest"]) =>
     method: "POST",
     body,
   })
+
+export type AlertSettings = S["AlertSettings"]
+
+/** The farmer's SMS alerts (Figma P2 · 07). Sending starts once the SMS provider is connected. */
+export const getAlerts = () => api<AlertSettings>("/api/farmer/alerts")
+
+export const saveAlerts = (body: S["AlertSettingsRequest"]) =>
+  api<AlertSettings>("/api/farmer/alerts", { method: "PUT", body })

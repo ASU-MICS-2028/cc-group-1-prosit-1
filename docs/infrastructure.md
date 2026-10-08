@@ -97,3 +97,10 @@ Snapshots kept: `agroconnect-production-move`, `agroconnect-production-final-202
 - **Staging host name:** set `host` for staging once there is a domain, so it no longer needs port 8080.
 - **Sign-in rate limit with 2+ servers** is counted per server (per-phone limits are shared in PostgreSQL). Move the per-address counter to PostgreSQL if abuse shows up.
 - **Optional:** RDS Multi-AZ (`rds_multi_az = true`, about +$16 a month).
+
+## Secrets to add when the team has them
+
+| Setting (server `.env` in SSM) | What for | Without it |
+|---|---|---|
+| `Khaya__ApiKey` | Speaker buttons in Twi, Ewe and Dagbani (ADR 0036) | The phone's own voice |
+| `Paystack__SecretKey` | Mobile money payments (ADR 0034) | Sample payments |

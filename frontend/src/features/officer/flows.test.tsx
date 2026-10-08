@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { fakeServer } from "@/test/fakes"
+import { fakeServer, json } from "@/test/fakes"
 import { renderRoute } from "@/test/renderRoute"
 
 beforeEach(() => {
@@ -11,36 +11,78 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe("officer requests, money and market (sample data)", () => {
-  it("lists requests and answers one with advice", async () => {
+const question = {
+  id: "11111111-1111-4111-8111-111111111111",
+  farmerId: "22222222-2222-4222-8222-222222222222",
+  farmerName: "Hawa Issah",
+  community: "Tolon",
+  category: "crops",
+  text: "Holes in my maize leaves",
+  crop: "maize",
+  problem: "fall_armyworm",
+  hasVoiceNote: false,
+  voiceSeconds: null,
+  status: "waiting",
+  officerId: "33333333-3333-4333-8333-333333333333",
+  officerName: "Fuseini Alhassan",
+  answer: null,
+  overdue: false,
+  createdAt: new Date().toISOString(),
+  answeredAt: null,
+  remindedAt: null,
+}
+
+describe("officer requests, money and market", () => {
+  it("lists the farmers' questions and answers one with advice (HelpService)", async () => {
+    const answers: unknown[] = []
+    fakeServer({
+      "GET /api/officer/requests": () =>
+        json(200, { open: 1, requests: [question] }),
+      [`POST /api/officer/requests/${question.id}/answer`]: (body) => {
+        answers.push(body)
+        return json(200, {
+          ...question,
+          status: "answered",
+          answer: (body as { advice: string }).advice,
+        })
+      },
+    })
+    renderRoute(`/requests/${question.id}`)
+    expect(
+      await screen.findByRole("heading", {
+        name: "Maize: Possible fall armyworm",
+      })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/The app thinks: Possible fall armyworm/)
+    ).toBeInTheDocument()
+    // no advice yet: says so instead of sending nothing
+    await userEvent.click(screen.getByRole("button", { name: "Send advice" }))
+    expect(
+      screen.getByText("Write your advice before sending.")
+    ).toBeInTheDocument()
+    await userEvent.type(
+      screen.getByLabelText("Your advice"),
+      "Crush the egg masses."
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Send advice" }))
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Advice sent to Hawa Issah"
+    )
+    expect(answers).toEqual([{ advice: "Crush the egg masses." }])
+    expect(
+      screen.getByRole("link", { name: "Add a farm visit" })
+    ).toHaveAttribute("href", `/farmers/${question.farmerId}/visit`)
+  })
+
+  it("says when there are no questions yet", async () => {
+    fakeServer({
+      "GET /api/officer/requests": () => json(200, { open: 0, requests: [] }),
+    })
     renderRoute("/requests")
     expect(
-      await screen.findByRole("heading", { name: "Requests" })
+      await screen.findByText(/No questions from your farmers yet/)
     ).toBeInTheDocument()
-    expect(screen.getByText("3 open")).toBeInTheDocument()
-    await userEvent.click(
-      screen.getByRole("link", { name: /Yellow leaves on maize/ })
-    )
-    expect(await screen.findByText(/Nitrogen shortage/)).toBeInTheDocument()
-    await userEvent.click(screen.getByRole("button", { name: "Send advice" }))
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Advice sent to Salifu Iddrisu by SMS"
-    )
-  })
-
-  it("approves a cooperative order from the requests", async () => {
-    renderRoute("/requests/r4")
-    await userEvent.click(
-      await screen.findByRole("button", { name: "Approve order" })
-    )
-    expect(screen.getByRole("status")).toHaveTextContent("Order approved")
-  })
-
-  it("sends a loan request to the loans list", async () => {
-    renderRoute("/requests/r3")
-    expect(
-      await screen.findByRole("link", { name: "Open loans" })
-    ).toHaveAttribute("href", "/money/loans")
   })
 
   it("shows money and farm health", async () => {

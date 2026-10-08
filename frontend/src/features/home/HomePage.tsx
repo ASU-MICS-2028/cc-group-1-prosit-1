@@ -7,7 +7,9 @@ import { FarmerSearch } from "@/components/FarmerSearch"
 import { SyncBadge } from "@/components/SyncBadge"
 import { buttonVariants } from "@/components/ui/button"
 import { Avatar, FarmerRow } from "@/features/farmers/FarmerRow"
-import { loans, requests } from "@/features/sample/data"
+import { getOfficerRequests } from "@/api/help"
+import { useServerData } from "@/features/farmer/useServerData"
+import { loans } from "@/features/sample/data"
 import { countByStatus, useDraft, useFarmers } from "@/features/farmers/farmers"
 import { STEPS } from "@/features/registration/schema"
 import { isToday, partOfDay } from "@/lib/dates"
@@ -177,14 +179,16 @@ function Today({
  */
 function MoreWork() {
   const { t } = useTranslation()
+  const open = useServerData("officer-requests", getOfficerRequests).data?.open
   const cards = [
     {
       to: "/requests",
       icon: MessageSquareText,
       title: t("nav.requests"),
-      text: t("home.requestsOpen", {
-        count: requests.filter((r) => !r.answered).length,
-      }),
+      text:
+        open === undefined
+          ? t("home.requestsHint")
+          : t("home.requestsOpen", { count: open }),
       tone: "bg-cream",
     },
     {

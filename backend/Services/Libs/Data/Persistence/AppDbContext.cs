@@ -21,6 +21,14 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<Payment> Payments => Set<Payment>();
 
+    public DbSet<HelpRequest> HelpRequests => Set<HelpRequest>();
+
+    public DbSet<HelpVoiceNote> HelpVoiceNotes => Set<HelpVoiceNote>();
+
+    public DbSet<AlertSetting> AlertSettings => Set<AlertSetting>();
+
+    public DbSet<SpeechClip> SpeechClips => Set<SpeechClip>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AppUser>(user =>
@@ -99,6 +107,47 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             payment.HasIndex(p => p.Reference).IsUnique();
             payment.HasIndex(p => new { p.FarmerId, p.CreatedAt });
             payment.HasOne<Farmer>().WithMany().HasForeignKey(p => p.FarmerId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<HelpRequest>(help =>
+        {
+            help.ToTable("help_requests");
+            help.Property(h => h.Id).ValueGeneratedNever();
+            help.Property(h => h.Text).HasMaxLength(1000);
+            help.Property(h => h.Problem).HasMaxLength(50);
+            help.Property(h => h.Answer).HasMaxLength(2000);
+            help.HasIndex(h => new { h.FarmerId, h.CreatedAt });
+            help.HasIndex(h => new { h.OfficerId, h.Status });
+            help.HasOne<Farmer>().WithMany().HasForeignKey(h => h.FarmerId).OnDelete(DeleteBehavior.Restrict);
+            help.HasOne<AppUser>().WithMany().HasForeignKey(h => h.OfficerId).OnDelete(DeleteBehavior.Restrict);
+            help.HasOne<AppUser>().WithMany().HasForeignKey(h => h.AnsweredById).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<HelpVoiceNote>(note =>
+        {
+            note.ToTable("help_voice_notes");
+            note.HasKey(n => n.HelpRequestId);
+            note.Property(n => n.ContentType).HasMaxLength(50);
+            note.HasOne<HelpRequest>().WithOne().HasForeignKey<HelpVoiceNote>(n => n.HelpRequestId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AlertSetting>(alert =>
+        {
+            alert.ToTable("alert_settings");
+            alert.HasKey(a => a.FarmerId);
+            alert.HasOne<Farmer>().WithOne().HasForeignKey<AlertSetting>(a => a.FarmerId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SpeechClip>(clip =>
+        {
+            clip.ToTable("speech_clips");
+            clip.Property(c => c.Id).ValueGeneratedNever();
+            clip.Property(c => c.Language).HasMaxLength(8);
+            clip.Property(c => c.TextHash).HasMaxLength(64);
+            clip.Property(c => c.Text).HasMaxLength(500);
+            clip.Property(c => c.Translated).HasMaxLength(1500);
+            clip.Property(c => c.ContentType).HasMaxLength(50);
+            clip.HasIndex(c => new { c.Language, c.TextHash }).IsUnique();
         });
 
         UseSnakeCaseNames(modelBuilder);

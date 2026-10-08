@@ -1,12 +1,13 @@
 import { Square, Volume2 } from "lucide-react"
 import { useId } from "react"
-import { toggleQuiet, useQuietKey } from "@/lib/speech"
+import { speechUrl, toggleQuiet, useQuietKey } from "@/lib/speech"
 import { cn } from "@/lib/utils"
 
 /**
  * The round speaker button next to a word or question, so people who cannot read can still use the
  * app (ADR 0014). One tap plays, the next tap stops; no overlay (that is for long listening, see
- * SpeechOverlay). It plays the recording at `src`, and until one exists the device voice reads `text`.
+ * SpeechOverlay). It plays the recording at `src` if given; otherwise the words in the chosen language
+ * from the speech service (Twi, Ewe, Dagbani); otherwise the phone's own voice reads `text`.
  */
 export function AudioButton({
   src,
@@ -28,7 +29,11 @@ export function AudioButton({
       type="button"
       aria-label={label}
       aria-pressed={playing}
-      onClick={() => toggleQuiet(key, text ?? label, src)}
+      onClick={() => {
+        const words = text ?? label
+        // A recorded prompt when one exists, else the server's voice for the language, else the phone's
+        toggleQuiet(key, words, src ?? speechUrl(words))
+      }}
       className={cn(
         "relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full bg-background text-primary outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-95",
         playing && "bg-primary! text-primary-foreground",

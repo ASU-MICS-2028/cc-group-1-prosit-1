@@ -45,11 +45,31 @@ export const routes: RouteObject[] = [
       { index: true, lazy: () => import("@/features/farmer/FarmerHomePage") },
       { path: "help", lazy: () => import("@/features/account/HelpPage") },
       {
+        path: "help/ask",
+        handle: { hideBottomNav: true },
+        lazy: () => import("@/features/account/GetHelpPage"),
+      },
+      {
+        path: "help/requests/:id",
+        handle: { hideBottomNav: true },
+        lazy: () => import("@/features/account/HelpRequestPage"),
+      },
+      {
         path: "profile",
         lazy: () => import("@/features/farmer/FarmerProfilePage"),
       },
       // Market is a place in the farmer's menu; the other services open from Home with a back button.
       { path: "prices", lazy: () => import("@/features/farmer/PricesPage") },
+      {
+        path: "prices/:crop",
+        handle: { hideBottomNav: true },
+        lazy: () => import("@/features/farmer/PriceDetailPage"),
+      },
+      {
+        path: "alerts",
+        handle: { hideBottomNav: true },
+        lazy: () => import("@/features/farmer/AlertsPage"),
+      },
       {
         path: "details",
         handle: { hideBottomNav: true },

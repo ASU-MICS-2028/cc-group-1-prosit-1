@@ -32,6 +32,8 @@ public static class FarmerServiceExtension
             .AddFeature<GetHarvestForecast>()
             .AddFeature<GetCooperative>()
             .AddFeature<GetLessons>()
-            .AddFeature<RequestChange>();
+            .AddFeature<RequestChange>()
+            .AddFeature<GetAlerts>()
+            .AddFeature<SaveAlerts>();
     }
 }

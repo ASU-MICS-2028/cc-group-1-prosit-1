@@ -197,3 +197,8 @@ public sealed record ChangeRequest(ChangeArea Area, string Details);
 
 /// <summary>The request was passed on; <c>Reference</c> is what the farmer can quote to their officer.</summary>
 public sealed record ChangeRequestResponse(DataSource Source, string Reference);
+
+/// <summary>The farmer's SMS alerts. HasPhone false: no number on record, so nothing can be sent.</summary>
+public sealed record AlertSettings(IReadOnlyList<Crop> PriceCrops, bool HeavyRain, bool DrySpell, bool HasPhone);
+
+public sealed record AlertSettingsRequest(IReadOnlyList<Crop> PriceCrops, bool HeavyRain, bool DrySpell);

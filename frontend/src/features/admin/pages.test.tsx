@@ -9,7 +9,7 @@ import {
   it,
   vi,
 } from "vitest"
-import { fakeServer } from "@/test/fakes"
+import { fakeServer, json } from "@/test/fakes"
 import { renderRoute } from "@/test/renderRoute"
 
 beforeAll(async () => {
@@ -115,25 +115,90 @@ describe("admin pages on sample data", () => {
     )
   })
 
-  it("Help desk filters requests and reassigns one", async () => {
+  it("Help desk shows overdue questions first and reassigns one (HelpService)", async () => {
+    const day = 24 * 60 * 60 * 1000
+    const base = {
+      farmerId: "f1",
+      community: "Tolon",
+      category: "crops",
+      crop: null,
+      problem: null,
+      hasVoiceNote: false,
+      voiceSeconds: null,
+      officerId: "o1",
+      officerName: "Kofi Asante",
+      answer: null,
+      answeredAt: null,
+      remindedAt: null,
+    }
+    fakeServer({
+      "GET /api/admin/help-desk": () =>
+        json(200, {
+          waiting: 2,
+          overdue: 1,
+          answered: 0,
+          requests: [
+            {
+              ...base,
+              id: "h1",
+              farmerName: "Hawa Issah",
+              text: "Possible fall armyworm",
+              status: "waiting",
+              overdue: true,
+              createdAt: new Date(Date.now() - 2 * day).toISOString(),
+            },
+            {
+              ...base,
+              id: "h2",
+              farmerName: "Salifu Iddrisu",
+              text: "Yellow leaves",
+              status: "waiting",
+              overdue: false,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+          officers: [
+            {
+              id: "o2",
+              fullName: "Fuseini Alhassan",
+              district: "Savelugu",
+              open: 0,
+            },
+            { id: "o1", fullName: "Kofi Asante", district: "Tolon", open: 2 },
+          ],
+        }),
+      "POST /api/admin/help-desk/h1/reassign": () =>
+        json(200, {
+          ...base,
+          id: "h1",
+          farmerName: "Hawa Issah",
+          text: "Possible fall armyworm",
+          status: "waiting",
+          overdue: true,
+          officerId: "o2",
+          officerName: "Fuseini Alhassan",
+          createdAt: new Date().toISOString(),
+        }),
+    })
     renderRoute("/admin/help-desk", admin)
     expect(
       await screen.findByRole("heading", {
         name: "Hawa Issah has waited 2 days",
       })
     ).toBeInTheDocument()
-    await userEvent.click(screen.getByRole("button", { name: "Answered 128" }))
+    expect(
+      screen.getByText(/Kofi has 2 open questions. Fuseini \(Savelugu\) has 0/)
+    ).toBeInTheDocument()
+    await userEvent.click(screen.getByRole("button", { name: "Overdue 1" }))
     expect(
       screen.queryByRole("button", { name: /Salifu Iddrisu/ })
     ).not.toBeInTheDocument()
-    await userEvent.click(screen.getByRole("button", { name: "Answered 128" }))
-    await userEvent.click(
-      screen.getByRole("button", { name: /2 farmers in Yendi/ })
-    )
     await userEvent.click(
       screen.getByRole("button", { name: "Reassign to Fuseini" })
     )
-    expect(screen.getByRole("status")).toHaveTextContent("Given to Fuseini.")
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Given to Fuseini."
+    )
   })
 
   it("Cooperatives shows orders and texts members who haven't pledged", async () => {
