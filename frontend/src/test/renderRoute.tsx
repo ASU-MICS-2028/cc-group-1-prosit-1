@@ -24,12 +24,27 @@ export const testFarmer: Session["user"] = {
   farmerId: "0192f0a0-0000-7000-8000-000000000001",
 }
 
+export const testAdmin: Session["user"] = {
+  id: "01a10ac0-450d-7b2c-95b4-c432dab17146",
+  role: "admin",
+  fullName: "Esi Owusu",
+  phone: "+233240000009",
+  region: "Northern",
+  district: null,
+  farmerId: null,
+}
+
 /** Puts a signed-in session on the "phone" (localStorage), valid for a week. */
 export function signIn(role: Role = "officer") {
   const session: Session = {
     token: "test-token",
     expiresAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
-    user: role === "farmer" ? testFarmer : testOfficer,
+    user:
+      role === "farmer"
+        ? testFarmer
+        : role === "admin"
+          ? testAdmin
+          : testOfficer,
   }
   localStorage.setItem("agroconnect.session", JSON.stringify(session))
 }

@@ -17,6 +17,20 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<Photo> Photos => Set<Photo>();
 
+    public DbSet<Wallet> Wallets => Set<Wallet>();
+
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<HelpRequest> HelpRequests => Set<HelpRequest>();
+
+    public DbSet<UssdSession> UssdSessions => Set<UssdSession>();
+
+    public DbSet<HelpVoiceNote> HelpVoiceNotes => Set<HelpVoiceNote>();
+
+    public DbSet<AlertSetting> AlertSettings => Set<AlertSetting>();
+
+    public DbSet<SpeechClip> SpeechClips => Set<SpeechClip>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AppUser>(user =>
@@ -72,6 +86,82 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             photo.Property(p => p.ContentType).HasMaxLength(50);
             photo.HasOne<Farmer>().WithMany().HasForeignKey(p => p.FarmerId).OnDelete(DeleteBehavior.Restrict);
             photo.HasOne<AppUser>().WithMany().HasForeignKey(p => p.UploadedById).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Wallet>(wallet =>
+        {
+            wallet.ToTable("wallets");
+            wallet.Property(w => w.Id).ValueGeneratedNever();
+            wallet.Property(w => w.PhoneE164).HasMaxLength(16);
+            wallet.Property(w => w.RecipientCode).HasMaxLength(50);
+            wallet.HasIndex(w => w.FarmerId).IsUnique();
+            wallet.HasOne<Farmer>().WithMany().HasForeignKey(w => w.FarmerId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Payment>(payment =>
+        {
+            payment.ToTable("payments");
+            payment.Property(p => p.Id).ValueGeneratedNever();
+            payment.Property(p => p.Description).HasMaxLength(100);
+            payment.Property(p => p.PhoneE164).HasMaxLength(16);
+            payment.Property(p => p.Reference).HasMaxLength(50);
+            payment.Property(p => p.ProviderMessage).HasMaxLength(300);
+            payment.HasIndex(p => p.Reference).IsUnique();
+            payment.HasIndex(p => new { p.FarmerId, p.CreatedAt });
+            payment.HasOne<Farmer>().WithMany().HasForeignKey(p => p.FarmerId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<HelpRequest>(help =>
+        {
+            help.ToTable("help_requests");
+            help.Property(h => h.Id).ValueGeneratedNever();
+            help.Property(h => h.Text).HasMaxLength(1000);
+            help.Property(h => h.Problem).HasMaxLength(50);
+            help.Property(h => h.Answer).HasMaxLength(2000);
+            help.HasIndex(h => new { h.FarmerId, h.CreatedAt });
+            help.HasIndex(h => new { h.OfficerId, h.Status });
+            help.HasOne<Farmer>().WithMany().HasForeignKey(h => h.FarmerId).OnDelete(DeleteBehavior.Restrict);
+            help.HasOne<AppUser>().WithMany().HasForeignKey(h => h.OfficerId).OnDelete(DeleteBehavior.Restrict);
+            help.HasOne<AppUser>().WithMany().HasForeignKey(h => h.AnsweredById).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<HelpVoiceNote>(note =>
+        {
+            note.ToTable("help_voice_notes");
+            note.HasKey(n => n.HelpRequestId);
+            note.Property(n => n.ContentType).HasMaxLength(50);
+            note.HasOne<HelpRequest>().WithOne().HasForeignKey<HelpVoiceNote>(n => n.HelpRequestId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AlertSetting>(alert =>
+        {
+            alert.ToTable("alert_settings");
+            alert.HasKey(a => a.FarmerId);
+            alert.HasOne<Farmer>().WithOne().HasForeignKey<AlertSetting>(a => a.FarmerId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SpeechClip>(clip =>
+        {
+            clip.ToTable("speech_clips");
+            clip.Property(c => c.Id).ValueGeneratedNever();
+            clip.Property(c => c.Language).HasMaxLength(8);
+            clip.Property(c => c.TextHash).HasMaxLength(64);
+            clip.Property(c => c.Text).HasMaxLength(500);
+            clip.Property(c => c.Translated).HasMaxLength(1500);
+            clip.Property(c => c.ContentType).HasMaxLength(50);
+            clip.HasIndex(c => new { c.Language, c.TextHash }).IsUnique();
+        });
+
+        modelBuilder.Entity<UssdSession>(session =>
+        {
+            session.ToTable("ussd_sessions");
+            session.HasKey(u => u.SessionId);
+            session.Property(u => u.SessionId).HasMaxLength(64);
+            session.Property(u => u.PhoneE164).HasMaxLength(16);
+            session.Property(u => u.Screen).HasMaxLength(30);
+            session.Property(u => u.Data).HasMaxLength(200);
+            // Finished sessions are cleared by age.
+            session.HasIndex(u => u.UpdatedAt);
         });
 
         UseSnakeCaseNames(modelBuilder);

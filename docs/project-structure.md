@@ -8,7 +8,8 @@ cc-group-1-prosit-1/
 │   ├── public/  src/  index.html  package.json  vite.config.ts  tsconfig*.json  eslint.config.js ...
 │   ├── Dockerfile  .dockerignore  .nginx/nginx.conf
 │   └── .env.example    (to add)
-├── backend/            the ASP.NET Core 10 solution, C# (section 4)
+├── design/assets/      the licence CREDITS of the design team's pictures; the source files stay with the designers (ignored by Git), the app uses copies in frontend/public
+├── backend/            the ASP.NET Core 10 solution, C# (section 4); backend/postman/ has a Postman collection of every endpoint
 │   ├── APIs/  Services/  tests/  openapi/  AgroConnect.sln
 │   └── Dockerfile
 ├── deploy/             EC2 bootstrap script, docker-compose.yml, deployment runbook (DevOps lead)
@@ -73,54 +74,98 @@ Vite + React + TypeScript. Each screen from the Figma design is one file in `src
 ```
 frontend/
 ├── public/
-│   ├── illustrations/        pictures from Figma, optimised SVG (welcome, language-banner, phone-login, consent), loaded only when shown
-│   ├── icons/                small icons from Figma (sprout, user-check, monitor, crops, money...)
+│   ├── app-icon.svg          the app icon source; pwa-*.png, maskable-icon-512x512.png, apple-touch-icon-180x180.png and favicon.ico are made from it
+│   ├── illustrations/        the design team's drawings, unchanged SVG copies from design/assets (farmer-home, language-people, phone-login, consent, registration-form, gps-location,
+│   │                         audio-prompts, saved-waiting, all-synced, empty-farmers, agent-home, help-community, cooperative, delivery, link-wallet, receipt, yield-growth); loaded only when shown
+│   ├── pictures/             crops/: the original crop photos (JPG); options/: choice tile pictures (WebP). Shown online, emoji offline (ADR 0025)
+│   ├── emoji/                the offline stand-ins for pictures (Fluent Emoji, bundled with the app)
+│   ├── icons/                small icons from Figma (sprout, user-check, monitor, crops, money, map-pin...)
 │   └── audio/ (next)         en/ tw/ ee/ dag/: one short recorded prompt per question key, e.g. who.mp3
 ├── src/
 │   ├── main.tsx              mount React
-│   ├── App.tsx               the router
+│   ├── App.tsx               the router, plus the app messages (install, new version)
 │   ├── app/
-│   │   ├── router.tsx        every route; start screens for signed-out people, /farmer for farmers, / for officers
+│   │   ├── router.tsx        every route; start screens for signed-out people, /farmer for farmers, /register (full screen) and / for officers
 │   │   ├── guards.ts         who may open what: signed out -> start screens; officer -> /; farmer -> /farmer
-│   │   ├── AppLayout.tsx     officer layout: floating bottom bar on phones, sidebar on wider screens
-│   │   └── nav.tsx, navItems.ts   the bottom bar and sidebar
+│   │   ├── AppLayout.tsx     officer layout: floating bottom bar on phones, sidebar from 768 px; sends the queue on opening and when the network returns; a route can hide the bottom bar (handle.hideBottomNav)
+│   │   ├── nav.tsx, navItems.ts   the bottom bar (phones) and the sidebar (computers: Home, Farmers, Visits; "N not sent yet"; Register a farmer)
+│   │   ├── TopBar.tsx        computers: logo, search or links, sync badge, account menu (ADR 0030)
+│   │   ├── AccountMenu.tsx   the initials at the top right: Profile, Language, Help, Install, Log out
+│   │   └── useHideBottomNav.ts   sub-pages hide the phone's bottom bar
+│   │   └── pwa/              AppPrompts.tsx (install, new version, works offline) and useInstallPrompt.ts
 │   ├── features/
 │   │   ├── start/            00 Welcome, 01 Language, 01b Who are you, 02a/c Log in, 02b/d Enter code (login.ts: shared helpers)
-│   │   ├── home/             03 Officer home
-│   │   ├── registration/     04-12 the 7-step registration form, review, saved (next)
-│   │   ├── farmers/          13 list, 14 detail, 20 edit
-│   │   ├── sync/             15 sync
-│   │   ├── profile/          16 profile and settings, 25 log out
-│   │   ├── farmer/           23 farmer home and the farmer's own screens
+│   │   ├── home/             03, 17, 18 / D04-D06 officer home (HomeBanner.tsx: the "Ready to register" banner)
+│   │   ├── registration/     04-12, 19, 28 and D07-D15: register a farmer (ADR 0027)
+│   │   │   ├── RegisterPage.tsx   the form: loads the draft, step in the address (?step=3), autosave, checks, save
+│   │   │   ├── WizardShell.tsx    header, progress, guide panel (from 1024 px), Back and Next
+│   │   │   ├── steps/             ConsentStep, PersonalStep, FarmStep, LocationStep, ContactStep, MoneyStep, HelpStep
+│   │   │   ├── ReviewStep.tsx     11 Check and save: answer cards with Edit
+│   │   │   ├── DuplicateCheck.tsx 28 the phone number is already used: same person or a different one?
+│   │   │   ├── SavedPage.tsx      12 / D15 Saved, waiting to sync (/register/saved)
+│   │   │   ├── Question.tsx       one question: label with speaker, answer, error box
+│   │   │   ├── schema.ts          the zod rules for all 7 steps, the empty form, the list of steps
+│   │   │   ├── options.ts         every answer code (same words as the API) and its icon
+│   │   │   ├── store.ts           draft load/save/discard, duplicate lookup, saveFarmer (one transaction)
+│   │   │   ├── capture.ts         GPS position, photo shrinking and keeping
+│   │   │   └── registration.test.tsx   the whole flow, drafts, duplicates, GPS and photo
+│   │   ├── farmers/          13 / D16 My farmers (table + preview on computers), 14 / D17 farmer page, 20 Edit farmer
+│   │   │   ├── farmers.ts         reads the farmers on the device (live), counts, search and filters
+│   │   │   ├── edit.ts            saves an edit and queues the farmer again
+│   │   │   ├── describe.ts        a farmer's answers as labelled lines, and the text Listen reads
+│   │   │   └── FarmerRow.tsx      the row and the initials avatar used in every list
+│   │   ├── visits/           26 Visits, 27 Log a visit; store.ts saves visits on the device and queues them
+│   │   ├── sync/             15 / D18 Sync; sync.ts sends the queue to POST /api/sync in batches of 100 (ADR 0029, 0032)
+│   │   ├── account/          shared by officers and farmers: Profile view, Log out? sheet (25), Change language, Help (24), Install the app (22)
+│   │   ├── profile/          16 / D19 the officer's Profile
+│   │   ├── admin/            the MoFA admin's pages (ADR 0033): AdminLayout (Figma admin sidebar; phone: "Admin works on a computer"), Overview
+│   │   ├── farmer/           the farmer's app (ADR 0031): Home (23), My details, Change my details, Market prices, Weather,
+│   │   │                     Check my crop, Harvest forecast, My cooperative, Lessons, My Profile; useServerData.ts keeps the
+│   │   │                     last answers on the device so the screens open offline
 │   │   └── design/           component sheet, development only (/design)
 │   ├── api/
 │   │   ├── client.ts         fetch wrapper: /api paths, the user's language (X-Language), the sign-in token, errors as ApiError
 │   │   ├── auth.ts           requestCode, verifyCode
+│   │   ├── farmer.ts         the farmer endpoints (my farm, prices, weather, crop check, harvest, cooperative, lessons, change requests)
 │   │   └── schema.d.ts       GENERATED by `npm run api:types` from ../backend/openapi/agroconnect.json; never edit by hand
 │   ├── auth/
 │   │   └── session.ts        the signed-in person and token, kept on the phone for the token's 7 days; log out clears it
-│   ├── db/ (next)            Dexie: farmers, visits, photos, outbox on the phone
+│   ├── db/
+│   │   └── local.ts          Dexie database on the device: farmers, photos, outbox, drafts, visits (data dictionary 4.7)
 │   ├── i18n/
 │   │   ├── index.ts          i18next setup, language saved on the phone
 │   │   └── locales/          en.json (built in), tw.json, ee.json, dag.json (downloaded only when chosen)
 │   ├── components/
 │   │   ├── ui/               shadcn primitives (button)
+│   │   ├── form/             form parts from Figma: TextField, ChoiceChips, PictureTiles, SizeStepper, FieldLabel, FieldError
 │   │   ├── ScreenShell.tsx   full screen without the bottom bar: phone layout under 768 px, the desktop brand-panel layout (Figma D01 to D03) from 768 px
 │   │   ├── BackButton.tsx, QuestionTitle.tsx (question + speaker), IllustrationCard.tsx
 │   │   ├── PhoneField.tsx    the "+233" phone box; CodeInput.tsx the six code boxes (one real input underneath)
 │   │   ├── AudioButton.tsx   speaker button that plays /audio/<lang>/<key>.mp3
+│   │   ├── Blocks.tsx        shared pieces: section title, back header, list row, offline note, card, label/value facts
+│   │   ├── Charts.tsx        ColumnChart (weekly payments) and RangeChart (harvest per crop): axes, units, gridlines, values, a table for screen readers
+│   │   ├── SpeechOverlay.tsx  Overlay · Playing Audio (Figma): "Playing in Twi", a waveform that fills as the phone reads, the time, pause/play;
+│   │   │                      tap outside or Escape stops. Mounted once in App.tsx, it follows speak() in lib/speech.ts
+│   │   ├── LanguageBanner.tsx "Hello, Akwaaba! Choose your language": real text beside the people drawing
+│   │   ├── FarmerSearch.tsx  "Search farmers" (Home on phones, the top bar on computers)
+│   │   ├── Sheet.tsx         the question that slides up (21 new version, 25 log out); a centred box on computers
+│   │   ├── SyncBadge.tsx     "3 waiting" / "1 to fix" / "All synced", opens Sync
 │   │   └── LanguageOptions.tsx, LanguagePicker.tsx, SyncStatus.tsx, PageHeader.tsx, FieldArt.tsx
 │   ├── lib/
 │   │   ├── phone.ts          toE164 ("024 000 0001" -> "+233240000001"), maskPhone, initials
 │   │   ├── audio.ts          promptAudio(key): the recording for the current language
+│   │   ├── dates.ts          dates and times the Ghana way (6 Oct, 16:42), today, good morning/afternoon/evening
+│   │   ├── speech.ts         Listen: reads a text with the device's voice
+│   │   ├── useOnline.ts      true or false: does the device have a network?
+│   │   ├── usePhotoUrl.ts    shows a photo kept on the device
 │   │   └── utils.ts          cn() class helper
 │   ├── index.css             Tailwind + the Figma colour tokens
-│   └── test/                 Vitest setup; renderRoute (opens the app at a path, signed in or not)
+│   └── test/                 Vitest setup (in-memory IndexedDB, wiped after each test); renderRoute (opens the app at a path, signed in or not); fakes.ts (a fake server, sample farmers)
 ├── index.html                theme colour, lang attribute
-├── vite.config.ts            React + React Compiler + Tailwind; dev proxy /api -> http://localhost:8000; test settings
+├── vite.config.ts            React + React Compiler + Tailwind + the PWA (manifest, service worker, ADR 0028); dev proxy /api -> http://localhost:8000; test settings
 ├── components.json           shadcn config
 ├── tsconfig*.json            path alias @/* -> src/*
-├── eslint.config.js, .prettierrc.json
+├── eslint.config.js, .prettierrc.json   (route files may export `loader` and `handle` next to `Component`)
 ├── Dockerfile                stage 1 node build -> stage 2 nginx-unprivileged serving dist/ on 8080 (DevOps lead's file)
 ├── .nginx/nginx.conf         SPA fallback, caching, /api proxy to the backend (DevOps lead's file)
 └── .env.example              VITE_API_BASE_URL (empty: same address as the app)
@@ -144,7 +189,7 @@ backend/
 │   ├── Program.cs                     logging, errors, sign-in checks, rate limits; adds each service in one line; Swagger UI in Development
 │   ├── OpenApi/BearerSecurity.cs      describes the sign-in token in the contract (Swagger's "Authorize" button, padlocks)
 │   ├── appsettings.json               settings for every environment
-│   ├── appsettings.Development.json   laptop only: local database, dev signing key, code 123456, demo officer
+│   ├── appsettings.Development.json   laptop only: local database, dev signing key, backup code 123456, demo accounts
 │   └── Properties/launchSettings.json `dotnet run` listens on http://localhost:8000
 ├── Services/
 │   ├── PlatformService/               GET /health, GET /languages: the smallest example of a service
@@ -157,8 +202,35 @@ backend/
 │   │   ├── Langs/en.json              the sign-in error messages, by key (other languages are more files)
 │   │   ├── AuthOptions.cs             limits: code lifetime, resend wait, tries, token lifetime, rate limit
 │   │   └── AuthServiceExtension.cs    AddAuthService(): registers all of the above
-│   ├── (next)  FarmerService          POST /api/sync, GET /api/sync/changes, farmer details, duplicate phone check, photos
-│   ├── (later) UssdService            POST /api/ussd: Africa's Talking callback, menu state machine, SMS
+│   ├── FarmerService/                 the signed-in farmer's own data and farm services (ADR 0031)
+│   │   ├── Features/FarmerEndpoints.cs   GET /api/farmer/me (live), prices, weather, harvest-forecast, cooperative, lessons;
+│   │   │                              POST crop-check, change-requests. A farmer only ever sees their own farm
+│   │   ├── Models/FarmerModels.cs     the JSON, with `source: sample | live` on every answer from an outside source
+│   │   ├── Providers/Interfaces/      one per outside source: prices, weather, crop advice, harvest, cooperatives, lessons, change requests
+│   │   ├── Providers/Samples/         the stand-ins used today; a live provider replaces one with a line in the extension
+│   │   ├── Langs/en.json              the farmer error messages
+│   │   └── FarmerServiceExtension.cs  AddFarmerService(): registers the providers and endpoints
+│   ├── MoneyService/                  the farmer's mobile money through Paystack (ADR 0034)
+│   │   ├── Features/MoneyEndpoints.cs GET /api/money, PUT /api/money/wallet, POST /api/money/payments, GET and POST .../{reference}(/code)
+│   │   ├── Providers/PaymentGateway.cs IPaymentGateway: PaystackGateway (with a key) or SamplePaymentGateway (without)
+│   │   └── MoneyServiceExtension.cs   AddMoneyService(): picks the provider from "Paystack:SecretKey"
+│   ├── AdminService/                  the MoFA admin's pages (ADR 0033)
+│   │   ├── Features/GetOverview.cs    GET /api/admin/overview: officers, farmers, visits and last sync for the admin's region or district
+│   │   ├── Features/SendTestSms.cs    POST /api/admin/sms/test: an admin checks SMS on this server
+│   │   └── AdminServiceExtension.cs   AddAdminService(): registers the endpoint
+│   ├── SyncService/                   stores what officers saved offline (ADR 0032; the contract in ADR 0029)
+│   │   ├── Features/SyncRecords.cs    POST /api/sync: reads each record on its own, owner from the sign-in, newest change wins,
+│   │   │                              one answer per record, one transaction per batch
+│   │   ├── Features/SyncRules.cs      the checks a record must pass (the registration form rules plus the database limits)
+│   │   ├── Features/SyncMapping.cs    copies a checked record onto the stored one; phone times never later than now
+│   │   ├── Models/SyncModels.cs       SyncRequest (farmers, visits), SyncResult (created, updated, unchanged, invalid, forbidden)
+│   │   ├── Langs/en.json              the reasons shown to the officer as "To fix"
+│   │   └── SyncServiceExtension.cs    AddSyncService(): registers the endpoint
+│   ├── (next)  SyncService            GET /api/sync/changes, the duplicate phone check, photo upload
+│   ├── UssdService/                   AgroConnect on simple phones by dialling a code (ADR 0038)
+│   │   ├── Features/ArkeselUssd.cs    POST /api/ussd/arkesel: Arkesel's callback for every key (no sign-in); checks Ussd:UserId
+│   │   ├── Features/UssdMenu.cs       the menu: prices, weather, ask my officer (a help request), my officer's number; state in ussd_sessions
+│   │   └── Langs/en.json              the menu text, one USSD screen (182 characters) at most
 │   └── Libs/
 │       ├── SharedLibrary/             used by every service
 │       │   ├── ValueObjects/PhoneNumber.cs   "024 000 0001" -> "+233240000001"; rejects non-Ghana numbers
@@ -168,6 +240,7 @@ backend/
 │       │   ├── Providers/             IClock (time, fakeable in tests), ISessionProvider (who is calling, in which language)
 │       │   ├── Enums/                 Language, Channel, and every fixed choice in the registration form (FarmerEnums.cs)
 │       │   ├── Security/Auth.cs       role names and token claim names
+│       │   ├── Sms/                   ISmsSender: ArkeselSmsSender (with a key; only allowed numbers unless TextEveryone) or LogOnlySmsSender (ADR 0037)
 │       │   └── Helpers/               data masking for logs; BuildTime (skips secret checks while the build writes the API contract)
 │       └── Data/                      the database
 │           ├── Entities/              one class per table: AppUser, LoginCode, Farmer, Visit, Photo
@@ -177,8 +250,8 @@ backend/
 │           └── DatabaseOptions.cs     the "Database" and "Seed" settings
 ├── tests/                             one test project per code project; CI requires 70% line coverage in each
 │   ├── Shared/                        [UnitTest]/[IntegrationTest] traits, ApiAssert, PostgresFixture (real PostgreSQL in Docker), TestClock
-│   ├── SharedLibrary.Tests/  PlatformService.Tests/  AuthService.Tests/
-│   └── Api.Tests/                     the whole API in memory: health, errors, sign-in over HTTP against a migrated, seeded database
+│   ├── SharedLibrary.Tests/  PlatformService.Tests/  AuthService.Tests/  FarmerService.Tests/  SyncService.Tests/  AdminService.Tests/  MoneyService.Tests/
+│   └── Api.Tests/                     the whole API in memory: health, errors, sign-in, sync and the farmer app over HTTP against a migrated, seeded database
 ├── openapi/agroconnect.json           GENERATED on dotnet build; committed, the contract the frontend reads
 ├── dotnet-tools.json                  local tools: dotnet-ef (run `dotnet tool restore` once)
 ├── Dockerfile                         multi-stage: sdk build, Debian-based aspnet runtime, non-root, port 8080

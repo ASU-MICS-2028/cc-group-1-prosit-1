@@ -19,12 +19,12 @@ public sealed class JwtTokenIssuer(IOptions<AuthOptions> options, IClock clock) 
     {
         var settings = options.Value;
         var now = clock.UtcNow;
-        var expires = now.AddDays(settings.TokenLifetimeDays);
+        var expires = now.Add(settings.TokenLifetime);
 
         var claims = new List<Claim>
         {
             new(AuthClaims.UserId, user.Id.ToString()),
-            new(AuthClaims.Role, user.Role == UserRole.Officer ? AuthPolicies.Officer : AuthPolicies.Farmer),
+            new(AuthClaims.Role, AuthPolicies.For(user.Role)),
         };
         if (user.FarmerId is { } farmerId)
         {

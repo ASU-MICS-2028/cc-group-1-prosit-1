@@ -13,6 +13,9 @@ environments = {
 # HTTPS once there is a domain and an ACM certificate for it (in af-south-1).
 certificate_arn = ""
 
+# HTTPS without a domain: CloudFront in front of each environment (cloudfront.tf).
+enable_cloudfront = true
+
 # Browser addresses allowed to upload photos to S3 (add the HTTPS domain later).
 photo_upload_origins = ["http://localhost:5173"]
 

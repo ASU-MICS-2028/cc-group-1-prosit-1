@@ -2,7 +2,7 @@ import i18n from "@/i18n"
 import { getSession } from "@/auth/session"
 
 /** In front of the contract's /api/... paths. Empty: same address as the app (see .env.example). */
-const BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
+export const BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "")
 
 /**
  * A failed call. `key` is the server's stable message key (e.g. "CODE_WRONG") for code to check;

@@ -2,7 +2,7 @@
 
 Living file for the AWS setup. Design and reasons: [ADR 0026](adr/0026-private-network-and-autoscaling.md). Terraform and step-by-step commands: [`deploy/terraform/README.md`](../deploy/terraform/README.md).
 
-_Last updated: 2026-10-07 (production switched on)_
+_Last updated: 2026-10-08 (HTTPS through CloudFront)_
 
 ## Addresses
 
@@ -10,7 +10,8 @@ _Last updated: 2026-10-07 (production switched on)_
 |---|---|---|
 | Production | http://agroconnect-2076557186.af-south-1.elb.amazonaws.com | Port 80. HTTPS once there is a domain and an ACM certificate |
 | Staging | http://agroconnect-2076557186.af-south-1.elb.amazonaws.com:8080 | Port 8080 until staging has its own host name. Demo officer: 024 000 0001, code 123456 |
-| Health check | `/health` on either | Passes through nginx to the API: `{"status":"ok","checks":{"database":"Healthy"}}` |
+| HTTPS (both) | `terraform output https_url` (https://<id>.cloudfront.net, one per environment) | CloudFront in front of the load balancer with AWS's certificate (`deploy/terraform/cloudfront.tf`). Use these: the service worker, install, GPS and camera only work on HTTPS. API never cached |
+| Health check | `/health` on any of them | Passes through nginx to the API: `{"status":"ok","checks":{"database":"Healthy"}}` |
 
 The old fixed IPs (15.240.151.93, 15.240.240.182) no longer exist.
 
@@ -57,7 +58,7 @@ internet ──► load balancer (public subnets, 2 zones)
 
 **Roll back.** Actions → Deploy → Run workflow → pick the environment and an older tag (e.g. `sha-75c52f7`). Images stay in ECR (last 30).
 
-**New servers.** Auto Scaling starts them for scale-out, replacement or instance refresh. Each one installs Docker, reads its `.env` and recorded version from SSM, pulls from ECR and starts the app (`deploy/server-boot.sh.tftpl`, log in `/var/log/agroconnect-boot.log`). A boot takes 5 to 8 minutes; the load balancer may not judge a server for its first 15 minutes (health-check grace period).
+**New servers.** Auto Scaling starts them for scale-out, replacement or instance refresh. Each one installs Docker, reads its `.env` and recorded version from SSM, pulls from ECR and starts the app (`deploy/server-boot.sh.tftpl`, log in `/var/log/agroconnect-boot.log`). A boot takes about 1 to 2 minutes (it uses the regional Ubuntu mirror, with apt timeouts); the load balancer may not judge a server for its first 15 minutes (health-check grace period).
 
 **Turn an environment on or off.** `running = true/false` in `deploy/terraform/terraform.tfvars`, then `terraform apply`. Off = 0 servers, nothing destroyed. The load balancer, fck-nat and RDS keep running.
 
@@ -96,3 +97,10 @@ Snapshots kept: `agroconnect-production-move`, `agroconnect-production-final-202
 - **Staging host name:** set `host` for staging once there is a domain, so it no longer needs port 8080.
 - **Sign-in rate limit with 2+ servers** is counted per server (per-phone limits are shared in PostgreSQL). Move the per-address counter to PostgreSQL if abuse shows up.
 - **Optional:** RDS Multi-AZ (`rds_multi_az = true`, about +$16 a month).
+
+## Secrets to add when the team has them
+
+| Setting (server `.env` in SSM) | What for | Without it |
+|---|---|---|
+| `Khaya__ApiKey` | Speaker buttons in Twi, Ewe and Dagbani (ADR 0036) | The phone's own voice |
+| `Paystack__SecretKey` | Mobile money payments (ADR 0034) | Sample payments |

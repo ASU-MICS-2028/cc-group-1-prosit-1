@@ -2,7 +2,39 @@
 
 A hands-on guide: every command we use, what it does, and why. Your laptop runs the same pieces as the servers, in the same way (in containers), so each command here teaches a cloud idea you will meet again on EC2.
 
-_Last updated: 5 October 2026. Commands are for Windows (PowerShell or Git Bash). Run backend commands from `backend/` and frontend commands from `frontend/`._
+_Last updated: 8 October 2026. Commands are for Windows (PowerShell or Git Bash). Run backend commands from `backend/` and frontend commands from `frontend/`._
+
+> **Test sign-ins (laptop only)**
+>
+> Codes are real: a random 6-digit code is texted to every registered number (ADR 0039). The demo accounts below have made-up numbers that cannot get an SMS, so use the **backup code `123456`** for them, or read their code in the API log.
+>
+> | Who are you? | Phone | Code | Opens |
+> |---|---|---|---|
+> | Extension officer (Fuseini Alhassan) | `024 000 0001` | `123456` | Officer app at `/` |
+> | Farmer (Ama Boateng) | `024 000 1234` | `123456` | Farmer app at `/farmer` |
+> | MoFA admin (Esi Owusu, Northern Region), **on a computer** | `024 000 0009` | `123456` | Admin Overview at `/admin` (on a phone: "Admin works on a computer") |
+>
+> - These accounts are created by the API when it starts on a laptop (`Seed` in `backend/APIs/agroconnect-api/appsettings.Development.json`).
+> - **Mobile money (ADR 0034):** with the Paystack test key in user-secrets (5.11), the farmer's Money pages use Paystack test mode; without it they show "Sample data" and a payment is approved by itself after a few seconds.
+> - **Limits:** one number can ask for 20 codes an hour, on a laptop and on the servers; codes are 15 seconds apart on a laptop and 45 seconds on the servers (`Auth:MaxCodesPerHour`, `Auth:ResendCooldownSeconds`). Over the limit the answer is `429 TOO_MANY_CODES` or `RESEND_TOO_SOON`.
+> - **Backup code:** `123456` (`Auth:BackupCode`) also works on a laptop and the staging demo, for any registered number, after **Send code**. Use it only when the SMS does not arrive. Production refuses to start if it is set.
+> - **Real team accounts** (your own officer, admin or farmer phone) go in user-secrets, never in a committed file:
+>
+>   ```
+>   dotnet user-secrets set "Seed:Admins:1:FullName" "<name>" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Admins:1:Phone" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Farmers:0:FullName" "<name>" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Farmers:0:Phone" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Seed:Farmers:0:OfficerPhone" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   dotnet user-secrets set "Sms:OnlyTo:1" "+233XXXXXXXXX" --project APIs/agroconnect-api
+>   ```
+>
+>   Index 0 of `Officers` and `Admins` is the demo account in `appsettings.Development.json`, so real ones start at 1. Restart the API; it adds anyone missing. Each number must also be on `Sms:OnlyTo` to get the SMS on a laptop.
+> - **Not registered?** The app answers "code sent" anyway (so nobody can find out who is registered), no SMS arrives, and any code is refused. After the resend wait the code screen says to ask their extension officer or MoFA admin.
+> - The phone number must match the role: the officer's number does not open the farmer app.
+> - A farmer you register in the app can sign in once their record reaches the server: as the officer, open **Sync** and tap **Sync now** (it also sends by itself when the app opens). Then sign in as a farmer with the number you registered: the code is texted if the number is on `Sms:OnlyTo`; otherwise use the backup code `123456` (section 5.8).
+> - A sign-in lasts 1 hour on a laptop (`Auth:TokenLifetime`). To see the sign-in screens again sooner, use Profile → Log out, or open a private window (`Ctrl+Shift+N`).
+> - The farmer app (Home, My details, Market, Weather, Check my crop, Harvest, Cooperative, Lessons) reads `/api/farmer/...`. Restart the API after pulling so it has the farmer endpoints. Answers marked "Sample data" come from sample providers (ADR 0031); all of them can be tried in Swagger (`/swagger`, section *Farmer*) after signing in as the farmer.
 
 ---
 
@@ -213,10 +245,11 @@ Open `http://localhost:5173`. The first time, the app shows Welcome, then the la
 | Officer (Fuseini Alhassan) | `024 000 0001` | `123456` |
 | Farmer (Ama Boateng) | `024 000 1234` | `123456` |
 
-**How the app reaches the API: the dev proxy.** The app calls paths like `/api/auth/code` on its own address. In `vite.config.ts`, `server.proxy` forwards every `/api/...` request from port 5173 to the API on port 8000.
+**How the app reaches the API: the dev proxy.** The app calls paths like `/api/auth/code` on its own address. In `vite.config.ts`, `server.proxy` forwards every `/api/...` request from port 5173 to the API on port 8000. To use an API on another port, set `API_PROXY_TARGET`, for example `API_PROXY_TARGET=http://localhost:8001 npm run dev`.
 - **Why:** on the servers, nginx does the same job (`frontend/.nginx/nginx.conf`), so the app code is identical on a laptop and in the cloud.
 - **No CORS needed:** the browser only ever talks to one address, so the API needs no CORS (cross-origin) rules.
 - **The setting:** `VITE_API_BASE_URL` in `.env.example` stays empty for this reason. Set it only to point a laptop at another server.
+- **`VITE_HELP_LINE`** (optional): the MoFA help line number. When set at build time, Help shows "Call" and "Send us an SMS"; when empty those rows are hidden, so the app never shows a made-up number.
 
 **Keeping the app and the API in agreement:** after any change to the API, rebuild it (which rewrites `backend/openapi/agroconnect.json`), then from `frontend/`:
 ```powershell
@@ -224,7 +257,9 @@ npm run api:types
 ```
 This regenerates `src/api/schema.d.ts`, the TypeScript description of every request and response. If a field was renamed on the server, the app now fails to build, so the mismatch is caught on the laptop and not on a farmer's phone.
 
-**Where the sign-in is kept:** after "Verify", the token and the person are saved in the browser's local storage (`agroconnect.session`) for the token's 7 days, so the app keeps working offline. To start again as a new user, use Profile → Log out, or clear the site data in the browser.
+**Where the sign-in is kept:** after "Verify", the token and the person are saved in the browser's local storage (`agroconnect.session`) until the token ends, so the app keeps working offline. To start again as a new user, use Profile → Log out, or clear the site data in the browser.
+
+**How long a sign-in lasts:** one setting on the API, `Auth:TokenLifetime`, written as `days.hours:minutes:seconds`. On a laptop it is `01:00:00` (1 hour, in `backend/APIs/agroconnect-api/appsettings.Development.json`), so you see the sign-in screens often while testing. On the servers it is the default, `7.00:00:00` (7 days, ADR 0022). After changing it, restart the API; a token already given out keeps its old end time, so log out once to get a new one.
 
 ### 5.6 Check the phone, tablet and computer layouts
 
@@ -234,6 +269,7 @@ The app picks its layout from the **width of the screen** (Tailwind's `md` break
 |---|---|---|
 | under 768 px (phones) | Phone design, edge to edge, main button at the bottom | P1 phone screens (00, 01, 01b, 02a to 02d) |
 | 768 px and up (tablets, laptops, PCs) | Desktop design: cream brand panel on the left, the form on the right; wider details (bigger code boxes) from 1024 px | D01 Choose Language, D02 Login, D03 Enter Code; Welcome and Who are you follow the same pattern |
+| Registration form | Under 768 px: the phone design with Back and Next at the bottom. From 768 px: a top bar with "Save and exit", questions side by side, Back and Next bottom right. From 1024 px: the cream guide panel with the list of steps | Phone 04 to 12, 19, 28; computer D07 to D15 |
 
 The three sizes to check: **390 × 844** (phone), **768 × 1024** (first desktop size), **1440 × 900** (desktop).
 
@@ -257,7 +293,95 @@ dotnet test -p:CollectCoverage=true -p:Threshold=70 -p:ThresholdType=line -p:Thr
 
 Frontend, from `frontend/`: `npm run lint`, `npm run format:check`, `npm run test:ci`, `npm run build`.
 
-### 5.8 Stop things
+### 5.8 Try the registration form, and look at the phone's database
+
+1. Start everything (5.0), sign in as the demo officer (`024 000 0001`, code `123456`), then tap **Register a farmer**.
+2. Go through the steps. The address shows the step (`/register?step=3`), so the browser's back button goes back one step.
+3. After "Yes, I agree", each answer is kept half a second after you stop typing ("Draft saved"). Close the tab and open `/register` again: the form reopens at the same step.
+4. Save the farmer. It appears at once on Home, Farmers and Sync as "waiting".
+5. Register a second farmer with the same phone number to see "Check before saving".
+6. **Send it to the server:** open **Sync** and tap **Sync now**. The farmer becomes "Sent" and leaves the queue. Then log out and sign in as **Farmer** with the number you registered (code `123456`): the farmer app opens with their farm and you as their officer (ADR 0032).
+7. **See a refused record:** in DevTools, Application, IndexedDB, `farmers`, change a waiting farmer's `phoneE164` to `+23324`, then Sync now. It comes back under **Needs fixing** with the reason.
+
+In Swagger (`/swagger`, section *Sync*) you can send a batch by hand after signing in as the officer; sending the same batch twice answers `unchanged`.
+
+**See what is stored on the "phone":** DevTools (`F12`), tab **Application**, then **Storage, IndexedDB, agroconnect**. The four tables are `farmers`, `photos`, `outbox` and `drafts` (data dictionary 4.7). Click a table to see its rows. **Clear site data** (Application, Storage) empties it and also signs you out.
+
+**GPS and the camera:** browsers allow them only on HTTPS or on `localhost`. On the laptop at `http://localhost:5173` they work: the browser asks for location, and "Take a photo" opens the file picker. On a phone over the Wi-Fi address (`http://192.168...`) they are blocked until the servers have HTTPS; the form still works without them.
+
+### 5.11 Mobile money with Paystack (test mode)
+
+The secret key stays out of the repository. Store it once in .NET's secret store on your laptop (from `backend/`):
+
+```
+dotnet user-secrets set "Paystack:SecretKey" "sk_test_..." --project APIs/agroconnect-api
+dotnet user-secrets list --project APIs/agroconnect-api
+```
+
+- **User-secrets** are kept in your user profile, not in the project folder, and are only read when the API runs as Development. On the servers the same setting is the environment variable `Paystack__SecretKey` (the DevOps lead adds it as a secret).
+- Restart the API. It applies the `AddMobileMoney` migration and now sends payments to Paystack in test mode.
+- Sign in as the farmer, open Money → Link mobile money → choose the network → Link. Then Buy inputs → Check and pay → Pay. The app shows *Approve the payment* and checks with the server every 3 seconds.
+- In test mode no real prompt reaches a phone. Use the test mobile money numbers from Paystack's *Test payments* page; payments then appear in the Paystack dashboard under Transactions (test mode).
+- Remove the key (`dotnet user-secrets remove "Paystack:SecretKey" --project APIs/agroconnect-api`) to go back to the sample provider.
+
+### 5.12 Real SMS with Arkesel
+
+Sign-in codes are sent by SMS through Arkesel (ADR 0037). Keep the key out of the repository (from `backend/`):
+
+```
+dotnet user-secrets set "Sms:ApiKey" "<your Arkesel API key>" --project APIs/agroconnect-api
+dotnet user-secrets set "Sms:OnlyTo:0" "+233XXXXXXXXX" --project APIs/agroconnect-api
+```
+
+- **Safe by default:** only the numbers in `Sms:OnlyTo` get a real SMS. Add more team phones as `Sms:OnlyTo:1`, `Sms:OnlyTo:2`. Every other number, including the demo accounts (made-up numbers that belong to real people), goes to the API log. Only production sets `Sms:TextEveryone` to true.
+- **Check it works:** sign in as the MoFA admin and send `POST /api/admin/sms/test` with `{ "phone": "+233XXXXXXXXX" }` (Postman: *MoFA admin → Send a test SMS*). The answer says `sent`, `logged` (not on the list) or `failed` with Arkesel's reason (no credit, sender ID not approved).
+- Every SMS costs credit; the balance is in the Arkesel dashboard.
+- **"I got 202 but no SMS":** `202` is always the answer to *Send code*, on purpose (it never reveals which numbers have accounts). No SMS is sent when the number has no account for that role, or when it is not in `Sms:OnlyTo`.
+- **Did it arrive?** The API log says `SMS sent to ***9339, Arkesel message <id>`. Find that id in the Arkesel dashboard (SMS reports) for its delivery status: Delivered, Failed (with the reason) or Pending.
+- **Why the first code is slow:** the first request after the API starts takes 5 to 10 seconds (.NET warms up once). After that a code with SMS takes about 3 seconds: 1.5 s to connect to Arkesel and 1.5 s for Arkesel to accept it. MTN then delivers it in seconds.
+
+### 5.13 Test the API with Postman
+
+A ready-made collection of every endpoint is in `backend/postman/AgroConnect.postman_collection.json`.
+
+1. In Postman: **Import**, then choose that file. A collection *AgroConnect API* appears.
+2. Start the API (port 8000). The collection's `baseUrl` variable is `http://localhost:8000`; change it (collection, *Variables* tab) to try another server.
+3. Open a folder **Sign in as …** (officer, farmer or MoFA admin) and run **1. Ask for a code**, then **2. Enter the code** (always `123456` on a laptop). The token is saved in the collection's `token` variable and sent with every other request.
+4. Run any request in that person's folder. A farmer token does not open officer or admin requests (the answer is 403), on purpose.
+5. Mobile money: **Pay** saves the payment reference, so **How is my payment?** checks that payment.
+
+Postman can also build a collection straight from the API contract: **Import** → `backend/openapi/agroconnect.json`. That lists every endpoint but without the sign-in steps and examples.
+
+### 5.14 Test the API with Swagger
+
+Swagger UI is a web page made from the API contract, built into the API on laptops (Development only, never on the servers).
+
+1. Start the API and open `http://localhost:8000/swagger`. Every endpoint is listed by section (Auth, Farmer, Money, Sync, Admin…); a lock icon means it needs a sign-in token.
+2. **Get a token:** open **POST /api/auth/code** → **Try it out** → body `{ "phone": "024 000 0001", "role": "officer" }` → **Execute**. Then **POST /api/auth/verify** → **Try it out** → `{ "phone": "024 000 0001", "role": "officer", "code": "123456" }` → **Execute**. Copy the `token` value from the answer (without the quotes).
+3. Click **Authorize** (top right), paste the token, **Authorize**, **Close**. The locks close: every request now carries the token.
+4. Open any endpoint → **Try it out** → change the example body if there is one → **Execute**. Below you see the exact request (as a `curl` command), the status code and the answer.
+5. To switch person (farmer `024 000 1234`, MoFA admin `024 000 0009`), repeat step 2 and paste the new token in **Authorize**.
+
+**Swagger or Postman?** Swagger needs nothing installed and always shows the latest endpoints, which suits a quick check. Postman keeps saved requests, the sign-in steps and examples, and can run a whole folder, which suits repeating a flow.
+
+### 5.15 Test the USSD menu
+
+The USSD menu answers at `POST /api/ussd/arkesel` (ADR 0038). Arkesel calls it for every key a person presses.
+
+**On the laptop, with Postman:** folder *USSD (as Arkesel calls it)*. Run *1. Dial the code*, then any *Press* request. Each answer's `message` is what the phone shows; `continueSession: false` ends the session. The sample farmer's number is `233240001234`.
+
+**In Arkesel's emulator:** Arkesel needs a public HTTPS address for the callback.
+- **A deployed server:** `https://<server address>/api/ussd/arkesel` (staging's CloudFront address works once this code is deployed).
+- **Your laptop, for a test session only:** a temporary tunnel gives the local API a public address.
+  ```
+  winget install Cloudflare.cloudflared
+  cloudflared tunnel --url http://localhost:8000
+  ```
+  It prints an address like `https://random-words.trycloudflare.com`. In the Arkesel USSD settings, set the callback URL to that address plus `/api/ussd/arkesel`. Stop the tunnel (`Ctrl+C`) when you finish: while it runs, anyone with the address can reach your local API.
+- **Only our USSD app:** put the app id Arkesel shows in the secret store, `dotnet user-secrets set "Ussd:UserId" "<id>" --project APIs/agroconnect-api`. Requests with another id are then refused. Left empty, any request is answered.
+- The number you dial from must belong to a registered farmer, otherwise the menu says the number is not registered.
+
+### 5.9 Stop things
 
 | Command | Effect | Data |
 |---|---|---|
@@ -265,6 +389,32 @@ Frontend, from `frontend/`: `npm run lint`, `npm run format:check`, `npm run tes
 | `docker compose -f docker-compose.dev.yml stop` | Stops the containers | Kept |
 | `docker compose -f docker-compose.dev.yml down` | Stops and **removes** the containers | Kept (the volume stays) |
 | `docker compose -f docker-compose.dev.yml down -v` | Also deletes the volume | **Deleted.** Next start is an empty database; the API recreates tables and demo data. Use it to start fresh. |
+
+### 5.10 Test the installable app (PWA)
+
+`npm run dev` (port 5173) is the workshop: quick, with live changes, but **without** the service worker, so it is a website. To test the real installable app, build it and serve the finished files (ADR 0028):
+
+```powershell
+cd frontend
+npm run build      # the finished app in dist/, with sw.js (the service worker) and manifest.webmanifest
+npm run preview    # serves dist/ at http://localhost:4173, as the server will
+```
+
+In Chrome at `http://localhost:4173` (sign-in needs the API running, 5.3):
+1. **Install:** click the install icon at the right of the address bar, or "Install" on the app's own card. AgroConnect opens in its own window and gets a Start menu icon.
+2. **Look inside:** `F12` → **Application**: *Manifest* (name, icons, any installability warning), *Service workers* ("activated and running"), *Cache storage* (about 70 saved files), *IndexedDB → agroconnect* (saved farmers).
+3. **Offline:** tick **Offline** under Application → Service workers, or stop `npm run preview`, then reload. The app must open and still register a farmer.
+4. **Slow network:** `F12` → Network → **Slow 3G**.
+5. **Updates:** change a text, `npm run build` again, and the open app shows "A new version is ready".
+6. **Score:** `F12` → **Lighthouse** → Analyze (installability, offline, speed, accessibility).
+7. **Start again:** Application → Storage → **Clear site data** removes the service worker, the saved files, the phone database and the sign-in.
+
+**On a real Android phone, from the laptop (USB):** phones only install from secure addresses, and `localhost` counts as secure.
+1. Phone: Settings → About phone → tap **Build number** 7 times; then Developer options → **USB debugging** on. Connect the USB cable and accept the prompt.
+2. Laptop Chrome: `chrome://inspect/#devices` → **Port forwarding** → add `4173` → `localhost:4173` → tick "Enable port forwarding". That one port is enough: `npm run preview` forwards `/api` to the API on the laptop (port 8000), like the dev server does, so sign-in works from the phone too.
+3. Phone Chrome: open `http://localhost:4173`, install it, then test airplane mode, GPS and the camera. **Inspect** on `chrome://inspect` shows the phone's screen and errors on the laptop.
+
+**App icons:** made from `public/app-icon.svg` with `npx @vite-pwa/assets-generator` and a small config (sizes 64, 192, 512, maskable 512 and Apple 180, no padding, brand green background). Run it again only when the icon changes.
 
 ---
 
@@ -396,14 +546,20 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | `port is already allocated` | Something else uses 5433 or 8000 | Stop it, or set `DB_PORT=5434` in `backend/.env` (copy from `.env.example`) and change the connection string to match |
 | `Auth:SigningKey must be at least 32 bytes` on start | No signing key (not running as Development?) | Use `dotnet run`, which sets Development, or set `Auth__SigningKey` |
 | Tests hang or fail with Docker errors | Testcontainers needs Docker | Start Docker Desktop, or run `dotnet test --filter Category=Unit` |
-| `429` when asking for a code | The 45-second resend wait, or 5 codes an hour | Wait, or use another number |
+| `429` when asking for a code | The resend wait (45 s, 15 s on a laptop), or 20 codes an hour | Wait, or use another number |
 | On the very first start against an empty database, one `ERR Failed executing DbCommand ... FROM "__EFMigrationsHistory"` line, then `Database is up to date` | The migration tool first asks "which migrations have run?" before its history table exists; the query fails, it creates the table and carries on | Nothing: expected once per new database. Any other `ERR` line is a real problem |
 | `git commit` says `error: pathspec '<your message>' did not match any file(s)` | In PowerShell, `git commit -F - @'...'@` passes the message as a file name instead of feeding it in | Save the message to a file (e.g. inside `.git/`, which is never committed) and run `git commit -F <that file>`, or pipe it: `@'...'@ \| git commit -F -` |
+| "Sync now" says it could not send | The server's farmer service (`POST /api/sync`) is not built yet, or there is no network | Nothing is lost: farmers and visits stay queued and are sent when the service is live (ADR 0029) |
+| A farmer screen says "No network, and nothing is saved on this device yet" | The API running is an older build without the farmer endpoints (404), or it is not running | Stop the API and start it again (`dotnet run` from `backend/APIs/agroconnect-api`) |
 | You want a clean database | Old test data | `docker compose -f docker-compose.dev.yml down -v`, then `up -d db`, then restart the API |
+| The registration form opens in the middle, or old farmers show on Home | The app's own database in the browser keeps drafts and saved farmers (that is the point of offline-first) | DevTools, Application, Clear site data; or tap "No" on the consent step to drop the draft |
+| "Location is turned off for this app" | The browser was told not to share location, or the page is not on HTTPS or `localhost` | Allow location in the address bar's site settings, or go on without it (it is optional) |
 
 ---
 
-## 11. Log: what was run and why (5 October)
+## 11. Log: what was run and why
+
+### 5 October
 
 | Command | Why |
 |---|---|
@@ -426,3 +582,37 @@ Changes to Dockerfiles, compose files, nginx, `deploy/` or `.github/` are agreed
 | Screenshots of every start screen at 390 px, 820 px and 1440 × 900 | Checked the new desktop layout (Figma D01 to D03) and the phone and tablet layouts against the design |
 | Moved the desktop layout to start at 768 px, then screenshots at 768 × 1024 | Follows the team's "Phone vs Desktop" rule (desktop from Tailwind `md`); the tablet card was removed |
 | Headless Chrome walk-through of Welcome → Language → Who are you → Log in → Code → Home, officer and farmer | First live check of the app against the real API and database: wrong number, wrong code (server message shown), right code, farmer app, log out |
+
+### 7 October
+
+| Command | Why |
+|---|---|
+| `npm install -D fake-indexeddb` (in `frontend/`) | An in-memory IndexedDB for the tests, so saving a farmer is tested end to end without a browser |
+| `npx tsc -b`, `npm run lint`, `npm run format:check` | Type check, lint rules and formatting of the registration form |
+| `npm run test:ci` | All 93 frontend tests pass; 97.6% of lines covered (the CI gate is 70%) |
+| `npm run build` | Production build: first screen about 130 KB gzipped; the registration form a separate 55 KB file, loaded only when opened |
+| Changed `Auth:TokenLifetime` to a duration and set `01:00:00` in `appsettings.Development.json`; `dotnet test tests/AuthService.Tests` | Sign-ins on a laptop now last 1 hour instead of 7 days, so the sign-in screens are tested often; the servers keep 7 days. All 37 sign-in tests pass |
+| `dotnet build -c Release`, `dotnet test -c Release` | The new FarmerService and its 25 tests (100% of lines); built in Release because the running API locks the Debug files |
+| `npm run api:types` | Regenerated the app's types from the contract, now with the farmer endpoints |
+| `dotnet sln AgroConnect.sln add --solution-folder Services Services/SyncService/SyncService.csproj` (and the same for `tests/SyncService.Tests`) | Adds the new SyncService and its tests to the solution, so `dotnet build` and CI include them |
+| `dotnet test tests/SyncService.Tests -c Release -p:CollectCoverage=true -p:Threshold=70` | 41 sync tests against a real PostgreSQL in Docker; 99% of lines covered. In Git Bash write `-p:` instead of `/p:`, which the shell turns into a folder path |
+| `dotnet test AgroConnect.sln -c Release`, `dotnet format --verify-no-changes` | All 190 backend tests pass, including the end-to-end test: an officer syncs a new farmer, who then signs in; formatting clean |
+| `npm run api:types`, `npm run test:ci` | The app now uses the generated sync types and sends 100 records per request; 133 tests pass, 94.7% of lines covered |
+| `ASPNETCORE_URLS=http://localhost:8001 dotnet bin/Release/net10.0/AgroConnect.Api.dll`, then `API_PROXY_TARGET=http://localhost:8001 npx vite --port 5174` | A second API with the new endpoints on port 8001, and a dev server pointing at it, while the usual API kept port 8000; used to screenshot the farmer app |
+| Exported five pictures from Figma as SVG and shrank them with `npx svgo` (1.2 to 1.9 MB each down to 15 to 31 KB compressed) | The Home banner, "No farmers yet", Sync, Help and the farmer's banner, loaded only when shown |
+| `npm run test:ci` after building every Phase 1 screen | 120 tests pass, 93.9% of lines covered; Sync is tested against a fake server |
+| Headless Chrome screenshots of every new screen at 390, 768 and 1440 px | Compared with Figma; fixed the banner edges, the tablet header, the card order on the farmer page and the 24-hour clock |
+| `npx vite --port 5173` and headless Chrome at 390 × 844, 768 × 1024 and 1440 × 900 | Screenshots of every registration screen (consent, the error state, each step, Check and save, the duplicate check, Saved) compared with Figma 04 to 12, 19, 28 and D07 to D15 |
+| `cp design/assets/agro-illustrations/by-screen/<file>.svg frontend/public/illustrations/<name>.svg` (17 drawings) and the crop JPGs to `frontend/public/pictures/crops/`; `cmp` to confirm each copy is identical | The app now shows the design team's own files, byte for byte; `npx svgo` was tried and could not make them smaller, so nothing is re-encoded |
+| `npm install` after a failed `npm ci` | `npm ci` deletes `node_modules` first; with `npm run dev` running, Windows locks one Vite file and the delete stops halfway. Stop the dev server before `npm ci`, or use `npm install` to repair |
+| `dotnet test tests/AdminService.Tests`, `dotnet test tests/AuthService.Tests`, `dotnet test tests/Api.Tests` | Admin sign-in and the Overview: 4 AdminService tests (100% of lines), admin code and token tests, and end-to-end: the seeded admin signs in, cannot use officer endpoints, and every seeded officer is added |
+| `ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:8001 dotnet AgroConnect.Api.dll` (from `bin/Release/net10.0`) and `API_PROXY_TARGET=http://localhost:8001 npx vite --port 5174` | A second copy of the new API and app beside the usual ones, to check the admin pages in Chrome; restart your own API (port 8000) to get the admin account |
+| `dotnet user-secrets init --project APIs/agroconnect-api`, then `dotnet user-secrets set "Paystack:SecretKey" ...` | Gave the API project its own secret store (it had none) and put the Paystack test key there, outside the repository |
+| `dotnet ef migrations add AddMobileMoney --project Services/Libs/Data --startup-project APIs/agroconnect-api` | The `wallets` and `payments` tables for mobile money (ADR 0034); applied by the API on start-up |
+| `dotnet test tests/MoneyService.Tests` | 32 tests: the Paystack client against a fake Paystack (requests, network codes, statuses, errors), the sample provider, and every money endpoint on a real database; 99% of lines |
+| `dotnet user-secrets set "Sms:ApiKey" ...` and `"Sms:OnlyTo:0" ...` | The Arkesel key and the one number allowed to get real SMS on this laptop, outside the repository |
+| `POST /api/admin/sms/test` as the MoFA admin (port 8001 copy of the new API) | First live SMS through Arkesel, sender ID AgroConnect: answer `sent`, message received; the demo admin's own sign-in code went to the log (not on the list) |
+| `node` script writing `backend/postman/AgroConnect.postman_collection.json` | A Postman collection of every endpoint (26 requests), with sign-in steps that save the token |
+| `Auth:MaxCodesPerHour` 20 for laptops and servers, `Auth:ResendCooldownSeconds` 15 on laptops | The team tests sign-in many times an hour; the servers keep a 45 s wait against SMS abuse |
+| `dotnet ef migrations add AddUssdSessions ...` | The `ussd_sessions` table: where each USSD dial is in the menu (ADR 0038) |
+| `dotnet test tests/UssdService.Tests`, `dotnet test tests/Api.Tests` | 16 USSD tests (every menu path, wrong keys, back and exit, old sessions, the app id check) and 2 end-to-end; 289 backend tests in all |

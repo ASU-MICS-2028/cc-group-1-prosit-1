@@ -2,7 +2,7 @@
 
 Living file: where the project stands right now. Update it at the end of every working session (what was done, what's next). Decisions themselves go in `adr/` and `decision-log.md`; this file only tracks progress.
 
-_Last updated: 2026-10-07 (private network live: staging and production behind the load balancer; see infrastructure.md)_
+_Last updated: 2026-10-07 (private network live: staging and production behind the load balancer, see infrastructure.md; offline registration reaches the server through sync, on branch feature/registration-form)_
 
 ## The assignment (Prosit 1, AgroConnect Ghana)
 Ashesi ICS 534 Cloud Computing. A four-week build; we are building all four weeks into one product.
@@ -42,11 +42,12 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 
 - Database (branch `feature/ui-build`): five tables (`users`, `login_codes`, `farmers`, `visits`, `photos`) in the first EF Core migration (`InitialSchema`). The API applies migrations on start-up and, on a laptop, seeds a demo officer (Fuseini Alhassan, 024 000 0001) and a sample farmer (Ama Boateng, 024 000 1234). Every column is explained in `data-dictionary.md`.
 - Sign-in (`AuthService`): `POST /api/auth/code`, `POST /api/auth/verify`, `GET /api/me`.
-  - **Codes:** 6 digits, stored only as a hash, valid 10 minutes; one per 45 s and 5 per hour per phone; locked after 5 wrong tries.
+  - **Codes:** 6 digits, stored only as a hash, valid 10 minutes; one per 45 s and 20 per hour per phone; locked after 5 wrong tries.
   - **Tokens:** 7-day signed tokens (JWT) with the role (officer or farmer) (ADR 0022).
   - **Abuse limits:** 30 requests per 5 minutes per network address.
   - **Farmer accounts:** created on first sign-in.
-  - **SMS:** written to the log until Africa's Talking is connected; the laptop code is always 123456.
+  - **SMS:** sent through Arkesel (ADR 0037), only to allowed numbers unless the server texts everyone.
+  - **Codes are always random** and texted (ADR 0039); the backup code 123456 works on laptops and staging when SMS fails, never in production. Real team accounts (one officer, one admin, one farmer) are seeded from user-secrets; the demo accounts stay as the backup.
   - **Tests:** 31, 99% coverage.
   - **Live check:** done against the local database.
 - Database clean-up (ADR 0023): snake_case names (`full_name`) and six enforced links (foreign keys); the first migration was regenerated before anything was committed or deployed. A test proves the database refuses a visit for a farmer that does not exist.
@@ -58,26 +59,99 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
   - The sign-in is kept on the phone for 7 days.
   - Frontend tests: 72, 98.3% lines.
   - Checked live in headless Chrome against the API and database.
-- Roles, accounts and devices decided (ADR 0024): three roles; admins add officers, officers register farmers; farmers phone only, officers phone and computer, admins computer only. *Who are you?* shows Extension officer / Farmer on a phone and Extension officer / MoFA admin on a computer (amended 2026-10-06). Designed in Figma (desktop *Who are you?*, farmer-on-a-computer, admin sign-in and code, *Add a person*, admin-on-a-phone), not built yet.
+- Roles, accounts and devices decided (ADR 0024): three roles; admins add officers, officers register farmers; officers on phone and computer, farmers on the phone, admins on a computer. *Who are you?*: Extension officer / Farmer on a phone, Extension officer / MoFA admin on a computer. A farmer on a computer gets the "use your phone" screen with a QR code. The farmers-on-a-computer amendment was withdrawn on 2026-10-07.
 - Infrastructure live (ADR 0026, 2026-10-06/07): own VPC with private app and database subnets, fck-nat, one load balancer, Auto Scaling (production 2 to 4 servers, staging 1), images from ECR, RDS `agroconnect-prod` in private subnets, CloudWatch alarms by email, budget $100. Production runs `sha-1355e3e`, staging `sha-75c52f7`. Old servers and the old database are deleted. Details and runbook: `infrastructure.md`.
+- Desktop layout from 768 px for the start screens (team rule "Phone vs Desktop"; branch `fix/desktop-breakpoint`).
+- Registration form from Figma (branch `feature/registration-form`, ADR 0027): phone screens 04 to 12, 19 and 28, computer screens D07 to D15.
+  - **Steps:** consent, about the farmer, the farm, location and photo, contact, money, help needed; then Check and save (Edit on each card), Saved, and "Check before saving" when the phone number is already used on this phone.
+  - **Offline:** Dexie database on the phone (`frontend/src/db/local.ts`: farmers, photos, outbox, drafts; data dictionary 4.7). Saving writes the farmer and its outbox row in one transaction. Drafts are kept only after consent.
+  - **GPS and photo:** optional; the photo is shrunk to about 150 KB.
+  - **Lists:** Home, Farmers and Sync now read the farmers saved on the phone, live.
+  - **Tests:** frontend 93, 97.6% lines (an in-memory IndexedDB, `fake-indexeddb`). Screens checked in headless Chrome at 390, 768 and 1440 px.
+- Installable app (ADR 0028): manifest, icons, service worker (whole app offline), install and update messages. Verified in Chrome: no installability errors, opens offline.
+- All Phase 1 app screens from Figma for phones and computers (ADR 0029): officer Home, My farmers, farmer page, Edit, Sync, Visits, Log a visit, Profile, Log out, Change language, Help, Install; the farmer's Home, Help and Profile. The app sends its queue to `POST /api/sync` by itself; the server side is next. Frontend 120 tests, 93.9% lines.
+- The farmer's app in full (ADR 0031): My details, Change my details, Call my officer, Market prices, Weather, Check my crop, Harvest forecast, My cooperative, Lessons, for phones and computers. Backend FarmerService: the farmer's record, officer and visits are live; the outside sources are sample providers labelled "Sample data". Backend 145 tests (FarmerService 100% lines), frontend 131 tests.
+- Offline registration reaches the server (ADR 0032): backend SyncService answers `POST /api/sync`. The signed-in officer owns what they send; another officer's record is refused; the newest change wins; each record is checked and answered on its own ("To fix" with the reason); a visit waits for its farmer; one transaction per batch. The app sends 100 records per request. End-to-end test: an officer syncs a new farmer, who then signs in and sees their farm. Backend 190 tests (SyncService 99% lines), frontend 133 tests (94.7% lines).
+- Computers follow the Figma sidebar (ADR 0030 amended 7 Oct): Home, Farmers, Visits, Requests, Market, Money, Profile, a sync card and Register a farmer, with a tab to collapse it. The top bar and account menu are gone.
+- USSD through Arkesel (ADR 0038): `POST /api/ussd/arkesel` with the menu 1 Market prices, 2 Weather, 3 Ask my officer (creates a help request), 4 My officer's number; the farmer is known by their number; menu state in the new `ussd_sessions` table (migration `AddUssdSessions`). 16 USSD tests and 2 end-to-end; Postman folder *USSD (as Arkesel calls it)*. Backend 289 tests.
+- SMS through Arkesel (ADR 0037): sign-in codes are texted for real (sender ID "AgroConnect"), safe by default (only numbers in `Sms:OnlyTo` unless `Sms:TextEveryone`); a failed SMS tells the person to try again; `POST /api/admin/sms/test` for admins. First live SMS sent and received on 8 Oct. Postman collection in `backend/postman/` (26 requests). Backend 251 tests.
+- Mobile money through Paystack (ADR 0034): MoneyService on the server (wallets and payments tables, migration `AddMobileMoney`); the farmer's Money home, Link mobile money and paying for inputs are connected; each payment is approved on the phone and the app checks until it is paid. Paystack test key in user-secrets on Bernard's laptop; without a key a labelled sample provider answers. Backend 238 tests (MoneyService 99% lines), frontend 162 tests. Still sample: input products and shops, loans, insurance, get paid, cooperative, officer requests and money summary.
+- MoFA admins can sign in (ADR 0033): role `admin`, SMS code like officers, demo admin Esi Owusu `024 000 0009` (Northern Region). Admin pages under `/admin` on a computer, beside the Figma admin sidebar; **Overview** shows live officers, farmers, registrations and visits this month and each officer's last sync for the admin's region or district (AdminService). On a phone: "Admin works on a computer". Next: Agents with *Add a person*, then the reports page (D20).
+- Admin pages from Figma P4 on sample data (2026-10-08): Regions, Agents (turn off a lost phone, Add a person panel), Cooperatives, Help desk (filter, reassign, remind), Impact and System health, each labelled "Sample data". Data shapes in `frontend/src/features/admin/sample.ts` for AdminService to mirror. Frontend 169 tests, 94% lines.
+- Registration's last page depends on the network (2026-10-08): online, the farmer is sent at once and the page says they are registered; offline, "Saved on this phone, waiting to sync"; refused, "Needs fixing" with the reason.
+- Lost or stolen phones (sample): officers report from Profile; admins see reports in Agents, report for an agent who called, and turn access off.
+- Admin Overview: district map, registrations against the plan, channels, money and reach (later phase, sample). Later-phase screens now say "Coming in a later phase". New favicon and app icons from the team logo. Frontend 176 tests, 94% lines.
+- Overlays from Figma (Phase 1 overlay row), first one built: **Playing Audio**. Every Listen button (farmer home, My details, the officer's farmer pages) now shows a card over the dimmed screen with the language, a waveform that fills as the phone reads, the time and pause/play; tapping outside stops. Next: Sent, Syncing (with real progress), Photo added; Recording waits for voice notes, Downloading for the reports page; Calling and Not in prototype stay in Figma only (the phone's dialer and hidden menu items cover them).
+- Farmer home rebuilt to the design (Figma 23): profile card under the banner, six tinted service tiles with a live line each (price and its trend, today's weather, expected bags, members, lessons), then Listen, Change my details and Call my agent in one card. The lines come from the saved answers, so they show offline.
+- Readable charts: the harvest forecast is a range chart per crop (at least / could reach, bags of 100 kg, harvest month); the officer's "Paid to shops by week" has a GH₵ axis, gridlines and the value on each bar. Both have a hidden table for screen readers.
+- Weather: the next 7 days are a list (day, sky, rain bar, high and low), all visible on a phone; today shows high and low.
+- Pictures (ADR 0025): answer tiles show pictures online, with emojis bundled for offline. Since 7 Oct the drawings and crop photos are the design team's own source files, copied unchanged from `design/assets/` (17 drawings, 6 crop photos as the original JPGs); the Figma frame exports, some distorted, are gone. The language banner is real text beside its drawing. Still needed: picture credits in the app (CC BY-SA photos, Storyset and Freepik).
+- Phase 2 screens in the frontend on sample data (labelled "Sample data"): farmer Money (link wallet, buy inputs, delivery, seed loan, insurance, get paid), cooperative savings, meeting, group order and selling together; officer Requests with advice, Money and farm health, loan review and Market. Check my crop has an optional leaf photo (kept on the phone) and a checklist answer. The data shapes in `frontend/src/features/sample/data.ts` are what the backend endpoints should return. Frontend 151 tests, 93% lines.
+- Sign-in length is now a setting (`Auth:TokenLifetime`): 1 hour on laptops for testing, 7 days on the servers (unchanged).
 - Docs: `phase-1-overview.md` (replaces the concise PDF), `data-dictionary.md` (who is who, every table, column and code), `tech-choices.md` (the whole stack), `local-development.md` (every command, health checks, laptop vs servers), and `project-structure.md` (backend file guide).
 
+## What is still sample (dummy) data, 2026-10-08
+
+**Real today:**
+- sign-in and roles;
+- registration and offline sync;
+- farmers, visits and the officer's Home;
+- the admin Overview numbers;
+- the farmer's own record, officer and visits;
+- Paystack payments, once a key is set.
+
+**Backend runs, but the data comes from a sample provider** (labelled "Sample data" in the app):
+- market prices;
+- weather;
+- Check my crop's answer;
+- harvest forecast;
+- My cooperative's name, leader and meeting (`SampleCooperativeDirectory`);
+- lessons.
+
+**Backend runs, but nothing reaches anyone yet:**
+- SMS sign-in codes are written to the log, not sent (`LogOnlySmsSender`; the backup code 123456 works on laptops);
+- change-detail requests are written to the log (`LogOnlyChangeRequestInbox`).
+
+**Mobile money (MoneyService):**
+- real through Paystack test mode when `Paystack__SecretKey` is set; otherwise the sample gateway approves after a few seconds;
+- *Buy inputs*: the products and shops are sample data, the payment is real.
+
+**Frontend only, no backend yet** (labelled "Coming in a later phase"):
+- Money: seed loan, insurance, get paid, delivery tracking;
+- cooperative savings, meeting attendance, group order, selling together;
+- officer Money and farm health, loan review, officer Market;
+- admin Regions, Agents (invites, access, phone reports), Cooperatives, Impact, System, and the Overview map, trend, channels and money tiles;
+- lost or stolen phone reports from Profile;
+- Nigeria and Kenya, Yorùbá and Kiswahili;
+- Download report (PDF), Call the driver.
+
+**Made real on 2026-10-08 (ADR 0035, 0036):**
+- Get help and Ask my officer to confirm, with voice notes;
+- officer Requests;
+- admin Help desk;
+- SMS alert settings (saved; sending waits for the SMS provider);
+- speech in Twi, Ewe and Dagbani (waits for the Khaya key).
+
+**No recordings yet:**
+- speaker buttons and lessons use the phone's own voice until the recorded prompts (ADR 0014) exist.
+
 ## Bernard's to-do right now
-1. Try the start screens yourself: `npm run dev` in `frontend/` with the API running (see `local-development.md` 5.5).
-2. With the DevOps lead: HTTPS for staging and production, and the `Auth__SigningKey` secret on each server.
-3. Share `docs/` with the team (Liza: `data-dictionary.md`; slides: `phase-1-overview.md`).
+1. Try the registration form yourself: sign in as the demo officer, tap "Register a farmer" (see `local-development.md` 5.8). Compare with Figma at phone and computer widths.
+2. Push `feature/registration-form` (the one working branch: registration form plus the study manual) and open its PR.
+3. With the DevOps lead: HTTPS for staging and production, and the `Auth__SigningKey` secret on each server.
+4. Share `docs/` with the team (Liza: `data-dictionary.md`; slides: `phase-1-overview.md`).
 
 ## Next steps (in order)
-1. **Farmer service (backend):** `POST /api/sync` (farmers and visits, safe to resend), `GET /api/sync/changes`, farmer details, the duplicate phone check, photo upload links. Tests and a live check.
-2. **Connect the app to the backend:** Vite dev proxy, API client typed from the OpenAPI contract, saved sign-in token.
-3. **Offline engine:** Dexie (farmers, visits, photos, outbox), sync on open, on reconnect and with "Sync now".
-4. **Screens from Figma:** sign-in, the 7-step registration, review and saved, farmer list and detail, edit, visits, the farmer's own view, help, sign-out, error, empty and offline states.
-5. **Installable app:** manifest, icons, Workbox caching, update and install prompts.
-6. **USSD and SMS** with the Africa's Talking sandbox.
+1. **Sync, second half (Bernard and Liza):** `GET /api/sync/changes` so a laptop or second phone receives the officer's farmers and visits; the duplicate phone check across phones; photo upload with its link check (ADR 0023).
+2. **Planned visits and photo upload:** visit plans from the server; send kept photos after their farmer syncs.
+3. **MoFA side (ADR 0024):** admin role and screens, the reports page (D20).
+4. **Sidebar tab** (open/close, remembered) from the team rule.
+5. **Installable app on real phones:** test over USB with port forwarding; install from staging after HTTPS.
+6. **USSD:** test in Arkesel's emulator once the callback URL is public (staging, or a tunnel); menu text in Twi, Ewe and Dagbani. SMS delivery reports and the officer's "Send advice by SMS" (Arkesel).
 7. **Infra (DevOps lead):** HTTPS (domain + ACM certificate on the load balancer), a staging host name. The private network, Auto Scaling, ECR, alarms and the photo buckets are live (`infrastructure.md`).
 8. **Write-up and slides:** from `phase-1-overview.md` and the ADRs.
-9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend: *Who are you?* choices by screen width, admin sign-in, farmer-on-a-computer and admin-on-a-phone screens, the *Add a person* form.
-10. **Pictures (ADR 0025):** export tile pictures as 160 px WebP outside the bundle, a Workbox cache-first rule for them, and the icon fallback when offline.
+9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend: *Who are you?* choices by screen width, admin sign-in, the admin-on-a-phone screen, the *Add a person* form.
+10. **Picture credits:** a short credits section in Help for the CC BY-SA crop photos and the Storyset and Freepik drawings (required by their licences); the answer-tile pictures in `pictures/options/` still come from Figma exports and need their source files.
 
 ## Open questions
 - Team sign-off still needed on ADR 0006 (Postgres), 0007 (phone-number auth) and 0015 (security plan).

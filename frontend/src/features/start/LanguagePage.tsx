@@ -1,3 +1,4 @@
+import { LanguageBanner } from "@/components/LanguageBanner"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
@@ -5,6 +6,7 @@ import { LanguageOptions } from "@/components/LanguageOptions"
 import { ScreenShell } from "@/components/ScreenShell"
 import { Button } from "@/components/ui/button"
 import { LANGUAGES, setLanguage, type LanguageCode } from "@/i18n"
+import { LaterLanguages } from "@/features/country/LaterLanguages"
 
 /** 01 Choose language: listen to each one, preview it, then continue in it. */
 export function Component() {
@@ -41,13 +43,7 @@ export function Component() {
         <p className="text-2xl leading-9 font-semibold text-primary">
           {t("app.name")}
         </p>
-        {/* Hello, Akwaaba! Choose your language: a greeting picture, the same in every language */}
-        <img
-          src="/illustrations/language-banner.svg"
-          alt=""
-          decoding="async"
-          className="aspect-[358/160] w-full rounded-[30px] bg-cream object-cover"
-        />
+        <LanguageBanner />
         <div>
           <h1 className="text-base font-medium text-foreground">
             {t("welcome.question")}
@@ -67,6 +63,7 @@ export function Component() {
         </p>
       </div>
       <LanguageOptions value={selected} onChange={preview} />
+      <LaterLanguages />
     </ScreenShell>
   )
 }

@@ -9,6 +9,9 @@ public enum UserRole
 {
     [JsonStringEnumMemberName("officer")] Officer = 0,
     [JsonStringEnumMemberName("farmer")] Farmer = 1,
+
+    /// <summary>MoFA admin: adds officers and sees reports for their region or district (ADR 0024). Computer only.</summary>
+    [JsonStringEnumMemberName("admin")] Admin = 2,
 }
 
 public enum Gender

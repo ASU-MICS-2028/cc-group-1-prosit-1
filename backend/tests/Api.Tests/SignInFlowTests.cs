@@ -1,6 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using AgroConnect.Data.Persistence;
+using AgroConnect.SharedLibrary.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AgroConnect.Api.Tests;
 
@@ -38,6 +42,28 @@ public sealed class SignInFlowTests(SeededApiFixture api)
     }
 
     [Fact]
+    public async Task A_listed_farmer_is_seeded_under_their_officer_and_bad_entries_are_skipped()
+    {
+        await using var scope = api.Factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var farmers = await db.Farmers.AsNoTracking().OrderBy(f => f.CreatedAt).ToListAsync();
+        var yaw = Assert.Single(farmers, f => f.PhoneE164 == SeededApiFixture.SeededFarmerPhone);
+        var officer = await db.Users.AsNoTracking().SingleAsync(u => u.Id == yaw.RegisteredById);
+
+        Assert.Equal(("Yaw Darko", "Diare", "Abena Mensah"), (yaw.FullName, yaw.Community, officer.FullName));
+        Assert.Equal([Crop.Rice], yaw.Crops);
+        Assert.True(yaw.ConsentGiven);
+        Assert.Single(farmers, f => f.PhoneE164 == SeededApiFixture.FarmerPhone);
+        Assert.DoesNotContain(farmers, f => f.FullName is "No such officer" or "Not a phone number" or "Ama Boateng again");
+
+        var (client, user) = await api.SignInAsync(SeededApiFixture.SeededFarmerPhone, "farmer");
+        using (client)
+        {
+            Assert.Equal(yaw.Id, user.GetProperty("farmerId").GetGuid());
+        }
+    }
+
+    [Fact]
     public async Task Request_code_answers_202_with_the_timings()
     {
         using var client = api.Factory.CreateClient();
@@ -68,7 +94,7 @@ public sealed class SignInFlowTests(SeededApiFixture api)
     {
         using var client = api.Factory.CreateClient();
 
-        var response = await client.PostAsJsonAsync("/api/auth/code", new { phone = "0240000001", role = "admin" }, SeededApiFixture.Json);
+        var response = await client.PostAsJsonAsync("/api/auth/code", new { phone = "0240000001", role = "superuser" }, SeededApiFixture.Json);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

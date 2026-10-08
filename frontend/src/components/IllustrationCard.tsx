@@ -9,7 +9,7 @@ export function IllustrationCard({
   className,
   imageClassName,
 }: {
-  /** File name in public/illustrations, without .svg */
+  /** File in public/illustrations: a name for .svg, or a name with its extension */
   name: string
   className?: string
   imageClassName?: string
@@ -22,7 +22,7 @@ export function IllustrationCard({
       )}
     >
       <img
-        src={`/illustrations/${name}.svg`}
+        src={`/illustrations/${name.includes(".") ? name : `${name}.svg`}`}
         alt=""
         loading="lazy"
         decoding="async"

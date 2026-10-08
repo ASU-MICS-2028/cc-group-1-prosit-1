@@ -1,6 +1,6 @@
 # ADR 0024: Roles, how accounts are made, and which device each role uses
 
-- **Status:** Accepted, amended 2026-10-06 (desktop sign-in choice; see *Amendment*)
+- **Status:** Accepted, amended 2026-10-06 (desktop sign-in choice); the 2026-10-07 amendment (farmers on a computer) was withdrawn the same day; see the *Amendments*
 - **Date:** 2026-10-05
 
 ## Context
@@ -59,3 +59,27 @@ The DevOps lead changed where MoFA admins choose their role. *Who are you?* now 
 - **Computer:** Extension officer or MoFA admin. Farmers are phone only, so a farmer choice on a computer would only lead to a dead end; they get one small line pointing to the phone instead.
 
 The separate `/admin` page is dropped: admins use the same address as everyone else and pick *MoFA admin* on a computer. The device rule is still the 768 px width check, never the user agent. Everything else in this ADR (three roles, who creates each account, devices per role, unknown-number handling) is unchanged.
+
+## Amendment (2026-10-07): farmers on a computer too (withdrawn, see below)
+
+Farmers are no longer phone only. A farmer who travels to town and signs in on a laptop, or in a cyber café, gets the same app in the computer layout, exactly like an extension officer: **the screen width picks the layout, the role picks the menus** (team rule "Phone vs Desktop").
+
+- **Under 768 px:** the farmer's phone design with the bottom bar (Home, Help, Profile).
+- **From 768 px:** the sidebar with the same places, and wider pages (the farmer's Home in two columns, Profile in two columns).
+- ***Who are you?*** keeps **Farmer** at every width. On a computer it will also offer **MoFA admin** once the admin sign-in exists.
+- The *Farmers use AgroConnect on the phone* screen (D02f) is no longer needed.
+
+**Why:** farmers do reach computers (district offices, cyber cafés, a relative's laptop), and turning them away to a phone they may not have with them helps nobody. One responsive app already serves both sizes, so this costs no extra screens.
+
+**Still true:** MoFA admins remain computer only (their pages are dashboards); farmers without a smartphone still have USSD, SMS and their officer.
+
+## Amendment (2026-10-07, later): back to the device rule
+
+The DevOps lead withdrew the "farmers on a computer too" amendment and restored the 2026-10-06 rule:
+
+- ***Who are you?*** on a **phone**: Extension officer or Farmer. On a **computer**: Extension officer or MoFA admin, plus one small link for farmers.
+- A **farmer on a computer** (that link, or a farmer already signed in who widens the window past 768 px) sees *Farmers use AgroConnect on the phone* (Figma D02f): a QR code and the link to open on their phone, a line about SMS and USSD for basic phones, and Log out. No farmer pages are drawn at computer width.
+- **MoFA admin** on a phone sees *Admin works on a computer*. On a computer the admin sign-in form is built; it says the admin account is not ready yet, until the backend `admin` role exists.
+- The width check (768 px) is still the only device rule, never the user agent.
+
+**Why:** the farmer design is made for phones (big tiles, bottom bar, Listen buttons), the farmer services are phone first, and a computer layout for farmers doubled the screens to design and test with little use. Farmers who reach a computer are shown how to get to the app on their phone.

@@ -14,7 +14,7 @@ _Last updated: 5 October 2026. Versions are the ones installed today (`npm ls`, 
 |---|---|
 | **Design** | Figma (mobile first, responsive), system font, our own design tokens |
 | **App on the phone** | React 19 PWA, TypeScript 6, Vite 8, Tailwind 4, shadcn/ui on Base UI, react-router 7, react-hook-form + zod, i18next, Dexie (IndexedDB), Workbox via vite-plugin-pwa |
-| **Simple phones** | USSD and SMS through Africa's Talking (planned) |
+| **Simple phones** | SMS (ADR 0037) and USSD (ADR 0038) through Arkesel |
 | **Backend** | C# on .NET 10 (ASP.NET Core Minimal APIs), EF Core 10 + Npgsql, JWT tokens, Serilog, built-in OpenAPI |
 | **Database** | PostgreSQL 17 (container on laptop and staging; RDS planned for production) |
 | **Photos** | Private S3 bucket with short-lived upload links (planned; disk on a laptop) |
@@ -81,6 +81,7 @@ These are what the farmer downloads, so each one is weighed against its size.
 | `vitest`, `@vitest/coverage-v8` | 5.0.3 | Test runner using the same Vite config; measures coverage for the 70% gate |
 | `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom` | 16.3.3, 14.6.7, 7.0.1 | Tests that act like a user: find by label, click, type, check what is visible |
 | `jsdom` | 30.1.2 | A browser simulated in Node, so tests run without opening Chrome |
+| `fake-indexeddb` | 6.2.5 | An in-memory IndexedDB for tests, so saving a farmer, drafts and the "to send" queue are tested on a laptop |
 | `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `globals` | 10.12.0, 10.0.1, 8.71.0, 7.1.1, 0.5.7, 17.13.0 | Lint rules: common bugs, React hook mistakes, unsafe TypeScript |
 | `prettier` | 3.9.9 | One formatting style, enforced in the hook and CI |
 | `@types/react`, `@types/react-dom`, `@types/node`, `@types/babel__core` | | Type definitions for the libraries above |
@@ -113,6 +114,8 @@ Each pick answers four questions: **why this**, **what we rejected**, **what it 
 - **Why:** generates the service worker and manifest from config, with Google's Workbox doing the caching. Hand-written service workers are the number one source of "users stuck on an old version" bugs.
 - **Rejected:** hand-writing `sw.js` (the brief's sample). Fine for learning, risky in production: cache versioning and the update flow are easy to get wrong.
 - **Cost to farmer:** small; the service worker is one file loaded once.
+- **How we use it (ADR 0028):** `registerType: "prompt"` (an update never reloads under an officer mid-form), every page saved for offline on first visit, illustrations cached when first shown, `/api` never cached. Our "Install AgroConnect" and "A new version is ready" cards live in `src/app/pwa/`.
+- **App icons:** one source picture, `public/app-icon.svg`, turned into the PNG sizes with `@vite-pwa/assets-generator`, run once with `npx` (not a project dependency; see `local-development.md` 5.10).
 - **At scale:** stays. For custom logic (e.g. background photo upload) we switch to its `injectManifest` mode, without changing tools.
 
 #### Dexie (IndexedDB)
@@ -151,6 +154,13 @@ Each pick answers four questions: **why this**, **what we rejected**, **what it 
   - Our own canvas resize: possible, but we would also have to handle rotation and threading.
 - **Cost to farmer:** lazy-loaded, downloaded only when someone opens the camera step.
 
+#### Browser features we use instead of libraries
+- **Speech (`speechSynthesis`):** "Listen to this profile" reads the details with the device's own voice until recorded prompts exist (ADR 0014, 0029). No download, works offline.
+- **`navigator.onLine` and the online/offline events:** the "No network" notes, and sending the queue as soon as the network returns.
+- **`navigator.storage.estimate()`:** "Stored on this device: N MB" on Profile.
+- **`<details>`:** the Help answers open and close without any script.
+- **Base UI Dialog** (already part of `@base-ui/react`): the bottom sheets (new version, log out), with focus kept inside and Escape to close.
+
 #### shadcn/ui (Base UI + Tailwind)
 - **Why:** components are copied into our code, not installed, so we ship only what we use and can change anything. Base UI underneath gives keyboard and screen reader accessibility.
 - **Why Base UI rather than Radix:** Base UI is shadcn's recommended default and is actively developed by the people behind Radix, MUI and Floating UI, while Radix development has slowed. The only API difference you will notice is a `render` prop where Radix used `asChild`.
@@ -170,6 +180,8 @@ Each pick answers four questions: **why this**, **what we rejected**, **what it 
   - Unit tests and a 70% line coverage gate are mandatory in CI.
   - Vitest reuses the Vite config, so there is no second toolchain.
   - Testing Library tests what the user sees, not how it is built.
+  - `fake-indexeddb` gives the tests a real IndexedDB in memory (Node has none), wiped after every test. The registration tests go through all 7 steps and then read what Dexie stored.
+  - **Rejected:** mocking Dexie by hand. It would test our mock, not the real transactions and indexes.
 - **Coverage:** excludes copied shadcn components, `main.tsx` and type files. `npm run test:ci` writes `coverage/coverage-summary.json`, which CI reads.
 
 ### 3.4 Left out on purpose
@@ -182,9 +194,11 @@ Each pick answers four questions: **why this**, **what we rejected**, **what it 
 | Web fonts (Poppins from Figma) | An extra download on every first visit; the system font looks native and costs nothing. |
 | Module Federation / micro-frontends | Extra round trips and harder offline caching now; planned after Phase 1. |
 | React Native / Flutter | App store install, bigger downloads, a second codebase. |
+| A chart library (Recharts, Chart.js) | 50 to 100 KB more for two small charts. `src/components/Charts.tsx` draws them in plain HTML and CSS: axis with its unit, light gridlines, the value on every bar, and a hidden table of the numbers for screen readers. |
 
 ### 3.5 The size budget
-- Initial JavaScript **under about 200 KB gzipped**. Today about 125 KB, checked in the `vite build` output.
+- Initial JavaScript **under about 200 KB gzipped**. Today about 130 KB, checked in the `vite build` output.
+- The registration form is the biggest page (about 55 KB gzipped, mostly react-hook-form and zod). It loads only when "Register a farmer" is opened. The photo compression library (about 20 KB) loads only when a photo is taken.
 - Everything not on the first screen is lazy-loaded: pages, the camera and compression, and languages other than English.
 - Illustrations from Figma are optimised SVG files loaded with `<img loading="lazy">`, not bundled.
 
@@ -323,7 +337,9 @@ Rejected: Kubernetes (about $73 a month for the control plane), ECS/Fargate (mor
 
 | Service | Use | Status |
 |---|---|---|
-| **Africa's Talking** | SMS sign-in codes, USSD menus, confirmation texts | Planned; on a laptop the SMS goes to the log |
+| **Arkesel** | SMS: sign-in codes now, advice and confirmations next. Sender ID "AgroConnect" approved (ADR 0037) | In use; texts only allowed numbers unless `Sms:TextEveryone` |
+| **Arkesel USSD** | The USSD menu for simple phones: Arkesel calls `POST /api/ussd/arkesel` for each key (ADR 0038) | Sandbox and emulator; live needs a USSD code from Arkesel |
+| **Paystack** | Mobile money payments for farmers (MTN, Telecel, AirtelTigo in GHS) and payouts to their wallets (ADR 0034). Chosen over the MTN MoMo API: one integration for all three networks | Test mode; live needs business verification |
 | **Figma** | The UI design: the source for every screen, icon and illustration | In use |
 | **GitHub** | Code, pull requests, CI, images (GHCR) | In use |
 

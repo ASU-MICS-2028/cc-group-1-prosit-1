@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- MoneyService: the farmer's mobile money (ADR 0034): link a wallet, pay through Paystack, see payments.
+       Without a Paystack key it uses a labelled sample provider. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\SharedLibrary\SharedLibrary.csproj" />
+    <ProjectReference Include="..\Libs\Data\Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Langs\*.json" />
+  </ItemGroup>
+</Project>

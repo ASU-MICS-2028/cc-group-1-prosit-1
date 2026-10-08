@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- AdminService: what a MoFA admin sees and does for their region or district (ADR 0024, 0033):
+       the overview of officers and farmers; later adding people and reports. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\SharedLibrary\SharedLibrary.csproj" />
+    <ProjectReference Include="..\Libs\Data\Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Langs\*.json" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,11 @@
+[
+  { "Lang": "en", "Key": "NOT_A_FARMER_ACCOUNT", "Text": "This account is not linked to a farm. Ask your extension officer." },
+  { "Lang": "en", "Key": "FARMER_NOT_FOUND", "Text": "We could not find your farm record. Ask your extension officer." },
+  { "Lang": "en", "Key": "NO_PHONE_FOR_WALLET", "Text": "Your record has no phone number. Ask your extension officer to add it, then link your wallet." },
+  { "Lang": "en", "Key": "NO_WALLET", "Text": "Link your mobile money wallet first." },
+  { "Lang": "en", "Key": "AMOUNT_INVALID", "Text": "Enter an amount between GH₵ 1 and GH₵ 10,000." },
+  { "Lang": "en", "Key": "DESCRIPTION_REQUIRED", "Text": "Say what the payment is for." },
+  { "Lang": "en", "Key": "PAYMENT_NOT_FOUND", "Text": "We could not find that payment." },
+  { "Lang": "en", "Key": "CODE_REQUIRED", "Text": "Enter the code your network sent you." },
+  { "Lang": "en", "Key": "WALLET_NOT_ACCEPTED", "Text": "The network did not accept this wallet. Check the network and try again." }
+]

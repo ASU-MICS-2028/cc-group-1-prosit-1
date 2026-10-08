@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- FarmerService: what a signed-in farmer sees about themselves (their farm, officer, visits) and the
+       farm services (prices, weather, crop check, harvest forecast, cooperative, lessons). Services with
+       no live data source yet use a sample provider behind an interface (ADR 0031). -->
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\SharedLibrary\SharedLibrary.csproj" />
+    <ProjectReference Include="..\Libs\Data\Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Langs\*.json" />
+  </ItemGroup>
+</Project>

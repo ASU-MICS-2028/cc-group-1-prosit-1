@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <!-- The API host: a thin composition root. It adds each service, sets up logging/errors/OpenAPI, and maps the features. No business logic here. -->
   <PropertyGroup>
     <AssemblyName>AgroConnect.Api</AssemblyName>
@@ -7,12 +7,20 @@
     <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
     <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)\..\..\openapi</OpenApiDocumentsDirectory>
     <OpenApiGenerateDocumentsOptions>--file-name agroconnect</OpenApiGenerateDocumentsOptions>
+    <UserSecretsId>7e7de67f-7899-4075-b8fe-8f6a479c2b63</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Services\Libs\SharedLibrary\SharedLibrary.csproj" />
     <ProjectReference Include="..\..\Services\Libs\Data\Data.csproj" />
     <ProjectReference Include="..\..\Services\PlatformService\PlatformService.csproj" />
     <ProjectReference Include="..\..\Services\AuthService\AuthService.csproj" />
+    <ProjectReference Include="..\..\Services\FarmerService\FarmerService.csproj" />
+    <ProjectReference Include="..\..\Services\SyncService\SyncService.csproj" />
+    <ProjectReference Include="..\..\Services\AdminService\AdminService.csproj" />
+    <ProjectReference Include="..\..\Services\MoneyService\MoneyService.csproj" />
+    <ProjectReference Include="..\..\Services\UssdService\UssdService.csproj" />
+    <ProjectReference Include="..\..\Services\HelpService\HelpService.csproj" />
+    <ProjectReference Include="..\..\Services\SpeechService\SpeechService.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
