@@ -84,6 +84,17 @@ public sealed class PaystackGatewayTests
     }
 
     [Fact]
+    public async Task A_declined_charge_gives_paystacks_own_reason()
+    {
+        var (gateway, _) = Create("""{"status":false,"message":"Charge attempted","data":{"status":"failed","message":"Declined. Please use the test mobile money number since you are doing a test transaction."}}""", HttpStatusCode.BadRequest);
+
+        var result = await gateway.ChargeAsync("agc_9", 100, "e@x.app", "0240001234", MobileNetwork.Mtn, CancellationToken.None);
+
+        Assert.Equal(PaymentStatus.Failed, result.Status);
+        Assert.StartsWith("Declined. Please use the test mobile money number", result.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task An_answer_that_is_not_json_is_a_failed_payment()
     {
         var (gateway, _) = Create("<html>Bad gateway</html>", HttpStatusCode.BadGateway);

@@ -118,7 +118,14 @@ public sealed class PaystackGateway(HttpClient http) : IPaymentGateway
     {
         if (!reply.Ok)
         {
-            return new GatewayResult(PaymentStatus.Failed, reply.Message);
+            // A refusal can carry the real reason in data.message ("Declined. Please use the test mobile money number…").
+            var reason = reply.Data.ValueKind == JsonValueKind.Object
+                && reply.Data.TryGetProperty("message", out var m)
+                && m.ValueKind == JsonValueKind.String
+                && !string.IsNullOrWhiteSpace(m.GetString())
+                    ? m.GetString()
+                    : reply.Message;
+            return new GatewayResult(PaymentStatus.Failed, reason);
         }
 
         var status = reply.Data.TryGetProperty("status", out var s) ? s.GetString() : null;
