@@ -15,15 +15,16 @@ describe("profile", () => {
     )
   })
 
-  it("keeps English: the other languages are not translated yet", async () => {
+  it("switches the app to Twi and remembers it; Dagbani is not translated yet", async () => {
     const { router } = renderRoute("/profile/language")
     expect(await screen.findByRole("radio", { name: /English/ })).toBeChecked()
     expect(screen.getByRole("radio", { name: /Dagbanli/ })).toBeDisabled()
-    await userEvent.click(screen.getByRole("radio", { name: /Dagbanli/ }))
-    expect(i18n.language).toBe("en")
-    await userEvent.click(screen.getByRole("button", { name: "Save" }))
+    await userEvent.click(screen.getByRole("radio", { name: /Twi/ }))
+    // The screen previews Twi at once, so Save is now "Kora"
+    await userEvent.click(await screen.findByRole("button", { name: "Kora" }))
     await waitFor(() => expect(router.state.location.pathname).toBe("/profile"))
-    expect(localStorage.getItem("agroconnect.lang")).toBe("en")
+    expect(i18n.language).toBe("tw")
+    expect(localStorage.getItem("agroconnect.lang")).toBe("tw")
   })
 
   it("asks before logging out, then signs out", async () => {
