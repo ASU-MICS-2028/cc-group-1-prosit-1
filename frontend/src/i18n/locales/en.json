@@ -970,7 +970,8 @@
       "for": "For",
       "payTo": "Pay to",
       "waiting": "Waiting for the buyer",
-      "another": "Ask another buyer"
+      "another": "Ask another buyer",
+      "amountCedis": "Amount (GH₵)"
     },
     "linkFirst": "No mobile money linked yet",
     "linkFirstHint": "Link your mobile money",
@@ -1387,5 +1388,16 @@
     "note": "Changing country moves you to that country's prices, languages and data store. Farmers you registered stay in {{country}}.",
     "laterLanguages": "Coming in a later phase",
     "laterLanguage": "{{country}} · coming in a later phase"
+  },
+  "validate": {
+    "required": "Fill this in.",
+    "phone": "Enter a Ghana mobile number, like 024 000 0000.",
+    "ownPhone": "That is your own number. Enter the buyer's number.",
+    "fullName": "Enter a first name and a surname, letters only.",
+    "amountMin": "Enter at least GH₵ {{min}}.",
+    "amountMax": "The most at once is GH₵ {{max}}.",
+    "whole": "Whole cedis only, numbers only.",
+    "fix": "Check the fields marked in red.",
+    "taken": "Someone already signs in with this number."
   }
 }

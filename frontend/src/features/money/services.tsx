@@ -1,9 +1,10 @@
 import { AlertTriangle, CheckCircle2 } from "lucide-react"
 import { useId, useState } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import type { TFunction } from "i18next"
 import { useTranslation } from "react-i18next"
 import { ChoiceChips } from "@/components/form/ChoiceChips"
+import { FieldError } from "@/components/form/FieldError"
 import { FieldLabel } from "@/components/form/FieldLabel"
 import { TextField } from "@/components/form/TextField"
 import {
@@ -14,6 +15,10 @@ import {
   TermsCard,
 } from "@/components/Flow"
 import { IllustrationCard } from "@/components/IllustrationCard"
+import { Button } from "@/components/ui/button"
+import { getSession } from "@/auth/session"
+import { toE164 } from "@/lib/phone"
+import { amount as checkAmount, ghanaPhone } from "@/lib/validate"
 import { cedis, insurance, loanOffer, wallet } from "@/features/sample/data"
 
 function loanTerms(amount: number, t: TFunction): [string, string][] {
@@ -230,10 +235,29 @@ export function Insured() {
 /** P3 · 12 Get paid: ask a buyer to pay by mobile money. */
 export function GetPaid() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const cropLabel = useId()
-  const [crop, setCrop] = useState("maize")
-  const [amount, setAmount] = useState("1200")
-  const [buyer, setBuyer] = useState("024 555 0182")
+  const own = getSession()?.user.phone ?? null
+  const [crop, setCrop] = useState<(typeof crops)[number] | null>(null)
+  const [amount, setAmount] = useState("")
+  const [buyer, setBuyer] = useState("")
+  const [tried, setTried] = useState(false)
+  const problems = {
+    crop: crop ? null : ("validate.required" as const),
+    amount: checkAmount(amount),
+    buyer: ghanaPhone(buyer, own),
+  }
+  const show = (k: keyof typeof problems) =>
+    tried && problems[k] ? t(problems[k], { min: 1, max: "10,000" }) : undefined
+
+  function send() {
+    setTried(true)
+    if (Object.values(problems).some(Boolean)) return
+    void navigate("/farmer/money/get-paid/sent", {
+      state: { crop, amount: Number(amount), buyer: toE164(buyer) },
+    })
+  }
+
   return (
     <FlowPage
       title={t("money.getPaid.title")}
@@ -241,12 +265,9 @@ export function GetPaid() {
       back="/farmer/money"
       sample
       footer={
-        <ButtonLink
-          to="/farmer/money/get-paid/sent"
-          state={{ crop, amount: Number(amount), buyer }}
-        >
+        <Button size="xl" className="w-full" onClick={send}>
           {t("money.getPaid.send")}
-        </ButtonLink>
+        </Button>
       }
     >
       <FieldLabel id={cropLabel} audioKey="money-get-paid-crop">
@@ -261,15 +282,20 @@ export function GetPaid() {
         value={crop}
         onChange={(v) => setCrop(v)}
       />
+      <FieldError id="gp-crop-error" message={show("crop")} />
       <FieldLabel htmlFor="gp-amount" audioKey="money-get-paid-amount">
-        {t("money.getPaid.amount")}
+        {t("money.getPaid.amountCedis")}
       </FieldLabel>
       <TextField
         id="gp-amount"
         value={amount}
         inputMode="numeric"
-        onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, ""))}
+        placeholder="1200"
+        invalid={Boolean(show("amount"))}
+        aria-describedby={show("amount") ? "gp-amount-error" : undefined}
+        onChange={(e) => setAmount(e.target.value)}
       />
+      <FieldError id="gp-amount-error" message={show("amount")} />
       <FieldLabel htmlFor="gp-buyer" audioKey="money-get-paid-buyer">
         {t("money.getPaid.buyer")}
       </FieldLabel>
@@ -277,8 +303,13 @@ export function GetPaid() {
         id="gp-buyer"
         value={buyer}
         inputMode="tel"
+        autoComplete="tel"
+        placeholder="024 000 0000"
+        invalid={Boolean(show("buyer"))}
+        aria-describedby={show("buyer") ? "gp-buyer-error" : undefined}
         onChange={(e) => setBuyer(e.target.value)}
       />
+      <FieldError id="gp-buyer-error" message={show("buyer")} />
       <InfoCard
         tone="cream"
         title={t("money.getPaid.share")}
