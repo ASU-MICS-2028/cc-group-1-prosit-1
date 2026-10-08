@@ -657,7 +657,14 @@
       "thisWeek": "This week",
       "trend": "{{crop}} · {{market}} · 30 days",
       "perKg": "{{price}} per kg",
-      "yourCrop": "Your crop"
+      "yourCrop": "Your crop",
+      "trendLabel": "Price over the last 30 days: low {{low}}, high {{high}}, today {{today}} per kg",
+      "today": "Today",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago",
+      "axis": "GH₵ per kg",
+      "high": "High {{price}}",
+      "low": "Low {{price}}"
     },
     "weather": {
       "title": "Weather",
@@ -740,7 +747,28 @@
       "couldReach": "Could reach",
       "range": "{{low}} to {{high}} bags",
       "crop": "Crop",
-      "when": "When"
+      "when": "When",
+      "worthTitle": "What it could be worth",
+      "worthRange": "{{low}} to {{high}}",
+      "worthNote": "At today's price in {{market}}. Prices change; selling together often pays more.",
+      "seePrices": "See today's prices",
+      "whenTitle": "Time to harvest",
+      "now": "Harvest time ({{month}})",
+      "inMonths_one": "About {{count}} month ({{month}})",
+      "inMonths_other": "About {{count}} months ({{month}})",
+      "basedOn": "This forecast is based on",
+      "soil": "{{soil}} soil",
+      "wrong": "Something wrong? Ask your officer to update your farm.",
+      "tipsTitle": "Reach the higher number",
+      "tips": {
+        "spacing": "Plant at the right spacing",
+        "pests": "Check for pests every week",
+        "soil": "Feed the soil with compost",
+        "storage": "Dry and store the grain well",
+        "check": "See a sick plant? Check my crop"
+      },
+      "lesson": "Lesson: {{title}}",
+      "passed": "Harvested in {{month}}; next season's comes after planting"
     },
     "cooperative": {
       "title": "My cooperative",

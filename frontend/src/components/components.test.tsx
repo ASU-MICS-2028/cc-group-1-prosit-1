@@ -42,7 +42,10 @@ describe("AudioButton", () => {
         rate = 1
         onend?: () => void
         onerror?: () => void
-        constructor(public text: string) {}
+        text: string
+        constructor(text: string) {
+          this.text = text
+        }
       }
     )
     vi.stubGlobal("speechSynthesis", {
