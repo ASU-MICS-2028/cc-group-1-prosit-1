@@ -31,6 +31,7 @@ export type Access = "active" | "checkIn" | "phoneLost" | "off"
 export interface Agent {
   id: string
   name: string
+  phone: string
   district: string
   farmers: number | null
   lastSync: string
@@ -43,6 +44,7 @@ export const agents: readonly Agent[] = [
   {
     id: "a1",
     name: "Fuseini Alhassan",
+    phone: "+233240000001",
     district: "Savelugu",
     farmers: 312,
     lastSync: "Today 08:14",
@@ -52,6 +54,7 @@ export const agents: readonly Agent[] = [
   {
     id: "a2",
     name: "Kofi Asante",
+    phone: "+233240000003",
     district: "Tolon",
     farmers: 286,
     lastSync: "Yesterday",
@@ -61,6 +64,7 @@ export const agents: readonly Agent[] = [
   {
     id: "a3",
     name: "Abena Darko",
+    phone: "+233240000004",
     district: "Kumbungu",
     farmers: 241,
     lastSync: "3 days ago",
@@ -70,6 +74,7 @@ export const agents: readonly Agent[] = [
   {
     id: "a4",
     name: "Ibrahim Musah",
+    phone: "+233240000005",
     district: "Tamale Metro",
     farmers: 198,
     lastSync: "12 days ago",
@@ -79,6 +84,7 @@ export const agents: readonly Agent[] = [
   {
     id: "a5",
     name: "Esi Owusu",
+    phone: "+233240000009",
     district: "Region office",
     farmers: null,
     lastSync: "Today 09:02",
@@ -157,7 +163,8 @@ export interface HelpRequest {
   via: "call" | "message" | "ussd"
   place: string
   sent: string
-  voiceNote?: string
+  /** A voice note (sample: read by the device voice until recordings are stored) */
+  voiceNote?: { length: string; transcript: string }
   suggestion?: { text: string; reassignTo: string }
 }
 
@@ -173,7 +180,11 @@ export const helpRequests: readonly HelpRequest[] = [
     via: "call",
     place: "Tolon",
     sent: "crop photo and voice note",
-    voiceNote: "0:18",
+    voiceNote: {
+      length: "0:18",
+      transcript:
+        "Good morning. My maize leaves have holes and there is something like sawdust in the middle of the plant. I sent a photo two days ago. Please, can someone come and look?",
+    },
     suggestion: {
       text: "Kofi has 6 open requests this week. Fuseini (Savelugu, 4 km away) has 2. Remind Kofi, or give this request to Fuseini.",
       reassignTo: "Fuseini",

@@ -2,7 +2,7 @@ import { act, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import i18n from "@/i18n"
-import { speak, stopSpeech } from "@/lib/speech"
+import { listen, speak, stopSpeech } from "@/lib/speech"
 import { SpeechOverlay } from "./SpeechOverlay"
 
 /** The phone's voice, faked: keeps the last utterance so the test can play its events. */
@@ -91,5 +91,47 @@ describe("SpeechOverlay (Overlay · Playing Audio)", () => {
     })
     act(() => first.onend?.())
     expect(await screen.findByRole("dialog")).toBeInTheDocument()
+  })
+
+  it("plays a recording (a lesson, a voice note) in the overlay, and pauses it", async () => {
+    const audio = {
+      play: vi.fn().mockResolvedValue(undefined),
+      pause: vi.fn(),
+      ontimeupdate: null as null | (() => void),
+      onended: null as null | (() => void),
+      currentTime: 0,
+      duration: 20,
+    }
+    vi.stubGlobal(
+      "Audio",
+      class {
+        constructor() {
+          return audio
+        }
+      }
+    )
+    render(<SpeechOverlay />)
+    act(() => void listen("Lesson text", "/audio/en/lessons.maize-spacing.mp3"))
+    expect(await screen.findByRole("dialog")).toBeInTheDocument()
+    expect(audio.play).toHaveBeenCalledOnce()
+    expect(voice.speak).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole("button", { name: "Pause" }))
+    expect(audio.pause).toHaveBeenCalled()
+    act(() => audio.onended?.())
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+  })
+
+  it("falls back to the device voice when the recording is missing", async () => {
+    vi.stubGlobal(
+      "Audio",
+      class {
+        play = () => Promise.reject(new Error("404"))
+        pause = () => {}
+      }
+    )
+    render(<SpeechOverlay />)
+    act(() => void listen("Lesson text", "/missing.mp3"))
+    await vi.waitFor(() => expect(voice.speak).toHaveBeenCalled())
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
   })
 })

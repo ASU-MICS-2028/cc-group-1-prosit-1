@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { getLessons } from "@/api/farmer"
 import { Button } from "@/components/ui/button"
 import { promptAudio } from "@/lib/audio"
-import { speak } from "@/lib/speech"
+import { listen } from "@/lib/speech"
 import { NoDataYet } from "./DataStatus"
 import { FarmerPage } from "./FarmerPage"
 import { useServerData } from "./useServerData"
@@ -16,10 +16,9 @@ type LessonId =
   | "selling-together"
   | "mobile-money-safety"
 
-/** Plays the lesson's recording; until one exists for the language, the device voice reads it. */
+/** Plays the lesson in the Playing overlay: its recording, or the device voice until one exists. */
 function play(id: string, text: string) {
-  if (typeof Audio === "undefined") return speak(text)
-  new Audio(promptAudio(`lessons.${id}`)).play().catch(() => speak(text))
+  listen(text, promptAudio(`lessons.${id}`))
 }
 
 /** Lessons: short audio lessons on storage, pests, planting, soil, selling and money. */

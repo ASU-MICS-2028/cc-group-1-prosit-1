@@ -165,6 +165,7 @@ export function Component() {
         <AudioButton
           src={promptAudio("farmerHome.welcome")}
           label={t("farmerHome.listen")}
+          text={`${t("farmerHome.akwaaba")} ${name.split(" ")[0]}. ${t("farmerHome.youAre")} ${t("farmerHome.registered")} ${t("farmerHome.withMofa")}`}
           className="size-11 bg-secondary"
         />
       </header>

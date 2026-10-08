@@ -60,9 +60,9 @@ describe("farmer money", () => {
     ).toBeInTheDocument()
     for (const service of [
       /Buy inputs/,
-      /Seed loan/,
-      /Crop insurance/,
-      /Ask a buyer/,
+      /Get a loan/,
+      /Insure crops/,
+      /From buyers/,
     ])
       expect(screen.getByRole("link", { name: service })).toBeInTheDocument()
     expect(await screen.findByText("Tolon Agro Inputs")).toBeInTheDocument()
@@ -210,8 +210,38 @@ describe("farmer money", () => {
   it("asks a buyer to pay", async () => {
     renderRoute("/farmer/money/get-paid", { as: "farmer" })
     expect(await screen.findByText("What did you sell?")).toBeInTheDocument()
+    // nothing filled in: each field says what is missing
+    await userEvent.click(screen.getByRole("button", { name: "Send request" }))
+    expect(screen.getAllByText("Fill this in.")).toHaveLength(3)
     await userEvent.click(screen.getByRole("radio", { name: "Groundnut" }))
-    await go("Send request")
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Amount (GH₵)" }),
+      "20000"
+    )
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Buyer's phone number" }),
+      "12345"
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Send request" }))
+    expect(
+      screen.getByText("The most at once is GH₵ 10,000.")
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText("Enter a Ghana mobile number, like 024 000 0000.")
+    ).toBeInTheDocument()
+    await userEvent.clear(screen.getByRole("textbox", { name: "Amount (GH₵)" }))
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Amount (GH₵)" }),
+      "1200"
+    )
+    await userEvent.clear(
+      screen.getByRole("textbox", { name: "Buyer's phone number" })
+    )
+    await userEvent.type(
+      screen.getByRole("textbox", { name: "Buyer's phone number" }),
+      "024 555 0182"
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Send request" }))
     expect(await screen.findByText("Request sent")).toBeInTheDocument()
     expect(screen.getByText("Groundnut")).toBeInTheDocument()
   })

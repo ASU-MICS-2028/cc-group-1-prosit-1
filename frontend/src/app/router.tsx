@@ -13,6 +13,10 @@ export const routes: RouteObject[] = [
     children: [
       { path: "/welcome", lazy: () => import("@/features/start/WelcomePage") },
       {
+        path: "/country",
+        lazy: () => import("@/features/country/CountryPage"),
+      },
+      {
         path: "/language",
         lazy: () => import("@/features/start/LanguagePage"),
       },
@@ -277,6 +281,14 @@ export const routes: RouteObject[] = [
         lazy: () => import("@/features/farmer/LessonsPage"),
       },
       {
+        path: "profile/country",
+        lazy: () => import("@/features/country/CountrySettingsPage"),
+      },
+      {
+        path: "profile/country/change",
+        lazy: () => import("@/features/country/ChangeCountryPage"),
+      },
+      {
         path: "profile/language",
         handle: { hideBottomNav: true },
         lazy: () => import("@/features/account/ChangeLanguagePage"),
@@ -448,6 +460,14 @@ export const routes: RouteObject[] = [
       {
         path: "profile",
         lazy: () => import("@/features/profile/ProfilePage"),
+      },
+      {
+        path: "profile/country",
+        lazy: () => import("@/features/country/CountrySettingsPage"),
+      },
+      {
+        path: "profile/country/change",
+        lazy: () => import("@/features/country/ChangeCountryPage"),
       },
       {
         path: "profile/language",

@@ -124,11 +124,19 @@ export function PaymentApproval() {
             id="payment-code"
             inputMode="numeric"
             autoComplete="one-time-code"
+            maxLength={8}
             value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="h-12 w-full rounded-full border bg-card px-5 text-base outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            // digits only: network codes are 4 to 8 numbers
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            aria-invalid={code.length > 0 && code.length < 4 ? true : undefined}
+            className="h-12 w-full rounded-full border bg-card px-5 text-base tracking-widest outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           />
-          <Button type="submit" size="xl" className="w-full" disabled={!code}>
+          <Button
+            type="submit"
+            size="xl"
+            className="w-full"
+            disabled={code.length < 4}
+          >
             {t("money.pay.sendCode")}
           </Button>
           {error ? (

@@ -16,11 +16,15 @@ import {
 import { useId, useState, type ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { ChoiceChips } from "@/components/form/ChoiceChips"
+import { FieldError } from "@/components/form/FieldError"
 import { TextField } from "@/components/form/TextField"
 import { LaterPhaseButton, SampleBadge } from "@/components/Flow"
 import { Sheet } from "@/components/Sheet"
 import { Button } from "@/components/ui/button"
 import { cedis } from "@/features/sample/data"
+import { toE164 } from "@/lib/phone"
+import { listen } from "@/lib/speech"
+import { fullName, ghanaPhone, required, type Problem } from "@/lib/validate"
 import { cn } from "@/lib/utils"
 import {
   adminCooperative,
@@ -560,28 +564,49 @@ function AddPerson({
   const [region, setRegion] = useState("Northern")
   const [district, setDistrict] = useState("")
   const [tried, setTried] = useState(false)
-  const missing = name.trim() === "" || phone.replace(/\D/g, "").length < 9
+  // Each field's problem: a real name, a Ghana number not already an agent's, a region, and a district for officers.
+  const problems: Record<string, Problem | "validate.taken" | null> = {
+    "person-name": fullName(name),
+    "person-phone":
+      ghanaPhone(phone) ??
+      (agents.some((a) => a.phone === toE164(phone)) ? "validate.taken" : null),
+    "person-region": required(region),
+    "person-district": role === "officer" ? required(district) : null,
+  }
+  const missing = Object.values(problems).some(Boolean)
 
   const field = (
     id: string,
     label: string,
     value: string,
     set: (v: string) => void,
-    extra: { inputMode?: "tel"; autoComplete?: string } = {}
-  ) => (
-    <div className="space-y-2">
-      <label htmlFor={id} className="block text-base text-foreground">
-        {label}
-      </label>
-      <TextField
-        id={id}
-        value={value}
-        onChange={(e) => set(e.target.value)}
-        invalid={tried && value.trim() === "" && id !== "person-district"}
-        {...extra}
-      />
-    </div>
-  )
+    extra: {
+      inputMode?: "tel"
+      autoComplete?: string
+      placeholder?: string
+    } = {}
+  ) => {
+    const problem = tried ? problems[id] : null
+    return (
+      <div className="space-y-2">
+        <label htmlFor={id} className="block text-base text-foreground">
+          {label}
+        </label>
+        <TextField
+          id={id}
+          value={value}
+          onChange={(e) => set(e.target.value)}
+          invalid={Boolean(problem)}
+          aria-describedby={problem ? `${id}-error` : undefined}
+          {...extra}
+        />
+        <FieldError
+          id={`${id}-error`}
+          message={problem ? t(problem) : undefined}
+        />
+      </div>
+    )
+  }
 
   return (
     <Dialog.Root open={open} onOpenChange={(next) => (next ? null : onClose())}>
@@ -618,6 +643,7 @@ function AddPerson({
             setPhone,
             {
               inputMode: "tel",
+              placeholder: "024 000 0000",
             }
           )}
           {field(
@@ -638,8 +664,8 @@ function AddPerson({
             {t("adminPages.person.note")}
           </p>
           {tried && missing ? (
-            <p role="alert" className="text-sm font-medium text-destructive">
-              {t("adminPages.person.missing")}
+            <p className="text-sm font-medium text-destructive">
+              {t("validate.fix")}
             </p>
           ) : null}
           <div className="mt-auto grid grid-cols-2 gap-3 pt-4">
@@ -877,15 +903,20 @@ export function HelpDesk() {
               : t("adminPages.help.unassigned", { place: open.place })}
           </p>
           {open.voiceNote ? (
-            <LaterPhaseButton className="gap-3 self-start pl-2">
+            <Button
+              size="xl"
+              variant="secondary"
+              className="gap-3 self-start pl-2 text-primary"
+              onClick={() => listen(open.voiceNote!.transcript)}
+            >
               <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <Play aria-hidden className="size-5" />
               </span>
               {t("adminPages.help.play", {
                 farmer: open.farmer.split(" ")[0],
-                length: open.voiceNote,
+                length: open.voiceNote.length,
               })}
-            </LaterPhaseButton>
+            </Button>
           ) : null}
           <p className="text-sm text-muted-foreground">
             {t("adminPages.help.adviceFrom")}

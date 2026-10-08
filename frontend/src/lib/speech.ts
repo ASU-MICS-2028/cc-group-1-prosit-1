@@ -45,6 +45,8 @@ const canSpeak = () =>
  */
 export function speak(text: string): boolean {
   if (!canSpeak()) return false
+  stopQuiet()
+  stopRecording()
   window.speechSynthesis.cancel() // a second tap restarts, never stacks
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = `${i18n.language}-GH`
@@ -74,8 +76,10 @@ export function speak(text: string): boolean {
 let reading: SpeechSynthesisUtterance | null = null
 
 export function pauseSpeech() {
-  if (!current || current.paused || !canSpeak()) return
-  window.speechSynthesis.pause()
+  if (!current || current.paused) return
+  if (player) player.pause()
+  else if (canSpeak()) window.speechSynthesis.pause()
+  else return
   set({
     ...current,
     paused: true,
@@ -85,14 +89,129 @@ export function pauseSpeech() {
 }
 
 export function resumeSpeech() {
-  if (!current || !current.paused || !canSpeak()) return
-  window.speechSynthesis.resume()
+  if (!current || !current.paused) return
+  if (player) void player.play().catch(() => {})
+  else if (canSpeak()) window.speechSynthesis.resume()
+  else return
   set({ ...current, paused: false, since: Date.now() })
 }
 
 /** Stops reading and closes the overlay. */
 export function stopSpeech() {
   reading = null
+  stopRecording()
   if (canSpeak()) window.speechSynthesis.cancel()
   set(null)
+}
+
+// ---------- Recordings in the overlay ----------
+
+/** The recording playing in the overlay, if it is a recording and not the device voice. */
+let player: HTMLAudioElement | null = null
+
+function stopRecording() {
+  if (!player) return
+  const was = player
+  player = null
+  was.pause()
+}
+
+/**
+ * Plays something long in the Playing overlay (a lesson, a voice note, a profile): the recording at
+ * `src` when there is one, otherwise the device voice reads `text`. Pause, resume and stop work the
+ * same for both.
+ */
+export function listen(text: string, src?: string): boolean {
+  stopQuiet()
+  stopSpeech()
+  if (!src || typeof Audio === "undefined") return speak(text)
+  const audio = new Audio(src)
+  player = audio
+  set({
+    language: i18n.language,
+    progress: 0,
+    paused: false,
+    elapsedBefore: 0,
+    since: Date.now(),
+  })
+  audio.ontimeupdate = () => {
+    if (player === audio && current && audio.duration > 0)
+      set({ ...current, progress: audio.currentTime / audio.duration })
+  }
+  audio.onended = () => {
+    if (player !== audio) return
+    player = null
+    set(null)
+  }
+  audio.play().catch(() => {
+    // no recording for this language yet: the device voice reads the text instead
+    if (player !== audio) return
+    player = null
+    speak(text)
+  })
+  return true
+}
+
+// ---------- Speaker buttons (no overlay) ----------
+
+/**
+ * The small round speaker buttons beside a question, a label or a language play without the overlay:
+ * one tap plays, the next tap stops. One at a time across the app. Recording first, device voice after.
+ */
+let quiet: { key: string; stop: () => void } | null = null
+const quietListeners = new Set<() => void>()
+
+function setQuiet(next: typeof quiet) {
+  quiet = next
+  quietListeners.forEach((notify) => notify())
+}
+
+/** Which speaker button is playing (its key), or null. */
+export function useQuietKey(): string | null {
+  return useSyncExternalStore(
+    (notify) => {
+      quietListeners.add(notify)
+      return () => quietListeners.delete(notify)
+    },
+    () => quiet?.key ?? null,
+    () => null
+  )
+}
+
+export function stopQuiet() {
+  if (!quiet) return
+  const was = quiet
+  setQuiet(null)
+  was.stop()
+}
+
+function speakQuietly(key: string, text: string) {
+  if (!canSpeak() || text.trim() === "") return setQuiet(null)
+  window.speechSynthesis.cancel()
+  const utterance = new SpeechSynthesisUtterance(text)
+  utterance.lang = `${i18n.language}-GH`
+  utterance.rate = 0.9
+  const done = () => {
+    if (quiet?.key === key) setQuiet(null)
+  }
+  utterance.onend = done
+  utterance.onerror = done
+  setQuiet({ key, stop: () => canSpeak() && window.speechSynthesis.cancel() })
+  window.speechSynthesis.speak(utterance)
+}
+
+/** Plays (or, when it is already playing, stops) one speaker button. */
+export function toggleQuiet(key: string, text: string, src?: string) {
+  if (quiet?.key === key) return stopQuiet()
+  stopQuiet()
+  stopSpeech()
+  if (!src || typeof Audio === "undefined") return speakQuietly(key, text)
+  const audio = new Audio(src)
+  setQuiet({ key, stop: () => audio.pause() })
+  audio.onended = () => {
+    if (quiet?.key === key) setQuiet(null)
+  }
+  audio.play().catch(() => {
+    if (quiet?.key === key) speakQuietly(key, text)
+  })
 }

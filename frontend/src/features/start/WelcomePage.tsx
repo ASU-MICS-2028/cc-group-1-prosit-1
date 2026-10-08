@@ -15,7 +15,7 @@ export function Component() {
       brand={{ tagline: t("start.brand"), illustration: "farmer-home" }}
       footer={
         <Link
-          to="/language"
+          to="/country"
           className={cn(buttonVariants({ size: "xl" }), "w-full")}
         >
           {t("start.getStarted")}

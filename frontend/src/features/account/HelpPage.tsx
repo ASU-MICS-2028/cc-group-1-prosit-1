@@ -22,9 +22,11 @@ export function Component() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
+      {/* Farmers: Help is a bottom-bar tab, so no Back. Officers open it from Profile. */}
       <BackHeader
         title={t("help.title")}
-        to={farmer ? "/farmer/profile" : "/profile"}
+        to={farmer ? false : "/profile"}
+        tone={farmer ? "green" : "default"}
       />
       <div className="flex h-45 items-center justify-center rounded-[30px] bg-cream">
         <img
@@ -67,6 +69,7 @@ export function Component() {
               <AudioButton
                 src={promptAudio(`help.${topic}`)}
                 label={t(`help.topics.${topic}.title`)}
+                text={`${t(`help.topics.${topic}.title`)}. ${t(`help.topics.${topic}.text`)}`}
                 className="size-10 bg-secondary"
               />
             </div>

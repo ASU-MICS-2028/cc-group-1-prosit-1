@@ -3,6 +3,7 @@ import {
   Download,
   Globe,
   Info,
+  Banknote,
   LogOut,
   RefreshCw,
   CircleHelp,
@@ -16,6 +17,7 @@ import { Avatar } from "@/features/farmers/FarmerRow"
 import { countByStatus, useFarmers } from "@/features/farmers/farmers"
 import { useLastSync } from "@/features/sync/sync"
 import { LANGUAGES } from "@/i18n"
+import { useCountry } from "@/lib/country"
 import { formatTime, formatShortDate, isToday } from "@/lib/dates"
 import { LogoutSheet } from "./LogoutSheet"
 import { LostPhoneSheet } from "./LostPhoneSheet"
@@ -64,6 +66,7 @@ export function ProfileView({
   const usedMb = useStorageUsedMb()
   const [loggingOut, setLoggingOut] = useState(false)
   const [reportingPhone, setReportingPhone] = useState(false)
+  const country = useCountry()
   const language =
     LANGUAGES.find((l) => l.code === i18n.language)?.label ?? "English"
   const lastSent = lastSync
@@ -94,6 +97,12 @@ export function ProfileView({
             title={t("profile.languageTitle")}
             subtitle={language}
             to={`${base}/profile/language`}
+          />
+          <ListRow
+            icon={Banknote}
+            title={t("country.settingsTitle")}
+            subtitle={`${country.name} · ${country.symbol}`}
+            to={`${base}/profile/country`}
           />
           {officer ? (
             <>

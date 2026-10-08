@@ -36,7 +36,7 @@ afterEach(() => {
 })
 
 describe("start screens", () => {
-  it("welcomes a new phone and leads to the language choice", async () => {
+  it("welcomes a new phone and leads to the country, then the language", async () => {
     const { router } = renderRoute("/", { firstRun: true })
     expect(
       await screen.findByRole("heading", { name: "Farmer support for Ghana" })
@@ -44,8 +44,29 @@ describe("start screens", () => {
     expect(router.state.location.pathname).toBe("/welcome")
     expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute(
       "href",
-      "/language"
+      "/country"
     )
+  })
+
+  it("chooses the country: Ghana now, Nigeria and Kenya in a later phase", async () => {
+    const { router } = renderRoute("/country", { firstRun: true })
+    const ghana = await screen.findByRole("radio", { name: /Ghana/ })
+    expect(ghana).toBeChecked()
+    const nigeria = screen.getByRole("radio", { name: /Nigeria/ })
+    expect(nigeria).toHaveAttribute("aria-disabled", "true")
+    expect(nigeria).toHaveTextContent("Coming in a later phase")
+    await userEvent.click(nigeria)
+    expect(ghana).toBeChecked()
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }))
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/language")
+    )
+    expect(localStorage.getItem("agroconnect.country")).toBe("GH")
+    // the language list names the later languages, not selectable
+    expect(await screen.findByText("Yorùbá")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("radio", { name: /Yorùbá/ })
+    ).not.toBeInTheDocument()
   })
 
   it("previews a language without saving it, then saves it on Continue", async () => {

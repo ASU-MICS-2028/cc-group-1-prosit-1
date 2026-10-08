@@ -657,7 +657,14 @@
       "thisWeek": "This week",
       "trend": "{{crop}} · {{market}} · 30 days",
       "perKg": "{{price}} per kg",
-      "yourCrop": "Your crop"
+      "yourCrop": "Your crop",
+      "trendLabel": "Price over the last 30 days: low {{low}}, high {{high}}, today {{today}} per kg",
+      "today": "Today",
+      "daysAgo_one": "{{count}} day ago",
+      "daysAgo_other": "{{count}} days ago",
+      "axis": "GH₵ per kg",
+      "high": "High {{price}}",
+      "low": "Low {{price}}"
     },
     "weather": {
       "title": "Weather",
@@ -740,7 +747,28 @@
       "couldReach": "Could reach",
       "range": "{{low}} to {{high}} bags",
       "crop": "Crop",
-      "when": "When"
+      "when": "When",
+      "worthTitle": "What it could be worth",
+      "worthRange": "{{low}} to {{high}}",
+      "worthNote": "At today's price in {{market}}. Prices change; selling together often pays more.",
+      "seePrices": "See today's prices",
+      "whenTitle": "Time to harvest",
+      "now": "Harvest time ({{month}})",
+      "inMonths_one": "About {{count}} month ({{month}})",
+      "inMonths_other": "About {{count}} months ({{month}})",
+      "basedOn": "This forecast is based on",
+      "soil": "{{soil}} soil",
+      "wrong": "Something wrong? Ask your officer to update your farm.",
+      "tipsTitle": "Reach the higher number",
+      "tips": {
+        "spacing": "Plant at the right spacing",
+        "pests": "Check for pests every week",
+        "soil": "Feed the soil with compost",
+        "storage": "Dry and store the grain well",
+        "check": "See a sick plant? Check my crop"
+      },
+      "lesson": "Lesson: {{title}}",
+      "passed": "Harvested in {{month}}; next season's comes after planting"
     },
     "cooperative": {
       "title": "My cooperative",
@@ -811,13 +839,13 @@
     "pinSafe": "Your PIN stays on your phone. The app never sees it.",
     "actions": {
       "buy": "Buy inputs",
-      "buyHint": "Seed and fertiliser from approved shops",
-      "loan": "Seed loan",
-      "loanHint": "Pay back after harvest",
-      "insure": "Crop insurance",
-      "insureHint": "Get paid if the rain fails",
+      "buyHint": "Seeds, fertiliser",
+      "loan": "Get a loan",
+      "loanHint": "For seeds and tools",
+      "insure": "Insure crops",
+      "insureHint": "Against bad rain",
       "getPaid": "Get paid",
-      "getPaidHint": "Ask a buyer to pay you"
+      "getPaidHint": "From buyers"
     },
     "recent": "Recent",
     "waitingNetwork": "Waiting for network",
@@ -942,7 +970,8 @@
       "for": "For",
       "payTo": "Pay to",
       "waiting": "Waiting for the buyer",
-      "another": "Ask another buyer"
+      "another": "Ask another buyer",
+      "amountCedis": "Amount (GH₵)"
     },
     "linkFirst": "No mobile money linked yet",
     "linkFirstHint": "Link your mobile money",
@@ -1343,5 +1372,32 @@
     "ratio": "Officer to farmers",
     "active": "Farmers active in the last 30 days",
     "channels": "How farmers reach us"
+  },
+  "country": {
+    "question": "Choose your country",
+    "hint": "This sets your money, languages and where your data is kept.",
+    "continue": "Continue",
+    "save": "Save",
+    "settingsTitle": "Country and money",
+    "country": "Country",
+    "money": "Money",
+    "unit": "Farm size in",
+    "unitHint": "New registrations start in this unit. You can still change it for each farm.",
+    "data": "Where your data is kept",
+    "dataWhere": "{{store}} · AWS Cape Town · encrypted",
+    "note": "Changing country moves you to that country's prices, languages and data store. Farmers you registered stay in {{country}}.",
+    "laterLanguages": "Coming in a later phase",
+    "laterLanguage": "{{country}} · coming in a later phase"
+  },
+  "validate": {
+    "required": "Fill this in.",
+    "phone": "Enter a Ghana mobile number, like 024 000 0000.",
+    "ownPhone": "That is your own number. Enter the buyer's number.",
+    "fullName": "Enter a first name and a surname, letters only.",
+    "amountMin": "Enter at least GH₵ {{min}}.",
+    "amountMax": "The most at once is GH₵ {{max}}.",
+    "whole": "Whole cedis only, numbers only.",
+    "fix": "Check the fields marked in red.",
+    "taken": "Someone already signs in with this number."
   }
 }

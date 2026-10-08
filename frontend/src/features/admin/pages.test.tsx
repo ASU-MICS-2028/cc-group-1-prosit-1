@@ -82,13 +82,23 @@ describe("admin pages on sample data", () => {
     await userEvent.click(
       within(panel).getByRole("button", { name: "Send invite" })
     )
-    expect(within(panel).getByRole("alert")).toHaveTextContent(
-      "Enter their full name and phone number."
+    expect(within(panel).getAllByText("Fill this in.").length).toBeGreaterThan(
+      0
     )
+    // one name only, and a number someone already uses
+    await userEvent.type(within(panel).getByLabelText("Full name"), "Amina")
     await userEvent.type(
-      within(panel).getByLabelText("Full name"),
-      "Amina Yakubu"
+      within(panel).getByLabelText("Phone number"),
+      "024 000 0001"
     )
+    expect(
+      within(panel).getByText("Enter a first name and a surname, letters only.")
+    ).toBeInTheDocument()
+    expect(
+      within(panel).getByText("Someone already signs in with this number.")
+    ).toBeInTheDocument()
+    await userEvent.type(within(panel).getByLabelText("Full name"), " Yakubu")
+    await userEvent.clear(within(panel).getByLabelText("Phone number"))
     await userEvent.type(
       within(panel).getByLabelText("Phone number"),
       "024 555 0192"

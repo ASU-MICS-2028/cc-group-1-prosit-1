@@ -53,13 +53,14 @@ export function Requests() {
   return (
     <div className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl leading-9 font-semibold text-primary">
-            {t("requests.title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("requests.subtitle")}
-          </p>
+        {/* Phones open Requests from a Home card, so Back goes Home; computers use the sidebar */}
+        <div className="min-w-0 flex-1">
+          <BackHeader
+            title={t("requests.title")}
+            subtitle={t("requests.subtitle")}
+            to={desktop ? false : "/"}
+            tone="green"
+          />
         </div>
         <div className="flex items-center gap-2">
           <SampleBadge />
