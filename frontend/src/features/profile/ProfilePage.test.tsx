@@ -15,25 +15,15 @@ describe("profile", () => {
     )
   })
 
-  it("changes and remembers the language only after Save", async () => {
+  it("keeps English: the other languages are not translated yet", async () => {
     const { router } = renderRoute("/profile/language")
     expect(await screen.findByRole("radio", { name: /English/ })).toBeChecked()
+    expect(screen.getByRole("radio", { name: /Dagbanli/ })).toBeDisabled()
     await userEvent.click(screen.getByRole("radio", { name: /Dagbanli/ }))
-    await waitFor(() => expect(i18n.language).toBe("dag")) // preview
-    expect(localStorage.getItem("agroconnect.lang")).toBe("en")
-
+    expect(i18n.language).toBe("en")
     await userEvent.click(screen.getByRole("button", { name: "Save" }))
     await waitFor(() => expect(router.state.location.pathname).toBe("/profile"))
-    expect(localStorage.getItem("agroconnect.lang")).toBe("dag")
-  })
-
-  it("puts the old language back when leaving without Save", async () => {
-    const { router } = renderRoute("/profile/language")
-    await userEvent.click(await screen.findByRole("radio", { name: /Twi/ }))
-    await waitFor(() => expect(i18n.language).toBe("tw"))
-    await userEvent.click(screen.getByRole("button", { name: "Back" }))
-    await waitFor(() => expect(router.state.location.pathname).toBe("/profile"))
-    await waitFor(() => expect(i18n.language).toBe("en"))
+    expect(localStorage.getItem("agroconnect.lang")).toBe("en")
   })
 
   it("asks before logging out, then signs out", async () => {

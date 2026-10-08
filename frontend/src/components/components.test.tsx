@@ -9,22 +9,26 @@ import { LanguageOptions } from "./LanguageOptions"
 import { StatusChip, SyncIcon } from "./SyncStatus"
 
 describe("LanguageOptions", () => {
-  it("lists the four languages with their English names and a speaker each", () => {
-    render(<LanguageOptions value="tw" onChange={() => {}} />)
-    const radios = screen.getAllByRole("radio")
-    expect(radios).toHaveLength(4)
-    expect(screen.getByRole("radio", { name: /Twi/ })).toBeChecked()
-    expect(screen.getByText("Akan")).toBeInTheDocument()
+  it("lists the four languages with a speaker each; only translated ones can be chosen", () => {
+    render(<LanguageOptions value="en" onChange={() => {}} />)
+    expect(screen.getAllByRole("radio")).toHaveLength(4)
+    expect(screen.getByRole("radio", { name: /English/ })).toBeChecked()
+    expect(screen.getByRole("radio", { name: /English/ })).toBeEnabled()
+    for (const later of [/Twi/, /Eʋegbe/, /Dagbanli/])
+      expect(screen.getByRole("radio", { name: later })).toBeDisabled()
+    expect(
+      screen.getByText("Akan · coming in a later phase")
+    ).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Listen to Dagbanli" })
     ).toBeInTheDocument()
   })
 
-  it("reports the language that was picked", async () => {
+  it("does not pick a language that is not translated yet", async () => {
     const onChange = vi.fn()
     render(<LanguageOptions value="en" onChange={onChange} />)
     await userEvent.click(screen.getByRole("radio", { name: /Eʋegbe/ }))
-    expect(onChange).toHaveBeenCalledWith("ee")
+    expect(onChange).not.toHaveBeenCalled()
   })
 })
 
