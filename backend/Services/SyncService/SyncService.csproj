@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- SyncService: receives what officers saved on their phones while offline (farmers, visits) and stores
+       it, one answer per record. The contract is in ADR 0029; the rules are in ADR 0032. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\SharedLibrary\SharedLibrary.csproj" />
+    <ProjectReference Include="..\Libs\Data\Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Langs\*.json" />
+  </ItemGroup>
+</Project>

@@ -93,7 +93,13 @@ export function Component() {
       <div className="flex items-center justify-between">
         <BackButton to={`/login/${role}`} />
         <span className="text-sm font-medium text-muted-foreground">
-          {t(role === "farmer" ? "login.farmerTag" : "login.officerTag")}
+          {t(
+            role === "farmer"
+              ? "login.farmerTag"
+              : role === "admin"
+                ? "login.adminTag"
+                : "login.officerTag"
+          )}
         </span>
       </div>
       <IllustrationCard name="phone-login" className="h-52.5 py-2 md:hidden" />
@@ -152,6 +158,11 @@ export function Component() {
             </>
           )}
         </p>
+        {waitLeft === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t("login.notRegistered")}
+          </p>
+        ) : null}
         {notice && waitLeft > 0 ? (
           <p className="text-sm font-medium text-primary">{notice}</p>
         ) : null}

@@ -21,7 +21,11 @@ public abstract class AuthTestBase(PostgresFixture database) : IAsyncLifetime
 {
     protected const string OfficerPhone = "+233240000001";
     protected const string FarmerPhone = "+233240001234";
-    protected const string Code = "123456";
+    /// <summary>The code "texted" in these tests (the generator is fixed so the test can type it).</summary>
+    protected const string Code = "482913";
+
+    /// <summary>The backup code for when SMS is not working.</summary>
+    protected const string BackupCode = "123456";
     private const string RegistrarPhone = "+233249999999";
 
     private AppUser? _registrar;
@@ -41,12 +45,12 @@ public abstract class AuthTestBase(PostgresFixture database) : IAsyncLifetime
     protected AuthOptions Settings { get; } = new()
     {
         SigningKey = TestSettings.SigningKey,
-        FixedCode = Code,
+        BackupCode = BackupCode,
     };
 
     protected IOptions<AuthOptions> Options => Microsoft.Extensions.Options.Options.Create(Settings);
 
-    protected ILoginCodeGenerator Generator => new LoginCodeGenerator(Options);
+    protected ILoginCodeGenerator Generator { get; } = Substitute.For<ILoginCodeGenerator>();
 
     protected ITokenIssuer Tokens => new JwtTokenIssuer(Options, Clock);
 
@@ -55,16 +59,20 @@ public abstract class AuthTestBase(PostgresFixture database) : IAsyncLifetime
         await Database.ResetAsync();
         Db = Database.CreateContext();
         Session.Language.Returns(Language.English);
+        Generator.NewCode().Returns(Code);
+        Sms.SendAsync(default, default!, default).ReturnsForAnyArgs(new SmsResult(SmsOutcome.Sent));
     }
 
     public async Task DisposeAsync() => await Db.DisposeAsync();
 
-    protected async Task<AppUser> AddOfficerAsync(string phone = OfficerPhone)
+    protected const string AdminPhone = "+233240000009";
+
+    protected async Task<AppUser> AddOfficerAsync(string phone = OfficerPhone, UserRole role = UserRole.Officer)
     {
         var officer = new AppUser
         {
             Id = Guid.CreateVersion7(),
-            Role = UserRole.Officer,
+            Role = role,
             PhoneE164 = phone,
             FullName = "Fuseini Alhassan",
             Region = "Northern",

@@ -1,0 +1,14 @@
+[
+  { "Lang": "en", "Key": "NOT_A_FARMER_ACCOUNT", "Text": "This account is not linked to a farm. Ask your extension officer." },
+  { "Lang": "en", "Key": "FARMER_NOT_FOUND", "Text": "We could not find your farm record. Ask your extension officer." },
+  { "Lang": "en", "Key": "HELP_EMPTY", "Text": "Say what the problem is: type it or record a voice note." },
+  { "Lang": "en", "Key": "HELP_TOO_LONG", "Text": "Keep it under 1,000 letters, or record a voice note." },
+  { "Lang": "en", "Key": "VOICE_NOTE_INVALID", "Text": "The voice note could not be read. Record it again, up to 2 minutes." },
+  { "Lang": "en", "Key": "HELP_NOT_FOUND", "Text": "We could not find that question." },
+  { "Lang": "en", "Key": "HELP_NOT_ANSWERED", "Text": "Your officer has not answered yet." },
+  { "Lang": "en", "Key": "ANSWER_REQUIRED", "Text": "Write your advice before sending it." },
+  { "Lang": "en", "Key": "ANSWER_TOO_LONG", "Text": "Keep the advice under 2,000 letters: it is sent by SMS." },
+  { "Lang": "en", "Key": "NOT_AN_OFFICER_ACCOUNT", "Text": "Only extension officers can do this." },
+  { "Lang": "en", "Key": "NOT_AN_ADMIN_ACCOUNT", "Text": "Only MoFA admins can do this." },
+  { "Lang": "en", "Key": "OFFICER_NOT_IN_AREA", "Text": "Choose an officer in your area." }
+]

@@ -1,6 +1,7 @@
 using AgroConnect.AuthService.Features;
 using AgroConnect.AuthService.Models;
 using AgroConnect.SharedLibrary.Enums;
+using AgroConnect.SharedLibrary.Providers.Interfaces;
 using AgroConnect.SharedLibrary.ValueObjects;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,15 @@ public sealed class RequestCodeTests(PostgresFixture database) : AuthTestBase(da
     }
 
     [Fact]
+    public async Task Says_so_when_the_sms_provider_cannot_send_the_code()
+    {
+        await AddOfficerAsync();
+        Sms.SendAsync(default, default!, default).ReturnsForAnyArgs(new SmsResult(SmsOutcome.Failed, "Insufficient balance"));
+
+        await ApiAssert.FailsAsync(StatusCodes.Status503ServiceUnavailable, "SMS_UNAVAILABLE", () => SendAsync(OfficerPhone, UserRole.Officer));
+    }
+
+    [Fact]
     public async Task Answers_the_same_for_an_unknown_number_but_sends_nothing()
     {
         var result = await SendAsync("0550000000", UserRole.Officer);
@@ -66,6 +76,18 @@ public sealed class RequestCodeTests(PostgresFixture database) : AuthTestBase(da
     }
 
     [Fact]
+    public async Task Texts_a_known_admin_but_not_an_officer_asking_as_admin()
+    {
+        await AddOfficerAsync(AdminPhone, UserRole.Admin);
+        await AddOfficerAsync();
+
+        await SendAsync(AdminPhone, UserRole.Admin);
+        await SendAsync(OfficerPhone, UserRole.Admin);
+
+        await Sms.Received(1).SendAsync(PhoneNumber.Parse(AdminPhone), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Rejects_a_number_that_is_not_a_Ghana_number() =>
         await ApiAssert.FailsAsync(StatusCodes.Status400BadRequest, "INVALID_PHONE", () => SendAsync("12345", UserRole.Officer));
 
@@ -83,9 +105,9 @@ public sealed class RequestCodeTests(PostgresFixture database) : AuthTestBase(da
     }
 
     [Fact]
-    public async Task Stops_after_five_codes_in_an_hour()
+    public async Task Stops_after_twenty_codes_in_an_hour()
     {
-        for (var i = 0; i < 5; i++)
+        for (var i = 0; i < 20; i++)
         {
             await SendAsync(OfficerPhone, UserRole.Officer);
             Clock.Advance(TimeSpan.FromMinutes(1));

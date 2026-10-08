@@ -6,9 +6,9 @@ export interface CodeScreenState {
   resendAfterSeconds: number
 }
 
-/** The role in the address (/login/officer, /login/farmer); anything else is treated as officer. */
+/** The role in the address (/login/officer, /login/farmer, /login/admin); anything else is treated as officer. */
 export function roleFrom(param: string | undefined): Role {
-  return param === "farmer" ? "farmer" : "officer"
+  return param === "farmer" || param === "admin" ? param : "officer"
 }
 
 /** 45 seconds as "0:45". */

@@ -1,3 +1,5 @@
+using AgroConnect.SharedLibrary.Enums;
+
 namespace AgroConnect.SharedLibrary.Security;
 
 /// <summary>Claim names in the sign-in token. Kept short: the token travels on every request over 2G.</summary>
@@ -13,4 +15,14 @@ public static class AuthPolicies
 {
     public const string Officer = "officer";
     public const string Farmer = "farmer";
+    public const string Admin = "admin";
+
+    /// <summary>The policy (and token role claim) for a role.</summary>
+    public static string For(UserRole role) => role switch
+    {
+        UserRole.Officer => Officer,
+        UserRole.Farmer => Farmer,
+        UserRole.Admin => Admin,
+        _ => throw new ArgumentOutOfRangeException(nameof(role), role, null),
+    };
 }

@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { renderRoute, testFarmer, testOfficer } from "@/test/renderRoute"
@@ -36,7 +36,7 @@ afterEach(() => {
 })
 
 describe("start screens", () => {
-  it("welcomes a new phone and leads to the language choice", async () => {
+  it("welcomes a new phone and leads to the country, then the language", async () => {
     const { router } = renderRoute("/", { firstRun: true })
     expect(
       await screen.findByRole("heading", { name: "Farmer support for Ghana" })
@@ -44,8 +44,29 @@ describe("start screens", () => {
     expect(router.state.location.pathname).toBe("/welcome")
     expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute(
       "href",
-      "/language"
+      "/country"
     )
+  })
+
+  it("chooses the country: Ghana now, Nigeria and Kenya in a later phase", async () => {
+    const { router } = renderRoute("/country", { firstRun: true })
+    const ghana = await screen.findByRole("radio", { name: /Ghana/ })
+    expect(ghana).toBeChecked()
+    const nigeria = screen.getByRole("radio", { name: /Nigeria/ })
+    expect(nigeria).toHaveAttribute("aria-disabled", "true")
+    expect(nigeria).toHaveTextContent("Coming in a later phase")
+    await userEvent.click(nigeria)
+    expect(ghana).toBeChecked()
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }))
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/language")
+    )
+    expect(localStorage.getItem("agroconnect.country")).toBe("GH")
+    // the language list names the later languages, not selectable
+    expect(await screen.findByText("Yorùbá")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("radio", { name: /Yorùbá/ })
+    ).not.toBeInTheDocument()
   })
 
   it("previews a language without saving it, then saves it on Continue", async () => {
@@ -96,7 +117,9 @@ describe("start screens", () => {
     await userEvent.type(screen.getByLabelText("Phone number"), "6")
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()
     expect(
-      screen.getByText("A shared family phone is fine.")
+      screen.getByText(
+        "New officer? Your MoFA admin adds you first, then you can log in."
+      )
     ).toBeInTheDocument()
   })
 
@@ -189,6 +212,11 @@ describe("start screens", () => {
       as: null,
       state: { phone: "+233240001234", resendAfterSeconds: 0 },
     })
+    expect(
+      await screen.findByText(
+        /Codes only go to numbers registered with AgroConnect/
+      )
+    ).toBeInTheDocument()
     await userEvent.click(
       await screen.findByRole("button", { name: "Resend code" })
     )
@@ -247,11 +275,20 @@ describe("start screens", () => {
     await userEvent.click(screen.getByRole("button", { name: "Verify" }))
 
     expect(
-      await screen.findByRole("heading", { name: "Hello, Ama Boateng" })
+      await screen.findByRole("heading", { name: "Ama" })
     ).toBeInTheDocument()
+    expect(screen.getByText("Saved with MoFA")).toBeInTheDocument()
     expect(router.state.location.pathname).toBe("/farmer")
 
-    await userEvent.click(screen.getByRole("button", { name: "Log out" }))
+    // Log out lives on Profile, behind "Log out?"
+    await userEvent.click(screen.getAllByRole("link", { name: "Profile" })[0])
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Log out" })
+    )
+    const sheet = await screen.findByRole("dialog", { name: "Log out?" })
+    await userEvent.click(
+      within(sheet).getByRole("button", { name: "Log out" })
+    )
     await waitFor(() => expect(router.state.location.pathname).toBe("/who"))
     expect(localStorage.getItem("agroconnect.session")).toBeNull()
   })
@@ -274,7 +311,8 @@ describe("log-in helpers", () => {
   it("reads the role from the address", () => {
     expect(roleFrom("farmer")).toBe("farmer")
     expect(roleFrom("officer")).toBe("officer")
-    expect(roleFrom("admin")).toBe("officer")
+    expect(roleFrom("admin")).toBe("admin")
+    expect(roleFrom("superuser")).toBe("officer")
     expect(roleFrom(undefined)).toBe("officer")
   })
 

@@ -48,14 +48,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "photos" {
   }
 }
 
-# Browsers upload straight to S3 with presigned PUT URLs.
-# TODO: replace "*" with the app's HTTPS origin once the domain exists.
+# Browsers upload straight to S3 with presigned PUT URLs. Allowed: the listed addresses plus the
+# environment's own CloudFront HTTPS address (cloudfront.tf).
 resource "aws_s3_bucket_cors_configuration" "photos" {
   for_each = var.environments
   bucket   = aws_s3_bucket.photos[each.key].id
   cors_rule {
     allowed_methods = ["PUT", "GET"]
-    allowed_origins = var.photo_upload_origins # only the app's own addresses (ADR 0026)
+    allowed_origins = concat( # only the app's own addresses (ADR 0026)
+      var.photo_upload_origins,
+      var.enable_cloudfront ? ["https://${aws_cloudfront_distribution.app[each.key].domain_name}"] : []
+    )
     allowed_headers = ["*"]
     max_age_seconds = 3000
   }

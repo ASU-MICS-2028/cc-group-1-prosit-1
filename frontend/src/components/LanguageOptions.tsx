@@ -35,6 +35,7 @@ export function LanguageOptions({
             <AudioButton
               src={`/audio/${language.code}/language.mp3`}
               label={t("common.listen", { language: language.label })}
+              text={language.label}
               className="size-12 bg-card"
             />
             <input

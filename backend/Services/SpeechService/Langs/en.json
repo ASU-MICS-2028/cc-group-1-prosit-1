@@ -1,0 +1,4 @@
+[
+  { "Lang": "en", "Key": "SPEECH_NOT_AVAILABLE", "Text": "Speech in this language is not available yet. The phone's own voice reads it instead." },
+  { "Lang": "en", "Key": "SPEECH_TEXT_INVALID", "Text": "Nothing to read, or too much at once (500 letters at most)." }
+]

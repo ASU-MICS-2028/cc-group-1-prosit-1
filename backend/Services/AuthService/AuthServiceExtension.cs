@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -26,7 +27,11 @@ public static class AuthServiceExtension
     {
         var authOptions = services.AddOptions<AuthOptions>()
             .Bind(configuration.GetSection(AuthOptions.Section))
-            .Validate(o => Encoding.UTF8.GetByteCount(o.SigningKey) >= 32, "Auth:SigningKey must be at least 32 bytes (set Auth__SigningKey).");
+            .Validate(o => Encoding.UTF8.GetByteCount(o.SigningKey) >= 32, "Auth:SigningKey must be at least 32 bytes (set Auth__SigningKey).")
+            .Validate(o => o.TokenLifetime > TimeSpan.Zero, "Auth:TokenLifetime must be longer than zero, e.g. 7.00:00:00.")
+            .Validate<IHostEnvironment>(
+                (o, environment) => !environment.IsProduction() || string.IsNullOrEmpty(o.BackupCode),
+                "Auth:BackupCode must be empty in production: anyone who knows a registered number could sign in.");
         if (!BuildTime.IsOpenApiExport)
         {
             authOptions.ValidateOnStart();
@@ -52,7 +57,8 @@ public static class AuthServiceExtension
 
         services.AddAuthorizationBuilder()
             .AddPolicy(AuthPolicies.Officer, policy => policy.RequireRole(AuthPolicies.Officer))
-            .AddPolicy(AuthPolicies.Farmer, policy => policy.RequireRole(AuthPolicies.Farmer));
+            .AddPolicy(AuthPolicies.Farmer, policy => policy.RequireRole(AuthPolicies.Farmer))
+            .AddPolicy(AuthPolicies.Admin, policy => policy.RequireRole(AuthPolicies.Admin));
 
         services.AddRateLimiter(limiter =>
         {
@@ -69,7 +75,6 @@ public static class AuthServiceExtension
 
         services.AddSingleton<ILoginCodeGenerator, LoginCodeGenerator>();
         services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
-        services.AddSingleton<ISmsSender, LogOnlySmsSender>();
 
         return services
             .AddMessages(typeof(AuthServiceExtension).Assembly)

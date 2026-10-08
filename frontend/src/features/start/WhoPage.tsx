@@ -4,28 +4,49 @@ import { useTranslation } from "react-i18next"
 import { BackButton } from "@/components/BackButton"
 import { QuestionTitle } from "@/components/QuestionTitle"
 import { ScreenShell } from "@/components/ScreenShell"
+import { useIsDesktop } from "@/lib/useIsDesktop"
 
-const roles = [
-  {
-    to: "/login/officer",
-    icon: "user-check",
-    title: "who.officer",
-    hint: "who.officerHint",
-  },
-  {
-    to: "/login/farmer",
-    icon: "sprout",
-    title: "who.farmer",
-    hint: "who.farmerHint",
-  },
-] as const
+interface Role {
+  to: string
+  icon: string
+  title: "who.officer" | "who.farmer" | "who.admin"
+  hint: "who.officerHint" | "who.farmerHint" | "who.adminHint"
+}
 
-/** 01b Who are you?: officers and farmers get different apps after sign-in. */
+const officer: Role = {
+  to: "/login/officer",
+  icon: "user-check",
+  title: "who.officer",
+  hint: "who.officerHint",
+}
+const farmer: Role = {
+  to: "/login/farmer",
+  icon: "sprout",
+  title: "who.farmer",
+  hint: "who.farmerHint",
+}
+const admin: Role = {
+  to: "/login/admin",
+  icon: "bank",
+  title: "who.admin",
+  hint: "who.adminHint",
+}
+
+/**
+ * 01b / D02a Who are you? The screen width decides the choices (ADR 0024):
+ * - phone: Extension officer or Farmer, with a line telling MoFA admins to use a computer;
+ * - computer: Extension officer or MoFA admin; farmers are phone only and get a line to the
+ *   "use your phone" screen instead of a choice that would lead nowhere.
+ */
 export function Component() {
   const { t } = useTranslation()
+  const desktop = useIsDesktop()
+  const roles = desktop ? [officer, admin] : [officer, farmer]
 
   return (
-    <ScreenShell brand={{ tagline: t("start.brand"), illustration: "welcome" }}>
+    <ScreenShell
+      brand={{ tagline: t("start.brand"), illustration: "farmer-home" }}
+    >
       <BackButton to="/language" />
       <div className="space-y-1">
         <QuestionTitle title={t("who.title")} audioKey="who" size="page" />
@@ -63,10 +84,19 @@ export function Component() {
         ))}
       </ul>
 
-      <p className="flex items-center gap-3 rounded-2xl bg-cream py-3 pr-3.5 pl-3 text-sm font-medium text-foreground">
-        <img src="/icons/monitor.svg" alt="" className="size-5.5 shrink-0" />
-        {t("who.office")}
-      </p>
+      {desktop ? (
+        <Link
+          to="/farmer-on-computer"
+          className="text-base font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          {t("who.farmerOnComputer")}
+        </Link>
+      ) : (
+        <p className="flex items-center gap-3 rounded-2xl bg-cream py-3 pr-3.5 pl-3 text-sm font-medium text-foreground">
+          <img src="/icons/monitor.svg" alt="" className="size-5.5 shrink-0" />
+          {t("who.office")}
+        </p>
+      )}
     </ScreenShell>
   )
 }

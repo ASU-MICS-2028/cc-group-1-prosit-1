@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react"
+import { act, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import "@/i18n"
 import { FarmerRow } from "@/features/farmers/FarmerRow"
 import { AudioButton } from "./AudioButton"
@@ -29,8 +29,40 @@ describe("LanguageOptions", () => {
 })
 
 describe("AudioButton", () => {
-  it("plays its recording", async () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  /** A fake device voice: records what it is asked to read. */
+  function fakeVoice() {
+    const spoken: string[] = []
+    let last: { onend?: () => void } | null = null
+    vi.stubGlobal(
+      "SpeechSynthesisUtterance",
+      class {
+        lang = ""
+        rate = 1
+        onend?: () => void
+        onerror?: () => void
+        text: string
+        constructor(text: string) {
+          this.text = text
+        }
+      }
+    )
+    vi.stubGlobal("speechSynthesis", {
+      speak: (u: { text: string; onend?: () => void }) => {
+        spoken.push(u.text)
+        last = u
+      },
+      cancel: vi.fn(),
+      pause: vi.fn(),
+      resume: vi.fn(),
+    })
+    return { spoken, finish: () => last?.onend?.() }
+  }
+
+  it("plays its recording on one tap and stops on the next", async () => {
     const play = vi.fn().mockResolvedValue(undefined)
+    const pause = vi.fn()
     const created: string[] = []
     vi.stubGlobal(
       "Audio",
@@ -39,30 +71,46 @@ describe("AudioButton", () => {
           created.push(src)
         }
         play = play
+        pause = pause
       }
     )
     render(<AudioButton src="/audio/tw/language.mp3" label="Listen" />)
-    await userEvent.click(screen.getByRole("button", { name: "Listen" }))
+    const button = screen.getByRole("button", { name: "Listen" })
+    await userEvent.click(button)
     expect(created).toEqual(["/audio/tw/language.mp3"])
     expect(play).toHaveBeenCalledOnce()
-    vi.unstubAllGlobals()
+    expect(button).toHaveAttribute("aria-pressed", "true")
+    await userEvent.click(button)
+    expect(pause).toHaveBeenCalledOnce()
+    expect(button).toHaveAttribute("aria-pressed", "false")
+    // no overlay for speaker buttons
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
 
-  it("stays silent when the recording is missing or blocked", async () => {
+  it("reads the text with the device voice when there is no recording", async () => {
+    const voice = fakeVoice()
     vi.stubGlobal(
       "Audio",
       class {
         play = () => Promise.reject(new Error("not found"))
+        pause = () => {}
       }
     )
-    render(<AudioButton src="/missing.mp3" label="Listen" />)
-    await userEvent.click(screen.getByRole("button", { name: "Listen" }))
-    vi.unstubAllGlobals()
+    render(
+      <AudioButton src="/missing.mp3" label="Listen" text="Which crops?" />
+    )
+    const button = screen.getByRole("button", { name: "Listen" })
+    await userEvent.click(button)
+    await vi.waitFor(() => expect(voice.spoken).toEqual(["Which crops?"]))
+    act(() => voice.finish())
+    expect(button).toHaveAttribute("aria-pressed", "false")
   })
 
-  it("does nothing without a recording", async () => {
+  it("without a recording reads its label", async () => {
+    const voice = fakeVoice()
     render(<AudioButton label="Listen" />)
     await userEvent.click(screen.getByRole("button", { name: "Listen" }))
+    expect(voice.spoken).toEqual(["Listen"])
   })
 })
 
@@ -78,8 +126,10 @@ describe("sync status", () => {
     )
     expect(screen.getByText("3 waiting")).toBeInTheDocument()
     expect(screen.getByText("1 synced")).toBeInTheDocument()
-    expect(screen.getByText("0 failed")).toBeInTheDocument()
-    expect(screen.getByRole("img", { name: "Sync failed" })).toBeInTheDocument()
+    expect(screen.getByText("0 to fix")).toBeInTheDocument()
+    expect(
+      screen.getByRole("img", { name: "Needs fixing" })
+    ).toBeInTheDocument()
   })
 })
 

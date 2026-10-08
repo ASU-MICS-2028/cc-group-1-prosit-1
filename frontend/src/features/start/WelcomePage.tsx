@@ -12,10 +12,10 @@ export function Component() {
   return (
     <ScreenShell
       className="pt-6"
-      brand={{ tagline: t("start.brand"), illustration: "welcome" }}
+      brand={{ tagline: t("start.brand"), illustration: "farmer-home" }}
       footer={
         <Link
-          to="/language"
+          to="/country"
           className={cn(buttonVariants({ size: "xl" }), "w-full")}
         >
           {t("start.getStarted")}
@@ -27,7 +27,7 @@ export function Component() {
         {t("app.name")}
       </p>
       <IllustrationCard
-        name="welcome"
+        name="farmer-home"
         className="h-82.5 p-2.5 md:hidden"
         imageClassName="h-77.5"
       />

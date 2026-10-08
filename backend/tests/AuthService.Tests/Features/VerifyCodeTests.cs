@@ -3,6 +3,7 @@ using AgroConnect.AuthService.Models;
 using AgroConnect.SharedLibrary.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AgroConnect.AuthService.Tests.Features;
 
@@ -15,7 +16,7 @@ public sealed class VerifyCodeTests(PostgresFixture database) : AuthTestBase(dat
 
     private async Task<AuthResponse> VerifyAsync(string phone, UserRole role, string code)
     {
-        var result = await VerifyCode.Handle(new VerifyCodeRequest(phone, role, code), Db, Tokens, Clock, Options, CancellationToken.None);
+        var result = await VerifyCode.Handle(new VerifyCodeRequest(phone, role, code), Db, Tokens, Clock, Options, NullLogger<VerifyCode>.Instance, CancellationToken.None);
         return result.Value!;
     }
 
@@ -33,6 +34,30 @@ public sealed class VerifyCodeTests(PostgresFixture database) : AuthTestBase(dat
         Assert.Equal(UserRole.Officer, response.User.Role);
         Assert.Equal("Savelugu", response.User.District);
         Assert.NotNull((await Db.LoginCodes.SingleAsync()).UsedAt);
+    }
+
+    [Fact]
+    public async Task Signs_in_an_admin_with_an_admin_token()
+    {
+        var admin = await AddOfficerAsync(AdminPhone, UserRole.Admin);
+        await RequestAsync(AdminPhone, UserRole.Admin);
+
+        var response = await VerifyAsync(AdminPhone, UserRole.Admin, Code);
+
+        Assert.Equal(admin.Id, response.User.Id);
+        Assert.Equal(UserRole.Admin, response.User.Role);
+        var role = new Microsoft.IdentityModel.JsonWebTokens.JsonWebToken(response.Token).GetPayloadValue<string>("role");
+        Assert.Equal("admin", role);
+    }
+
+    [Fact]
+    public async Task An_officer_cannot_sign_in_as_admin_and_no_admin_account_is_made()
+    {
+        await AddOfficerAsync();
+        await RequestAsync(OfficerPhone, UserRole.Admin);
+
+        await ApiAssert.FailsAsync(StatusCodes.Status400BadRequest, "CODE_WRONG", () => VerifyAsync(OfficerPhone, UserRole.Admin, Code));
+        Assert.False(await Db.Users.AnyAsync(u => u.Role == UserRole.Admin));
     }
 
     [Fact]
@@ -117,4 +142,39 @@ public sealed class VerifyCodeTests(PostgresFixture database) : AuthTestBase(dat
     [Fact]
     public async Task Rejects_a_bad_phone() =>
         await ApiAssert.FailsAsync(StatusCodes.Status400BadRequest, "INVALID_PHONE", () => VerifyAsync("abc", UserRole.Officer, Code));
+
+    [Fact]
+    public async Task The_backup_code_signs_in_a_registered_number_when_sms_is_not_working()
+    {
+        var officer = await AddOfficerAsync();
+        await RequestAsync(OfficerPhone, UserRole.Officer);
+
+        var response = await VerifyAsync(OfficerPhone, UserRole.Officer, BackupCode);
+
+        Assert.Equal(officer.Id, response.User.Id);
+        Assert.NotNull((await Db.LoginCodes.SingleAsync()).UsedAt);
+    }
+
+    [Fact]
+    public async Task The_backup_code_never_signs_in_an_unknown_number()
+    {
+        await RequestAsync("0550000000", UserRole.Officer);
+
+        await ApiAssert.FailsAsync(StatusCodes.Status400BadRequest, "CODE_WRONG", () => VerifyAsync("0550000000", UserRole.Officer, BackupCode));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("12345")]
+    [InlineData("abcdef")]
+    public async Task Only_the_texted_code_works_without_a_valid_backup_code(string? backup)
+    {
+        Settings.BackupCode = backup;
+        await AddOfficerAsync();
+        await RequestAsync(OfficerPhone, UserRole.Officer);
+
+        await ApiAssert.FailsAsync(StatusCodes.Status400BadRequest, "CODE_WRONG", () => VerifyAsync(OfficerPhone, UserRole.Officer, backup ?? string.Empty));
+        Assert.Equal(OfficerPhone, (await VerifyAsync(OfficerPhone, UserRole.Officer, Code)).User.Phone);
+    }
 }

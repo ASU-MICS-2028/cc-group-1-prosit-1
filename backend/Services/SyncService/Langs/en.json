@@ -1,0 +1,15 @@
+[
+  { "Lang": "en", "Key": "SYNC_BODY_INVALID", "Text": "The records could not be read. Update the app and try again." },
+  { "Lang": "en", "Key": "RECORD_UNREADABLE", "Text": "This record could not be read. Update the app, then open the record and save it again." },
+  { "Lang": "en", "Key": "CONSENT_REQUIRED", "Text": "The farmer has not given consent, so the record cannot be stored." },
+  { "Lang": "en", "Key": "NAME_INVALID", "Text": "Enter the farmer's full name (2 to 100 letters)." },
+  { "Lang": "en", "Key": "PHONE_INVALID", "Text": "The phone number is not a Ghana number. Check it, or choose \"No phone\"." },
+  { "Lang": "en", "Key": "PLACE_TOO_LONG", "Text": "The community or district name is too long (100 letters at most)." },
+  { "Lang": "en", "Key": "CROPS_REQUIRED", "Text": "Choose at least one crop." },
+  { "Lang": "en", "Key": "FARM_SIZE_INVALID", "Text": "Enter a farm size above 0." },
+  { "Lang": "en", "Key": "LOCATION_INVALID", "Text": "The farm location is not valid. Capture it again." },
+  { "Lang": "en", "Key": "NOT_YOUR_FARMER", "Text": "Another officer registered this farmer, so only they can change the record." },
+  { "Lang": "en", "Key": "NOT_YOUR_VISIT", "Text": "Another officer logged this visit, so only they can change it." },
+  { "Lang": "en", "Key": "VISIT_END_REQUIRED", "Text": "A finished visit needs the time it ended. Open it and save it again." },
+  { "Lang": "en", "Key": "NOTES_TOO_LONG", "Text": "The notes are too long (2000 letters at most)." }
+]

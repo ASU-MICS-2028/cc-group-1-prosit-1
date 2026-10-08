@@ -52,6 +52,12 @@ variable "nat_instance_type" {
   default     = "t4g.nano"
 }
 
+variable "enable_cloudfront" {
+  description = "Put a CloudFront distribution in front of each environment for HTTPS on <id>.cloudfront.net (no domain needed)."
+  type        = bool
+  default     = true
+}
+
 variable "photo_upload_origins" {
   description = "Web addresses allowed to upload photos straight to S3 from the browser (CORS). Add the HTTPS domain when there is one."
   type        = list(string)

@@ -76,5 +76,5 @@ export function useSession(): Session | null {
 
 /** Where a signed-in person starts. */
 export function homeFor(role: Role): string {
-  return role === "farmer" ? "/farmer" : "/"
+  return role === "farmer" ? "/farmer" : role === "admin" ? "/admin" : "/"
 }
