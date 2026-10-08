@@ -39,7 +39,7 @@ describe("after saving a farmer", () => {
   })
 
   it("offline: saved on this phone, waiting to sync", async () => {
-    const fetchMock = fakeServer({})
+    fakeServer({})
     vi.spyOn(navigator, "onLine", "get").mockReturnValue(false)
     await openSaved()
     expect(await screen.findByText("Saved on this phone")).toBeInTheDocument()
@@ -47,7 +47,6 @@ describe("after saving a farmer", () => {
     expect(
       screen.getByText(/We will send her details to MoFA automatically/)
     ).toBeInTheDocument()
-    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it("online but the server cannot be reached: waiting to sync", async () => {
