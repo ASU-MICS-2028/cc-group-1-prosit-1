@@ -901,6 +901,71 @@
         ]
       }
     },
+    "/api/admin/sms/test": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "SendTestSms",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestSmsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestSmsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/money": {
       "get": {
         "tags": [
@@ -3513,6 +3578,13 @@
           }
         }
       },
+      "SmsOutcome": {
+        "enum": [
+          "sent",
+          "logged",
+          "failed"
+        ]
+      },
       "SoilType": {
         "enum": [
           "sandy",
@@ -3896,6 +3968,38 @@
           "clientUpdatedAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "TestSmsRequest": {
+        "required": [
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "TestSmsResponse": {
+        "required": [
+          "outcome",
+          "detail"
+        ],
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/SmsOutcome"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

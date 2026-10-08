@@ -9,6 +9,7 @@ using AgroConnect.MoneyService;
 using AgroConnect.PlatformService;
 using AgroConnect.SharedLibrary;
 using AgroConnect.SharedLibrary.Features;
+using AgroConnect.SharedLibrary.Sms;
 using AgroConnect.SpeechService;
 using AgroConnect.SyncService;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -60,6 +61,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 // Each service adds itself here. A new service is one line.
 builder.Services
     .AddSharedLibrary()
+    .AddSms(builder.Configuration)
     .AddData(builder.Configuration)
     .AddPlatformService()
     .AddAuthService(builder.Configuration)

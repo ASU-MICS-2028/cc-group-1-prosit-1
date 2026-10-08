@@ -1,6 +1,7 @@
 using AgroConnect.AuthService.Features;
 using AgroConnect.AuthService.Models;
 using AgroConnect.SharedLibrary.Enums;
+using AgroConnect.SharedLibrary.Providers.Interfaces;
 using AgroConnect.SharedLibrary.ValueObjects;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,15 @@ public sealed class RequestCodeTests(PostgresFixture database) : AuthTestBase(da
         await SendAsync(FarmerPhone, UserRole.Farmer);
 
         await Sms.Received(1).SendAsync(Arg.Any<PhoneNumber>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Says_so_when_the_sms_provider_cannot_send_the_code()
+    {
+        await AddOfficerAsync();
+        Sms.SendAsync(default, default!, default).ReturnsForAnyArgs(new SmsResult(SmsOutcome.Failed, "Insufficient balance"));
+
+        await ApiAssert.FailsAsync(StatusCodes.Status503ServiceUnavailable, "SMS_UNAVAILABLE", () => SendAsync(OfficerPhone, UserRole.Officer));
     }
 
     [Fact]
@@ -95,9 +105,9 @@ public sealed class RequestCodeTests(PostgresFixture database) : AuthTestBase(da
     }
 
     [Fact]
-    public async Task Stops_after_five_codes_in_an_hour()
+    public async Task Stops_after_twenty_codes_in_an_hour()
     {
-        for (var i = 0; i < 5; i++)
+        for (var i = 0; i < 20; i++)
         {
             await SendAsync(OfficerPhone, UserRole.Officer);
             Clock.Advance(TimeSpan.FromMinutes(1));

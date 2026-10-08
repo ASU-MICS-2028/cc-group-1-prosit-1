@@ -42,11 +42,11 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 
 - Database (branch `feature/ui-build`): five tables (`users`, `login_codes`, `farmers`, `visits`, `photos`) in the first EF Core migration (`InitialSchema`). The API applies migrations on start-up and, on a laptop, seeds a demo officer (Fuseini Alhassan, 024 000 0001) and a sample farmer (Ama Boateng, 024 000 1234). Every column is explained in `data-dictionary.md`.
 - Sign-in (`AuthService`): `POST /api/auth/code`, `POST /api/auth/verify`, `GET /api/me`.
-  - **Codes:** 6 digits, stored only as a hash, valid 10 minutes; one per 45 s and 5 per hour per phone; locked after 5 wrong tries.
+  - **Codes:** 6 digits, stored only as a hash, valid 10 minutes; one per 45 s and 20 per hour per phone; locked after 5 wrong tries.
   - **Tokens:** 7-day signed tokens (JWT) with the role (officer or farmer) (ADR 0022).
   - **Abuse limits:** 30 requests per 5 minutes per network address.
   - **Farmer accounts:** created on first sign-in.
-  - **SMS:** written to the log until Africa's Talking is connected; the laptop code is always 123456.
+  - **SMS:** sent through Arkesel (ADR 0037), only to allowed numbers unless the server texts everyone; the laptop code is always 123456.
   - **Tests:** 31, 99% coverage.
   - **Live check:** done against the local database.
 - Database clean-up (ADR 0023): snake_case names (`full_name`) and six enforced links (foreign keys); the first migration was regenerated before anything was committed or deployed. A test proves the database refuses a visit for a farmer that does not exist.
@@ -72,6 +72,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 - The farmer's app in full (ADR 0031): My details, Change my details, Call my officer, Market prices, Weather, Check my crop, Harvest forecast, My cooperative, Lessons, for phones and computers. Backend FarmerService: the farmer's record, officer and visits are live; the outside sources are sample providers labelled "Sample data". Backend 145 tests (FarmerService 100% lines), frontend 131 tests.
 - Offline registration reaches the server (ADR 0032): backend SyncService answers `POST /api/sync`. The signed-in officer owns what they send; another officer's record is refused; the newest change wins; each record is checked and answered on its own ("To fix" with the reason); a visit waits for its farmer; one transaction per batch. The app sends 100 records per request. End-to-end test: an officer syncs a new farmer, who then signs in and sees their farm. Backend 190 tests (SyncService 99% lines), frontend 133 tests (94.7% lines).
 - Computers follow the Figma sidebar (ADR 0030 amended 7 Oct): Home, Farmers, Visits, Requests, Market, Money, Profile, a sync card and Register a farmer, with a tab to collapse it. The top bar and account menu are gone.
+- SMS through Arkesel (ADR 0037): sign-in codes are texted for real (sender ID "AgroConnect"), safe by default (only numbers in `Sms:OnlyTo` unless `Sms:TextEveryone`); a failed SMS tells the person to try again; `POST /api/admin/sms/test` for admins. First live SMS sent and received on 8 Oct. Postman collection in `backend/postman/` (26 requests). Backend 251 tests.
 - Mobile money through Paystack (ADR 0034): MoneyService on the server (wallets and payments tables, migration `AddMobileMoney`); the farmer's Money home, Link mobile money and paying for inputs are connected; each payment is approved on the phone and the app checks until it is paid. Paystack test key in user-secrets on Bernard's laptop; without a key a labelled sample provider answers. Backend 238 tests (MoneyService 99% lines), frontend 162 tests. Still sample: input products and shops, loans, insurance, get paid, cooperative, officer requests and money summary.
 - MoFA admins can sign in (ADR 0033): role `admin`, SMS code like officers, demo admin Esi Owusu `024 000 0009` (Northern Region). Admin pages under `/admin` on a computer, beside the Figma admin sidebar; **Overview** shows live officers, farmers, registrations and visits this month and each officer's last sync for the admin's region or district (AdminService). On a phone: "Admin works on a computer". Next: Agents with *Add a person*, then the reports page (D20).
 - Admin pages from Figma P4 on sample data (2026-10-08): Regions, Agents (turn off a lost phone, Add a person panel), Cooperatives, Help desk (filter, reassign, remind), Impact and System health, each labelled "Sample data". Data shapes in `frontend/src/features/admin/sample.ts` for AdminService to mirror. Frontend 169 tests, 94% lines.
@@ -144,7 +145,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 3. **MoFA side (ADR 0024):** admin role and screens, the reports page (D20).
 4. **Sidebar tab** (open/close, remembered) from the team rule.
 5. **Installable app on real phones:** test over USB with port forwarding; install from staging after HTTPS.
-6. **USSD and SMS** with the Africa's Talking sandbox.
+6. **USSD** for feature phones (Africa's Talking); SMS delivery reports and the officer's "Send advice by SMS" (Arkesel).
 7. **Infra (DevOps lead):** HTTPS (domain + ACM certificate on the load balancer), a staging host name. The private network, Auto Scaling, ECR, alarms and the photo buckets are live (`infrastructure.md`).
 8. **Write-up and slides:** from `phase-1-overview.md` and the ADRs.
 9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend: *Who are you?* choices by screen width, admin sign-in, the admin-on-a-phone screen, the *Add a person* form.

@@ -106,16 +106,4 @@ public sealed class AuthProviderTests
         Assert.Equal("officer", jwt.GetClaim("role").Value);
         Assert.False(jwt.TryGetClaim("farmer_id", out _));
     }
-
-    [Theory]
-    [InlineData("Development")]
-    [InlineData("Production")]
-    public async Task Log_only_sender_never_fails(string environmentName)
-    {
-        var environment = Substitute.For<IHostEnvironment>();
-        environment.EnvironmentName.Returns(environmentName);
-        var sender = new LogOnlySmsSender(environment, NullLogger<LogOnlySmsSender>.Instance);
-
-        await sender.SendAsync(PhoneNumber.Parse("0240000001"), "Your code is 123456", CancellationToken.None);
-    }
 }

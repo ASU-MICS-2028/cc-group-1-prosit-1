@@ -84,7 +84,11 @@ public sealed class RequestCode : IFeature
 
         if (await HasAccountAsync(db, phone, request.Role, cancellationToken))
         {
-            await sms.SendAsync(phone, messages.Get("LOGIN_CODE_SMS", session.Language, code), cancellationToken);
+            var sent = await sms.SendAsync(phone, messages.Get("LOGIN_CODE_SMS", session.Language, code), cancellationToken);
+            if (sent.Outcome == SmsOutcome.Failed)
+            {
+                throw new ApiException(StatusCodes.Status503ServiceUnavailable, "SMS_UNAVAILABLE");
+            }
         }
 
         return TypedResults.Accepted(

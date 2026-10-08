@@ -26,7 +26,7 @@ public sealed class AuthOptions
 
     public int MaxAttempts { get; set; } = 5;
 
-    public int MaxCodesPerHour { get; set; } = 5;
+    public int MaxCodesPerHour { get; set; } = 20;
 
     /// <summary>Sign-in requests allowed per network address every 5 minutes (a whole office can share one address).</summary>
     public int RateLimitPerWindow { get; set; } = 30;
