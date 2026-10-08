@@ -1,0 +1,830 @@
+{
+  "info": {
+    "name": "AgroConnect API",
+    "description": "Every AgroConnect endpoint, grouped by who uses it.\n\n1. Start the API (port 8000).\n2. Open a \"Sign in as …\" folder and run 1, then 2: the token is saved.\n3. Run any request in that person's folder.\n\nTest phones (laptop, code 123456): officer 024 000 0001, farmer 024 000 1234, MoFA admin 024 000 0009.\nSigning in again as someone else replaces the token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "reference",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Is the API up?",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sign in as extension officer",
+      "description": "Run 1 then 2. On a laptop the code is always 123456. The token is saved for every other request.",
+      "item": [
+        {
+          "name": "1. Ask for a code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/code",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "code"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"024 000 0001\",\n  \"role\": \"officer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log and is always 123456."
+          }
+        },
+        {
+          "name": "2. Enter the code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"024 000 0001\",\n  \"role\": \"officer\",\n  \"code\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body.token) {",
+                  "  pm.collectionVariables.set(\"token\", body.token);",
+                  "  console.log(\"Signed in as \" + body.user.fullName + \" (\" + body.user.role + \")\");",
+                  "}",
+                  "pm.test(\"signed in\", () => pm.expect(body.token).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Who am I",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sign in as farmer",
+      "description": "Run 1 then 2. On a laptop the code is always 123456. The token is saved for every other request.",
+      "item": [
+        {
+          "name": "1. Ask for a code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/code",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "code"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"024 000 1234\",\n  \"role\": \"farmer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log and is always 123456."
+          }
+        },
+        {
+          "name": "2. Enter the code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"024 000 1234\",\n  \"role\": \"farmer\",\n  \"code\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body.token) {",
+                  "  pm.collectionVariables.set(\"token\", body.token);",
+                  "  console.log(\"Signed in as \" + body.user.fullName + \" (\" + body.user.role + \")\");",
+                  "}",
+                  "pm.test(\"signed in\", () => pm.expect(body.token).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Who am I",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sign in as MoFA admin",
+      "description": "Run 1 then 2. On a laptop the code is always 123456. The token is saved for every other request.",
+      "item": [
+        {
+          "name": "1. Ask for a code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/code",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "code"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"024 000 0009\",\n  \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "On a laptop no SMS is sent to the demo numbers: the code is in the API log and is always 123456."
+          }
+        },
+        {
+          "name": "2. Enter the code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"024 000 0009\",\n  \"role\": \"admin\",\n  \"code\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body.token) {",
+                  "  pm.collectionVariables.set(\"token\", body.token);",
+                  "  console.log(\"Signed in as \" + body.user.fullName + \" (\" + body.user.role + \")\");",
+                  "}",
+                  "pm.test(\"signed in\", () => pm.expect(body.token).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Who am I",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Officer",
+      "description": "Sign in as the extension officer first.",
+      "item": [
+        {
+          "name": "Sync: send farmers and visits",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sync"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmers\": [\n    {\n      \"id\": \"0192f0a0-1111-7000-8000-000000000001\",\n      \"consentGiven\": true,\n      \"consentAt\": \"2026-10-08T09:00:00Z\",\n      \"language\": \"en\",\n      \"fullName\": \"Abdul Rahman\",\n      \"phoneE164\": \"+233245550101\",\n      \"hasNoPhone\": false,\n      \"community\": \"Kumbungu\",\n      \"regionDistrict\": \"Northern · Kumbungu District\",\n      \"crops\": [\n        \"rice\"\n      ],\n      \"farmSize\": 3,\n      \"farmSizeUnit\": \"acres\",\n      \"plantingSeasons\": [\n        \"rainy\"\n      ],\n      \"reachChannels\": [\n        \"sms\"\n      ],\n      \"incomeSources\": [],\n      \"helpNeeded\": [\n        \"market_prices\"\n      ],\n      \"clientUpdatedAt\": \"2026-10-08T09:00:00Z\"\n    }\n  ],\n  \"visits\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Each record gets an answer: created, updated, unchanged, invalid or forbidden. Sending the same batch twice answers unchanged."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Farmer",
+      "description": "Sign in as the farmer first.",
+      "item": [
+        {
+          "name": "My farm",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/farmer/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "farmer",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Market prices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/farmer/prices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "farmer",
+                "prices"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Weather",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/farmer/weather",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "farmer",
+                "weather"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check my crop",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/farmer/crop-check",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "farmer",
+                "crop-check"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"crop\": \"maize\",\n  \"symptoms\": [\n    \"holes_in_leaves\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Harvest forecast",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/farmer/harvest-forecast",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "farmer",
+                "harvest-forecast"
+              ]
+            }
+          }
+        },
+        {
+          "name": "My cooperative",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/farmer/cooperative",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "farmer",
+                "cooperative"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Lessons",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/farmer/lessons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "farmer",
+                "lessons"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ask to change my details",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/farmer/change-requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "farmer",
+                "change-requests"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"area\": \"phone\",\n  \"details\": \"New number 024 555 1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Farmer · Mobile money (Paystack)",
+      "description": "Sign in as the farmer first. With the Paystack test key in user-secrets these go to Paystack test mode; without it a sample provider answers (\"sample\": true).",
+      "item": [
+        {
+          "name": "My wallet and payments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/money",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "money"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Link my wallet",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/money/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "money",
+                "wallet"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network\": \"mtn\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "network: mtn, telecel or airteltigo. Links the farmer's registered number; charges nothing."
+          }
+        },
+        {
+          "name": "Pay (start a payment)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/money/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "money",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"purpose\": \"inputs\",\n  \"description\": \"Tolon Agro Inputs\",\n  \"amount\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "amount in GH₵ (1 to 10,000). The reference is saved for the next two requests."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body.reference) pm.collectionVariables.set(\"reference\", body.reference);",
+                  "pm.test(\"has a status\", () => pm.expect(body.status).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "How is my payment?",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/money/payments/{{reference}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "money",
+                "payments",
+                "{{reference}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body.reference) pm.collectionVariables.set(\"reference\", body.reference);",
+                  "pm.test(\"has a status\", () => pm.expect(body.status).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Send the network's code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/money/payments/{{reference}}/code",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "money",
+                "payments",
+                "{{reference}}",
+                "code"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Only when the status is needs_code."
+          }
+        }
+      ]
+    },
+    {
+      "name": "MoFA admin",
+      "description": "Sign in as the MoFA admin first.",
+      "item": [
+        {
+          "name": "Overview of my area",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/overview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "overview"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send a test SMS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/sms/test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "sms",
+                "test"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Leave phone empty to text the admin's own phone. On a laptop only numbers in Sms:OnlyTo get a real SMS; others go to the log (outcome logged)."
+          }
+        }
+      ]
+    }
+  ]
+}

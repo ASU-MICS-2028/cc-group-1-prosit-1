@@ -9,7 +9,7 @@ cc-group-1-prosit-1/
 │   ├── Dockerfile  .dockerignore  .nginx/nginx.conf
 │   └── .env.example    (to add)
 ├── design/assets/      the licence CREDITS of the design team's pictures; the source files stay with the designers (ignored by Git), the app uses copies in frontend/public
-├── backend/            the ASP.NET Core 10 solution, C# (section 4)
+├── backend/            the ASP.NET Core 10 solution, C# (section 4); backend/postman/ has a Postman collection of every endpoint
 │   ├── APIs/  Services/  tests/  openapi/  AgroConnect.sln
 │   └── Dockerfile
 ├── deploy/             EC2 bootstrap script, docker-compose.yml, deployment runbook (DevOps lead)
@@ -216,6 +216,7 @@ backend/
 │   │   └── MoneyServiceExtension.cs   AddMoneyService(): picks the provider from "Paystack:SecretKey"
 │   ├── AdminService/                  the MoFA admin's pages (ADR 0033)
 │   │   ├── Features/GetOverview.cs    GET /api/admin/overview: officers, farmers, visits and last sync for the admin's region or district
+│   │   ├── Features/SendTestSms.cs    POST /api/admin/sms/test: an admin checks SMS on this server
 │   │   └── AdminServiceExtension.cs   AddAdminService(): registers the endpoint
 │   ├── SyncService/                   stores what officers saved offline (ADR 0032; the contract in ADR 0029)
 │   │   ├── Features/SyncRecords.cs    POST /api/sync: reads each record on its own, owner from the sign-in, newest change wins,
@@ -236,6 +237,7 @@ backend/
 │       │   ├── Providers/             IClock (time, fakeable in tests), ISessionProvider (who is calling, in which language)
 │       │   ├── Enums/                 Language, Channel, and every fixed choice in the registration form (FarmerEnums.cs)
 │       │   ├── Security/Auth.cs       role names and token claim names
+│       │   ├── Sms/                   ISmsSender: ArkeselSmsSender (with a key; only allowed numbers unless TextEveryone) or LogOnlySmsSender (ADR 0037)
 │       │   └── Helpers/               data masking for logs; BuildTime (skips secret checks while the build writes the API contract)
 │       └── Data/                      the database
 │           ├── Entities/              one class per table: AppUser, LoginCode, Farmer, Visit, Photo

@@ -71,7 +71,6 @@ public static class AuthServiceExtension
 
         services.AddSingleton<ILoginCodeGenerator, LoginCodeGenerator>();
         services.AddSingleton<ITokenIssuer, JwtTokenIssuer>();
-        services.AddSingleton<ISmsSender, LogOnlySmsSender>();
 
         return services
             .AddMessages(typeof(AuthServiceExtension).Assembly)

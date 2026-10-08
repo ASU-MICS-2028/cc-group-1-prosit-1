@@ -55,6 +55,7 @@ public abstract class AuthTestBase(PostgresFixture database) : IAsyncLifetime
         await Database.ResetAsync();
         Db = Database.CreateContext();
         Session.Language.Returns(Language.English);
+        Sms.SendAsync(default, default!, default).ReturnsForAnyArgs(new SmsResult(SmsOutcome.Sent));
     }
 
     public async Task DisposeAsync() => await Db.DisposeAsync();

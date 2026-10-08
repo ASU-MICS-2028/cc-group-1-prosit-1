@@ -9,7 +9,7 @@ _Last updated: Monday 5 October 2026, midday._
 ## 0. Where we are now
 
 ### Done
-- **Decisions:** 34 ADRs (short decision notes), including one repository (0017), the backend structure (0020), the UI from Figma (0021), sign-in rules (0022), database naming and links (0023), roles and devices (0024), pictures online and icons offline (0025), the private network (0026, proposed) how the registration form works (0027) and the installable app (0028) the app screens with the sync contract (0029), the computer top bar with the account menu (0030), the farmer's app with sample providers (0031), the sync service (0032), MoFA admin accounts with the Overview (0033), and mobile money through Paystack (0034).
+- **Decisions:** 37 ADRs (short decision notes), including one repository (0017), the backend structure (0020), the UI from Figma (0021), sign-in rules (0022), database naming and links (0023), roles and devices (0024), pictures online and icons offline (0025), the private network (0026, proposed) how the registration form works (0027) and the installable app (0028) the app screens with the sync contract (0029), the computer top bar with the account menu (0030), the farmer's app with sample providers (0031), the sync service (0032), MoFA admin accounts with the Overview (0033), mobile money through Paystack (0034), help requests (0035), speech in Ghanaian languages through Khaya (0036), and SMS through Arkesel (0037).
 - **Repository and checks:** branch rules, pre-commit hooks, secret scanning, the CI pipeline (frontend, backend, Docker) with the 70% coverage gate, and the deploy pipeline (not tried on a server yet).
 - **Backend base:** a thin API host plus services, shared tools, structured logs, standard error answers in the caller's language, and the OpenAPI contract written on every build.
 - **Database:** five tables (users, login_codes, farmers, visits, photos) and the first migration, with PostgreSQL-style names (`full_name`) and six enforced links (foreign keys), so the database itself refuses, for example, a visit for a farmer that does not exist. The API creates the tables when it starts and adds a demo officer and a sample farmer on a laptop.
@@ -36,7 +36,7 @@ _Last updated: Monday 5 October 2026, midday._
 1. **Sync, second half (backend and app, Bernard and Liza):** `GET /api/sync/changes`, so a phone or laptop also receives what the officer saved on another device; then the duplicate phone check across phones and the photo upload with its link check.
 2. **Planned visits and the MoFA side (ADR 0024):** visit plans from the server ("Tomorrow", "Start visit"), the admin role, sign-in and *Add a person*, and the MoFA reports page (D20).
 3. **Install on a real phone:** try the installed app on a cheap Android phone over USB (port forwarding), then from staging once it has HTTPS (DevOps lead).
-4. **USSD and SMS** with the Africa's Talking sandbox.
+4. **USSD** for feature phones; SMS delivery reports (SMS itself works through Arkesel, ADR 0037).
 5. **Translations and recordings (Germain and the community):** Twi, Ewe and Dagbani texts and the voice prompts.
 
 ### What we test on a laptop (automatic, on every change)
@@ -46,7 +46,7 @@ _Last updated: Monday 5 October 2026, midday._
 - The API contract and the app's download size.
 
 ### What needs a real phone, accounts or servers
-- **Real SMS:** an Africa's Talking account and key. Until then the code is written to the API log, and on a laptop it is always `123456`.
+- **Real SMS on the servers:** the Arkesel key as a server secret (DevOps lead). On a laptop only allowed numbers are texted, and the code is always `123456`.
 - **A real phone:** install the app, airplane mode then sync, GPS and the camera in the registration form (they need HTTPS on a server, or the laptop's address), speed on a cheap Android.
 - **Design review:** compare the screens with Figma on a phone.
 - **CI on GitHub:** every pull request runs the full checks.
@@ -250,7 +250,7 @@ Every farmer and visit row has two times: `client_updated_at` (when it changed o
 | | PDF plan (4 Oct) | What we built, and why |
 |---|---|---|
 | Code lifetime | 5 minutes | **10 minutes**: SMS can be slow on 2G. |
-| Resend | not set | **Once every 45 seconds**, at most **5 codes per hour** per phone. |
+| Resend | not set | **Once every 45 seconds**, at most **20 codes per hour** per phone. |
 | Wrong tries | "locked after too many" | **5 wrong tries**, then a new code is needed. |
 | Token | 15 minutes | **7 days**: officers work offline for days and cannot sign in again in a field with no signal; a week also limits what a lost phone can do. Signing out removes it from the phone. |
 | Roles | farmer, agent, admin | **officer** and **farmer** now; admin with the MoFA summary later. |

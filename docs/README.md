@@ -53,5 +53,8 @@ Still to write: `architecture.md` (diagram), `ussd-menu.md`, `consent-form.md`, 
 | [0032](adr/0032-sync-service.md) | The sync service: how the server stores what officers saved offline | Accepted |
 | [0033](adr/0033-mofa-admin-accounts-and-overview.md) | MoFA admin accounts, their area, and the Overview | Accepted |
 | [0034](adr/0034-mobile-money-with-paystack.md) | Mobile money through Paystack | Accepted |
+| [0035](adr/0035-help-requests.md) | Help requests from farmers to their officer | Accepted |
+| [0036](adr/0036-speech-in-ghanaian-languages.md) | Speaker buttons in Twi, Ewe and Dagbani through GhanaNLP Khaya | Accepted |
+| [0037](adr/0037-sms-through-arkesel.md) | SMS through Arkesel, safe by default | Accepted |
 
 **Proposed** means recommended but waiting for the owning team member to confirm.

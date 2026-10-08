@@ -1,6 +1,7 @@
 using AgroConnect.Data;
 using AgroConnect.SharedLibrary;
 using AgroConnect.SharedLibrary.Features;
+using AgroConnect.SharedLibrary.Sms;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +23,7 @@ public sealed class AuthServiceExtensionTests
         }
 
         builder.Configuration.AddInMemoryCollection(settings);
-        builder.Services.AddSharedLibrary().AddData(builder.Configuration).AddAuthService(builder.Configuration);
+        builder.Services.AddSharedLibrary().AddSms(builder.Configuration).AddData(builder.Configuration).AddAuthService(builder.Configuration);
         return builder.Build();
     }
 

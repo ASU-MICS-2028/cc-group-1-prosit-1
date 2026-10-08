@@ -233,7 +233,7 @@ login_codes: SMS sign-in codes, matched to users by phone number and role
 | `phone_e164` 🔒 | varchar(16) | yes | The phone the code was sent to | `+233240000001` |
 | `role` | integer (`UserRole`) | yes | Whether it was asked for on the officer or the farmer sign-in screen | `0` |
 | `code_hash` | varchar(64) | yes | HMAC-SHA256 of phone + code with the server's secret key, as 64 hex characters. Cannot be turned back into the code | `9F2C41...` |
-| `created_at` | timestamptz | yes | When it was sent. Used for "Resend in 0:45" (one per 45 seconds) and "at most 5 an hour" | |
+| `created_at` | timestamptz | yes | When it was sent. Used for "Resend in 0:45" (one per 45 seconds) and "at most 20 an hour" | |
 | `expires_at` | timestamptz | yes | 10 minutes after `created_at`; after that the code no longer works | |
 | `attempts` | integer | yes | Wrong codes typed so far. At 5 the code is locked and a new one is needed | `0` |
 | `used_at` | timestamptz | no | When it was used to sign in. A used code never works again | `NULL` until used |
