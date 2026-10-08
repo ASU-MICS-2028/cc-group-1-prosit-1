@@ -13,7 +13,7 @@ export function LanguagePicker({ id }: { id?: string }) {
       className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground"
     >
       {LANGUAGES.map((l) => (
-        <option key={l.code} value={l.code}>
+        <option key={l.code} value={l.code} disabled={!l.ready}>
           {l.label}
         </option>
       ))}

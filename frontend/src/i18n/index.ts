@@ -3,12 +3,13 @@ import { initReactI18next } from "react-i18next"
 import en from "./locales/en.json"
 
 // Each language is written in itself (docs/adr/0014). `sub` is the name an
-// English speaker knows it by, shown smaller under the native name. `ready` is false until native
-// speakers have translated the app: the language is listed but cannot be chosen yet ("later phase").
+// English speaker knows it by, shown smaller under the native name. `ready: false` lists a language
+// but stops it being chosen ("later phase") until it is translated. Twi and Ewe are first drafts
+// that native speakers should review; any text missing from a file shows in English.
 export const LANGUAGES = [
   { code: "en", label: "English", sub: "English", ready: true },
-  { code: "tw", label: "Twi", sub: "Akan", ready: false },
-  { code: "ee", label: "Eʋegbe", sub: "Ewe", ready: false },
+  { code: "tw", label: "Twi", sub: "Akan", ready: true },
+  { code: "ee", label: "Eʋegbe", sub: "Ewe", ready: true },
   { code: "dag", label: "Dagbanli", sub: "Dagbani", ready: false },
 ] as const
 
