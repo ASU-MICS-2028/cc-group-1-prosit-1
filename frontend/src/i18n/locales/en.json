@@ -664,7 +664,35 @@
       "daysAgo_other": "{{count}} days ago",
       "axis": "GH₵ per kg",
       "high": "High {{price}}",
-      "low": "Low {{price}}"
+      "low": "Low {{price}}",
+      "otherMarkets_one": "and {{count}} other market",
+      "otherMarkets_other": "and {{count}} other markets",
+      "filterLabel": "Show crops",
+      "filter": {
+        "mine": "My crops",
+        "all": "All crops",
+        "grains": "Grains",
+        "legumes": "Legumes",
+        "tubers": "Tubers"
+      },
+      "perKgShort": "per kg",
+      "perKgYours": "per kg · your crop",
+      "feedNote": "Prices come from the market data feed and update every morning.",
+      "listen": "Listen to the {{crop}} price",
+      "speak": "{{crop}} is {{price}} per kilo at {{market}}.",
+      "atMarket": "{{market}} · per kg",
+      "upBy": "Up {{amount}} ({{percent}}%) this week",
+      "downBy": "Down {{amount}} ({{percent}}%) this week",
+      "range": "How far back",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "months_one": "{{count}} month",
+      "months_other": "{{count}} months",
+      "nearYou": "Other markets near you",
+      "smsOn": "SMS me when the price changes",
+      "smsOff": "Stop price SMS",
+      "smsOnNote": "We will SMS you when the {{crop}} price moves more than 5%.",
+      "noChange": "No change this week"
     },
     "weather": {
       "title": "Weather",
@@ -816,6 +844,22 @@
           "summary": "Never share your PIN, and check the name before you confirm a payment."
         }
       }
+    },
+    "alerts": {
+      "title": "SMS alerts",
+      "rowHint": "Prices and weather by SMS",
+      "intro": "Choose what we send you by SMS. Each SMS is short and in your language.",
+      "prices": "Prices",
+      "priceOf": "{{crop}} price changes",
+      "priceHint": "When it moves more than 5%",
+      "weather": "Weather",
+      "heavyRain": "Heavy rain warning",
+      "heavyRainHint": "The day before",
+      "drySpell": "Dry spell warning",
+      "drySpellHint": "When no rain is expected for 7 days",
+      "free": "Alerts are free for you. Reply STOP to any SMS to turn them off.",
+      "noPhone": "Your record has no phone number, so SMS cannot reach you. Ask your officer to add it.",
+      "all": "All SMS alerts"
     }
   },
   "farmerOnComputer": {

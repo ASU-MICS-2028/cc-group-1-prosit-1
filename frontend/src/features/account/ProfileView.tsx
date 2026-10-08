@@ -4,6 +4,7 @@ import {
   Globe,
   Info,
   Banknote,
+  BellRing,
   LogOut,
   RefreshCw,
   CircleHelp,
@@ -98,6 +99,14 @@ export function ProfileView({
             subtitle={language}
             to={`${base}/profile/language`}
           />
+          {officer ? null : (
+            <ListRow
+              icon={BellRing}
+              title={t("farmerApp.alerts.title")}
+              subtitle={t("farmerApp.alerts.rowHint")}
+              to="/farmer/alerts"
+            />
+          )}
           <ListRow
             icon={Banknote}
             title={t("country.settingsTitle")}
