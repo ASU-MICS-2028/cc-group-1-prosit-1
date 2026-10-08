@@ -106,13 +106,13 @@ describe("MoFA admin", () => {
     expect(
       within(table).getByRole("row", { name: /Fuseini Alhassan/ })
     ).toHaveTextContent(/6 Oct \d\d:\d\d/)
-    // The admin sidebar: who is signed in, their area, and only built places
+    // The admin sidebar: who is signed in, their area, and all seven places
     expect(screen.getByText("MoFA, Northern Region")).toBeInTheDocument()
     expect(
       within(screen.getByRole("navigation", { name: "Main" })).getAllByRole(
         "link"
       )
-    ).toHaveLength(1)
+    ).toHaveLength(7) // Overview (live) and the six sample-data places
   })
 
   it("on a phone, says admin works on a computer", async () => {

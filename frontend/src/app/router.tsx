@@ -312,6 +312,48 @@ export const routes: RouteObject[] = [
         index: true,
         lazy: () => import("@/features/admin/AdminOverviewPage"),
       },
+      {
+        path: "regions",
+        lazy: () =>
+          import("@/features/admin/pages").then((m) => ({
+            Component: m.Regions,
+          })),
+      },
+      {
+        path: "agents",
+        lazy: () =>
+          import("@/features/admin/pages").then((m) => ({
+            Component: m.Agents,
+          })),
+      },
+      {
+        path: "cooperatives",
+        lazy: () =>
+          import("@/features/admin/pages").then((m) => ({
+            Component: m.Cooperatives,
+          })),
+      },
+      {
+        path: "help-desk",
+        lazy: () =>
+          import("@/features/admin/pages").then((m) => ({
+            Component: m.HelpDesk,
+          })),
+      },
+      {
+        path: "impact",
+        lazy: () =>
+          import("@/features/admin/pages").then((m) => ({
+            Component: m.Impact,
+          })),
+      },
+      {
+        path: "system",
+        lazy: () =>
+          import("@/features/admin/pages").then((m) => ({
+            Component: m.System,
+          })),
+      },
     ],
   },
   {

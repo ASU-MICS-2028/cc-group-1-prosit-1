@@ -25,7 +25,13 @@
     "money": "Money",
     "collapse": "Close the menu",
     "expand": "Open the menu",
-    "overview": "Overview"
+    "overview": "Overview",
+    "regions": "Regions",
+    "agents": "Agents",
+    "cooperatives": "Cooperatives",
+    "helpDesk": "Help desk",
+    "impact": "Impact",
+    "system": "System"
   },
   "welcome": {
     "hello": "Hello,",
@@ -1129,5 +1135,125 @@
     "never": "Not yet",
     "none": "No extension officers in your area yet.",
     "accountMenu": "Your account"
+  },
+  "adminPages": {
+    "regions": {
+      "title": "Farmer registrations · {{region}}",
+      "subtitle": "This month",
+      "registered": "Farmers registered",
+      "women": "Women farmers (target {{target}}%)",
+      "ussd": "Registered by USSD",
+      "newThisWeek": "New this week",
+      "byDistrict": "Farmers by district",
+      "byLanguage": "By language and channel",
+      "channel": "App {{app}}% · USSD {{ussd}}%",
+      "privacy": "Personal details are hidden; this view shows totals only."
+    },
+    "agents": {
+      "title": "Extension agents",
+      "subtitle": "{{region}} · {{count}} agents",
+      "add": "Add an agent",
+      "colAgent": "Agent",
+      "colDistrict": "District",
+      "colFarmers": "Farmers",
+      "colLastSync": "Last sync",
+      "colRole": "Role",
+      "colAccess": "Access",
+      "role": {
+        "officer": "Agent",
+        "admin": "Admin"
+      },
+      "access": {
+        "active": "Active",
+        "checkIn": "Check in",
+        "phoneLost": "Phone lost",
+        "off": "Access off"
+      },
+      "lostTitle": "Lost phone? Turn off access in one click.",
+      "lostText": "Farmers saved on that phone but not yet synced are listed so another agent can re-visit them. Admins see totals; personal details are shown only to the farmer's own agent.",
+      "turnOff": "Turn off {{name}}'s access",
+      "invited": "Invite sent to {{name}} by SMS"
+    },
+    "person": {
+      "title": "Add a person",
+      "text": "They get an SMS and sign in with this phone number and a 6-digit code. No password.",
+      "role": "Role",
+      "name": "Full name",
+      "phone": "Phone number",
+      "region": "Region",
+      "district": "District",
+      "note": "Officers see only the farmers they register. Admins see totals for their region.",
+      "missing": "Enter their full name and phone number.",
+      "cancel": "Cancel",
+      "send": "Send invite"
+    },
+    "coop": {
+      "subtitle": "{{members}} members · led by {{leader}}",
+      "members": "Members",
+      "saved": "Saved together",
+      "orders": "Group orders this season",
+      "sold": "Maize sold together",
+      "groupOrders": "Group orders",
+      "status": {
+        "open": "Open",
+        "delivered": "Delivered",
+        "quote": "Quote"
+      },
+      "selling": "Selling maize together",
+      "offer": "Buyer: {{buyer}} offers {{price}}/kg for {{tonnes}} tonnes, above today's Tamale price of {{market}}.",
+      "pledged": "{{pledged}} of {{tonnes}} tonnes pledged by {{members}} members",
+      "remind": "SMS members who haven't pledged",
+      "reminded": "SMS sent to members who haven't pledged"
+    },
+    "help": {
+      "title": "Help desk",
+      "subtitle": "Farmers' questions go to their own extension officer. You step in when one waits too long.",
+      "filter": "Show requests",
+      "count": {
+        "waiting": "Waiting {{count}}",
+        "overdue": "Overdue {{count}}",
+        "answered": "Answered {{count}}"
+      },
+      "status": {
+        "waiting": "Waiting",
+        "overdue": "Overdue",
+        "answered": "Answered"
+      },
+      "officerLine": "Officer: {{officer}} · {{status}} {{waited}}",
+      "noOfficer": "Their officer left · needs reassigning",
+      "waited": "{{farmer}} has waited {{waited}}",
+      "assigned": "{{place}} · assigned to {{officer}} (extension officer) · {{sent}}",
+      "unassigned": "{{place}} · no officer assigned",
+      "play": "Play {{farmer}}'s voice note · {{length}}",
+      "adviceFrom": "Advice comes from the farmer's officer, not the help desk:",
+      "reassign": "Reassign to {{officer}}",
+      "remind": "Remind {{officer}}",
+      "reassigned": "Given to {{officer}}. The farmer gets an SMS with their new officer.",
+      "remindedOfficer": "Reminder sent to {{officer}}.",
+      "waitingLower": "waiting",
+      "answeredLower": "answered"
+    },
+    "impact": {
+      "title": "Impact report",
+      "subtitle": "{{season}} season · all regions · measured with farmer consent",
+      "download": "Download report (PDF)",
+      "practices": "Good practices adopted after advice",
+      "handover": "Handing over to the community",
+      "done": "Done",
+      "notYet": "Not yet"
+    },
+    "system": {
+      "title": "System health",
+      "allOk": "All systems working",
+      "someSlow": "One service is slow",
+      "uptime": "Uptime this month (target {{target}}%)",
+      "p95": "API response, 95th percentile",
+      "waiting": "Records waiting on phones",
+      "failed": "Failed deploys this week",
+      "services": "Services",
+      "healthy": "Healthy",
+      "slow": "Slow SMS delivery",
+      "alerts": "Recent alerts"
+    }
   }
 }
