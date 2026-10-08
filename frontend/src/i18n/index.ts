@@ -3,13 +3,19 @@ import { initReactI18next } from "react-i18next"
 import en from "./locales/en.json"
 
 // Each language is written in itself (docs/adr/0014). `sub` is the name an
-// English speaker knows it by, shown smaller under the native name.
+// English speaker knows it by, shown smaller under the native name. `ready` is false until native
+// speakers have translated the app: the language is listed but cannot be chosen yet ("later phase").
 export const LANGUAGES = [
-  { code: "en", label: "English", sub: "English" },
-  { code: "tw", label: "Twi", sub: "Akan" },
-  { code: "ee", label: "Eʋegbe", sub: "Ewe" },
-  { code: "dag", label: "Dagbanli", sub: "Dagbani" },
+  { code: "en", label: "English", sub: "English", ready: true },
+  { code: "tw", label: "Twi", sub: "Akan", ready: false },
+  { code: "ee", label: "Eʋegbe", sub: "Ewe", ready: false },
+  { code: "dag", label: "Dagbanli", sub: "Dagbani", ready: false },
 ] as const
+
+/** Whether the app can be used in this language yet (translated by native speakers). */
+export function isReady(code: string): boolean {
+  return LANGUAGES.some((l) => l.code === code && l.ready)
+}
 
 export type LanguageCode = (typeof LANGUAGES)[number]["code"]
 
@@ -33,7 +39,8 @@ function isLanguage(value: string | null): value is LanguageCode {
 function readSavedLanguage(): LanguageCode {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
-    if (isLanguage(saved)) return saved
+    // A language chosen before it was taken off the list comes back as English.
+    if (isLanguage(saved) && isReady(saved)) return saved
   } catch {
     // storage can be blocked; fall back to English
   }

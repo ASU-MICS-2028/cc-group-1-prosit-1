@@ -1290,7 +1290,8 @@
     "you": "You",
     "backToLoans": "Back to loans",
     "axis": "GH₵",
-    "weekHeader": "Week"
+    "weekHeader": "Week",
+    "declinedNote": "{{farmer}}'s loan is declined. They will get an SMS."
   },
   "officerMarket": {
     "title": "Market prices",
@@ -1565,7 +1566,8 @@
     "dataWhere": "{{store}} · AWS Cape Town · encrypted",
     "note": "Changing country moves you to that country's prices, languages and data store. Farmers you registered stay in {{country}}.",
     "laterLanguages": "Coming in a later phase",
-    "laterLanguage": "{{country}} · coming in a later phase"
+    "laterLanguage": "{{country}} · coming in a later phase",
+    "languageLater": "{{name}} · coming in a later phase"
   },
   "validate": {
     "required": "Fill this in.",

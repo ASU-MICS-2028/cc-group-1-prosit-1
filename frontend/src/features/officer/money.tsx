@@ -6,32 +6,29 @@ import {
   Clock,
   XCircle,
 } from "lucide-react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { BackHeader, SectionTitle } from "@/components/Blocks"
-import {
-  ButtonLink,
-  Confirmation,
-  InfoCard,
-  SampleBadge,
-} from "@/components/Flow"
+import { Confirmation, InfoCard, SampleBadge } from "@/components/Flow"
 import { ColumnChart } from "@/components/Charts"
 import { Picture } from "@/components/Picture"
 import {
   cedis,
   cropProblems,
-  loans,
   marketPrices,
   moneySummary,
   type LoanApplication,
   type LoanStatus,
 } from "@/features/sample/data"
 import { useIsDesktop } from "@/lib/useIsDesktop"
+import { Button } from "@/components/ui/button"
+import { decideLoan, useLoans } from "./loanDecisions"
 import { cn } from "@/lib/utils"
 
 /** P3 · D1 / P3 · 13 Money and farm health for the officer's district. */
 export function MoneyHealth() {
   const { t } = useTranslation()
+  const loans = useLoans()
   const desktop = useIsDesktop()
   const s = moneySummary
   const tiles = [
@@ -159,6 +156,9 @@ export function Loans() {
   const { t } = useTranslation()
   const { id } = useParams()
   const desktop = useIsDesktop()
+  const loans = useLoans()
+  const declined = (useLocation().state as { declined?: string } | null)
+    ?.declined
   const open =
     loans.find((l) => l.id === id) ?? (desktop ? loans[0] : undefined)
 
@@ -179,6 +179,14 @@ export function Loans() {
         </p>
         <SampleBadge />
       </div>
+      {declined ? (
+        <p
+          role="status"
+          className="rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-primary"
+        >
+          {t("officerMoney.declinedNote", { farmer: declined })}
+        </p>
+      ) : null}
       <div
         className={cn(
           desktop &&
@@ -222,6 +230,7 @@ function LoanDecision({
   withBack?: boolean
 }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   return (
     <section
       aria-labelledby="loan-title"
@@ -274,12 +283,29 @@ function LoanDecision({
             {t("officerMoney.explainable")}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
-            <ButtonLink to="/money/loans" variant="secondary">
+            <Button
+              size="xl"
+              variant="secondary"
+              className="w-full text-primary"
+              onClick={() => {
+                decideLoan(loan.id, "declined")
+                void navigate("/money/loans", {
+                  state: { declined: loan.farmer },
+                })
+              }}
+            >
               {t("officerMoney.decline")}
-            </ButtonLink>
-            <ButtonLink to={`/money/loans/${loan.id}/approved`}>
+            </Button>
+            <Button
+              size="xl"
+              className="w-full"
+              onClick={() => {
+                decideLoan(loan.id, "approved")
+                void navigate(`/money/loans/${loan.id}/approved`)
+              }}
+            >
               {t("officerMoney.approve", { amount: cedis(loan.amount) })}
-            </ButtonLink>
+            </Button>
           </div>
         </>
       ) : (
@@ -293,9 +319,11 @@ function LoanDecision({
 export function LoanApproved() {
   const { t } = useTranslation()
   const { id } = useParams()
+  const loans = useLoans()
   const loan = loans.find((l) => l.id === id) ?? loans[0]
   return (
     <Confirmation
+      back={{ to: "/money/loans", label: t("officerMoney.loansTitle") }}
       sample
       badge={t("officerMoney.approvedBadge")}
       title={t("officerMoney.approvedTitle", {

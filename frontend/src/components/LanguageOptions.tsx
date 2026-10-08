@@ -3,6 +3,7 @@ import { useId } from "react"
 import { useTranslation } from "react-i18next"
 import { AudioButton } from "@/components/AudioButton"
 import { LANGUAGES, type LanguageCode } from "@/i18n"
+import { cn } from "@/lib/utils"
 
 /**
  * The language list from the design: one big row per language with a speaker
@@ -27,10 +28,18 @@ export function LanguageOptions({
     >
       {LANGUAGES.map((language) => {
         const id = `${name}-${language.code}`
+        // Not translated yet: shown, but cannot be chosen (like Yorùbá and Kiswahili).
+        const later = !language.ready
         return (
           <div
             key={language.code}
-            className="group/option relative flex items-center gap-3 rounded-full bg-secondary py-1.5 pr-5 pl-1.5 text-foreground transition-colors has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+            aria-disabled={later || undefined}
+            className={cn(
+              "group/option relative flex items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+              later
+                ? "bg-muted text-muted-foreground"
+                : "bg-secondary text-foreground has-checked:bg-primary has-checked:text-primary-foreground"
+            )}
           >
             <AudioButton
               src={`/audio/${language.code}/language.mp3`}
@@ -44,24 +53,33 @@ export function LanguageOptions({
               name={name}
               value={language.code}
               checked={value === language.code}
+              disabled={later}
               onChange={() => onChange(language.code)}
               className="sr-only"
             />
             <label
               htmlFor={id}
-              className="flex flex-1 cursor-pointer items-center gap-3 self-stretch after:absolute after:inset-0 after:content-['']"
+              className={cn(
+                "flex flex-1 items-center gap-3 self-stretch after:absolute after:inset-0 after:content-['']",
+                later ? "cursor-not-allowed" : "cursor-pointer"
+              )}
             >
               <span className="flex-1">
                 <span className="block text-base leading-6 font-medium">
                   {language.label}
                 </span>
                 <span className="block text-sm leading-5 font-medium text-muted-foreground group-has-checked/option:text-secondary">
-                  {language.sub}
+                  {later
+                    ? t("country.languageLater", { name: language.sub })
+                    : language.sub}
                 </span>
               </span>
               <span
                 aria-hidden
-                className="flex size-7 items-center justify-center rounded-full border-2 border-muted-foreground group-has-checked/option:border-card group-has-checked/option:bg-card"
+                className={cn(
+                  "flex size-7 items-center justify-center rounded-full border-2 border-muted-foreground group-has-checked/option:border-card group-has-checked/option:bg-card",
+                  later && "opacity-40"
+                )}
               >
                 <Check className="size-4 text-primary opacity-0 group-has-checked/option:opacity-100" />
               </span>
