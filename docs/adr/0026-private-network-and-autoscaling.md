@@ -1,6 +1,6 @@
 # ADR 0026: Private network, fck-nat, load balancer and Auto Scaling
 
-- **Status:** Accepted, applied 2026-10-06 (staging) and 2026-10-07 (production). Live state: [`../infrastructure.md`](../infrastructure.md)
+- **Status:** Accepted, applied 2026-10-06 (staging) and 2026-10-07 (production); amended 2026-10-08 (HTTPS through CloudFront). Live state: [`../infrastructure.md`](../infrastructure.md)
 - **Date:** 2026-10-05
 
 ## Context
@@ -64,3 +64,16 @@ Unhealthy servers (load balancer health check) are replaced. A changed launch te
 - **Alarms** email the team when a server fails its health check, when an environment has no healthy server, and on bursts of server errors.
 - **Staging's database is disposable:** a replaced staging server starts with an empty, re-seeded database.
 - **The move is a one-time migration with downtime:** snapshot, apply, deploy, check, then delete the old database by hand (`deploy/terraform/README.md`).
+
+## Amendment (2026-10-08): HTTPS through CloudFront until there is a domain
+
+The app served plain HTTP, and phone browsers turn off the service worker, installing, GPS and the camera outside HTTPS, so staging could not test the PWA. AWS will not issue a certificate for the load balancer's own `elb.amazonaws.com` name, and the team has no domain yet.
+
+**Decision:** one CloudFront distribution per environment in front of the load balancer (`deploy/terraform/cloudfront.tf`, switch `enable_cloudfront`). Each answers on `https://<id>.cloudfront.net` with AWS's default certificate and redirects HTTP to HTTPS. CloudFront reaches the load balancer over HTTP (production port 80, staging 8080).
+
+- **Caching:** pages and assets follow nginx's Cache-Control (hashed `/assets/` for a year; `index.html` and `sw.js` no-cache). `/api/*` and `/health` are never cached, and every viewer header (Authorization included), cookie and query string goes to the origin.
+- **Edges:** PriceClass_200, which includes the African edge locations.
+- **Photos:** each bucket's CORS allows its environment's CloudFront address.
+- **Cost:** within the CloudFront free tier at our traffic (1 TB and 10 million requests a month).
+
+**Later:** with a domain, add an ACM certificate (`certificate_arn`) to the load balancer, or to these distributions as an alias. The load balancer could then accept only CloudFront's addresses (its managed prefix list), so nobody bypasses HTTPS.

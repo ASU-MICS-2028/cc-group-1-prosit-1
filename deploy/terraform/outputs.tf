@@ -6,6 +6,11 @@ output "app_url" {
   }
 }
 
+output "https_url" {
+  description = "HTTPS addresses through CloudFront (cloudfront.tf). Use these; the plain HTTP ones above still work."
+  value       = { for k, d in aws_cloudfront_distribution.app : k => "https://${d.domain_name}" }
+}
+
 output "load_balancer_dns" {
   description = "Point the domain's DNS (CNAME or Route 53 alias) here once there is one."
   value       = aws_lb.main.dns_name

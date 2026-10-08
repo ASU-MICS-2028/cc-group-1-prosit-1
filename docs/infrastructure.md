@@ -2,7 +2,7 @@
 
 Living file for the AWS setup. Design and reasons: [ADR 0026](adr/0026-private-network-and-autoscaling.md). Terraform and step-by-step commands: [`deploy/terraform/README.md`](../deploy/terraform/README.md).
 
-_Last updated: 2026-10-07 (production switched on)_
+_Last updated: 2026-10-08 (HTTPS through CloudFront)_
 
 ## Addresses
 
@@ -10,7 +10,8 @@ _Last updated: 2026-10-07 (production switched on)_
 |---|---|---|
 | Production | http://agroconnect-2076557186.af-south-1.elb.amazonaws.com | Port 80. HTTPS once there is a domain and an ACM certificate |
 | Staging | http://agroconnect-2076557186.af-south-1.elb.amazonaws.com:8080 | Port 8080 until staging has its own host name. Demo officer: 024 000 0001, code 123456 |
-| Health check | `/health` on either | Passes through nginx to the API: `{"status":"ok","checks":{"database":"Healthy"}}` |
+| HTTPS (both) | `terraform output https_url` (https://<id>.cloudfront.net, one per environment) | CloudFront in front of the load balancer with AWS's certificate (`deploy/terraform/cloudfront.tf`). Use these: the service worker, install, GPS and camera only work on HTTPS. API never cached |
+| Health check | `/health` on any of them | Passes through nginx to the API: `{"status":"ok","checks":{"database":"Healthy"}}` |
 
 The old fixed IPs (15.240.151.93, 15.240.240.182) no longer exist.
 
