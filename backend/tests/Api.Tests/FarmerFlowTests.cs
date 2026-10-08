@@ -18,11 +18,18 @@ public sealed class FarmerFlowTests(SeededApiFixture api)
         Assert.Equal("Ama Boateng", farm.GetProperty("farmer").GetProperty("fullName").GetString());
         Assert.Equal("Fuseini Alhassan", farm.GetProperty("officer").GetProperty("fullName").GetString());
 
-        foreach (var path in new[] { "/api/farmer/prices", "/api/farmer/weather", "/api/farmer/harvest-forecast", "/api/farmer/cooperative", "/api/farmer/lessons" })
+        foreach (var path in new[] { "/api/farmer/prices", "/api/farmer/weather", "/api/farmer/harvest-forecast", "/api/farmer/lessons" })
         {
             var answer = await client.GetFromJsonAsync<JsonElement>(path, SeededApiFixture.Json);
             Assert.Equal("sample", answer.GetProperty("source").GetString());
         }
+
+        // The cooperative is live (ADR 0037): the seed puts the sample farmer in one with an open order.
+        var coop = await client.GetFromJsonAsync<JsonElement>("/api/farmer/cooperative", SeededApiFixture.Json);
+        Assert.Equal("live", coop.GetProperty("source").GetString());
+        Assert.Equal("Tolon Farmers Cooperative", coop.GetProperty("name").GetString());
+        var details = await client.GetFromJsonAsync<JsonElement>("/api/cooperative", SeededApiFixture.Json);
+        Assert.Equal("NPK fertiliser 15-15-15", details.GetProperty("openOrder").GetProperty("product").GetString());
 
         var check = await client.PostAsJsonAsync("/api/farmer/crop-check", new { crop = "maize", symptoms = new[] { "holes_in_leaves" } });
         Assert.Equal(HttpStatusCode.OK, check.StatusCode);

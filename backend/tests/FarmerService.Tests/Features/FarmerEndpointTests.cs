@@ -1,3 +1,4 @@
+using AgroConnect.Data.Entities;
 using AgroConnect.FarmerService.Features;
 using AgroConnect.FarmerService.Models;
 using AgroConnect.FarmerService.Providers.Interfaces;
@@ -101,17 +102,64 @@ public sealed class FarmerEndpointTests(PostgresFixture database) : FarmerTestBa
     }
 
     [Fact]
-    public async Task Harvest_cooperative_and_lessons_answer_for_the_signed_in_farmer()
+    public async Task Harvest_and_lessons_answer_for_the_signed_in_farmer()
     {
         SignInAs(await AddFarmerAsync(await AddOfficerAsync()));
 
         var harvest = await GetHarvestForecast.Handle(Db, Session, new SampleHarvestForecaster(), CancellationToken.None);
-        var coop = await GetCooperative.Handle(Db, Session, new SampleCooperativeDirectory(Clock), CancellationToken.None);
         var lessons = await GetLessons.Handle(Db, Session, new SampleLessonCatalogue(), CancellationToken.None);
 
         Assert.Equal([Crop.Maize, Crop.Groundnut], harvest.Value!.Crops.Select(c => c.Crop));
-        Assert.Equal("Tolon Farmers Cooperative", coop.Value!.Name);
         Assert.NotEmpty(lessons.Value!.Lessons);
+    }
+
+    [Fact]
+    public async Task The_cooperative_comes_from_the_cooperatives_tables()
+    {
+        var officer = await AddOfficerAsync();
+        var leader = await AddFarmerAsync(officer, "Mariama Alhassan");
+        var farmer = await AddFarmerAsync(officer);
+        SignInAs(farmer);
+
+        var none = await Assert.ThrowsAsync<ApiException>(() => GetCooperative.Handle(Db, Session, Clock, CancellationToken.None));
+        Assert.Equal("NOT_IN_A_COOPERATIVE", none.MessageKey);
+
+        await using (var db = Database.CreateContext())
+        {
+            var coopId = Guid.CreateVersion7();
+            db.Cooperatives.Add(new Cooperative
+            {
+                Id = coopId,
+                Name = "Tolon Women Farmers",
+                Community = "Tolon",
+                Region = "Northern",
+                District = "Tolon",
+                LeaderFarmerId = leader.Id,
+                CreatedById = officer.Id,
+                CreatedAt = Clock.UtcNow,
+            });
+            db.CooperativeMembers.AddRange(
+                new CooperativeMember { CooperativeId = coopId, FarmerId = leader.Id, JoinedAt = Clock.UtcNow },
+                new CooperativeMember { CooperativeId = coopId, FarmerId = farmer.Id, JoinedAt = Clock.UtcNow });
+            db.Meetings.Add(new Meeting
+            {
+                Id = Guid.CreateVersion7(),
+                CooperativeId = coopId,
+                StartsAt = Clock.UtcNow.AddDays(3),
+                Place = "Tolon community centre",
+                Topic = "Selling maize together",
+                Bring = "",
+            });
+            await db.SaveChangesAsync();
+        }
+
+        await using var read = Database.CreateContext();
+        var coop = (await GetCooperative.Handle(read, Session, Clock, CancellationToken.None)).Value!;
+        Assert.Equal(DataSource.Live, coop.Source);
+        Assert.Equal(2, coop.Members);
+        Assert.Equal("Mariama Alhassan", coop.ChairName);
+        Assert.Equal("Tolon community centre", coop.MeetingPlace);
+        Assert.Equal(DateOnly.FromDateTime(Clock.UtcNow.AddDays(3).UtcDateTime), coop.NextMeeting);
     }
 
     [Fact]

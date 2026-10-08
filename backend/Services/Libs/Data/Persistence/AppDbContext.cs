@@ -29,6 +29,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<SpeechClip> SpeechClips => Set<SpeechClip>();
 
+    public DbSet<Cooperative> Cooperatives => Set<Cooperative>();
+    public DbSet<CooperativeMember> CooperativeMembers => Set<CooperativeMember>();
+    public DbSet<SavingsContribution> SavingsContributions => Set<SavingsContribution>();
+    public DbSet<GroupOrder> GroupOrders => Set<GroupOrder>();
+    public DbSet<GroupOrderLine> GroupOrderLines => Set<GroupOrderLine>();
+    public DbSet<GroupSale> GroupSales => Set<GroupSale>();
+    public DbSet<SalePledge> SalePledges => Set<SalePledge>();
+    public DbSet<Meeting> Meetings => Set<Meeting>();
+    public DbSet<MeetingRsvp> MeetingRsvps => Set<MeetingRsvp>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AppUser>(user =>
@@ -148,6 +158,71 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             clip.Property(c => c.Translated).HasMaxLength(1500);
             clip.Property(c => c.ContentType).HasMaxLength(50);
             clip.HasIndex(c => new { c.Language, c.TextHash }).IsUnique();
+        });
+
+        modelBuilder.Entity<Cooperative>(cooperative =>
+        {
+            cooperative.ToTable("cooperatives");
+            cooperative.Property(c => c.Id).ValueGeneratedNever();
+            cooperative.Property(c => c.Name).HasMaxLength(150);
+            cooperative.Property(c => c.Community).HasMaxLength(100);
+            cooperative.Property(c => c.Region).HasMaxLength(100);
+            cooperative.Property(c => c.District).HasMaxLength(100);
+            cooperative.HasOne<Farmer>().WithMany().HasForeignKey(c => c.LeaderFarmerId).OnDelete(DeleteBehavior.Restrict);
+            cooperative.HasOne<AppUser>().WithMany().HasForeignKey(c => c.CreatedById).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<CooperativeMember>(member =>
+        {
+            member.ToTable("cooperative_members");
+            member.HasKey(m => new { m.CooperativeId, m.FarmerId });
+            member.HasIndex(m => m.FarmerId).IsUnique();
+            member.HasOne<Cooperative>().WithMany().HasForeignKey(m => m.CooperativeId).OnDelete(DeleteBehavior.Cascade);
+            member.HasOne<Farmer>().WithMany().HasForeignKey(m => m.FarmerId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<SavingsContribution>(contribution =>
+        {
+            contribution.ToTable("savings_contributions");
+            contribution.Property(c => c.Id).ValueGeneratedNever();
+            contribution.HasOne<Cooperative>().WithMany().HasForeignKey(c => c.CooperativeId).OnDelete(DeleteBehavior.Restrict);
+            contribution.HasOne<Farmer>().WithMany().HasForeignKey(c => c.FarmerId).OnDelete(DeleteBehavior.Restrict);
+            contribution.HasOne<Payment>().WithMany().HasForeignKey(c => c.PaymentId).OnDelete(DeleteBehavior.Restrict);
+            contribution.HasIndex(c => new { c.CooperativeId, c.FarmerId });
+        });
+        modelBuilder.Entity<GroupOrder>(order =>
+        {
+            order.ToTable("group_orders"); order.Property(o => o.Id).ValueGeneratedNever();
+            order.Property(o => o.Product).HasMaxLength(100); order.Property(o => o.Dealer).HasMaxLength(100);
+            order.HasOne<Cooperative>().WithMany().HasForeignKey(o => o.CooperativeId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<GroupOrderLine>(line =>
+        {
+            line.ToTable("group_order_lines"); line.HasKey(l => new { l.OrderId, l.FarmerId });
+            line.HasOne<GroupOrder>().WithMany().HasForeignKey(l => l.OrderId).OnDelete(DeleteBehavior.Cascade);
+            line.HasOne<Farmer>().WithMany().HasForeignKey(l => l.FarmerId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<GroupSale>(sale =>
+        {
+            sale.ToTable("group_sales"); sale.Property(s => s.Id).ValueGeneratedNever();
+            sale.Property(s => s.Crop).HasMaxLength(50); sale.Property(s => s.Buyer).HasMaxLength(100);
+            sale.HasOne<Cooperative>().WithMany().HasForeignKey(s => s.CooperativeId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<SalePledge>(pledge =>
+        {
+            pledge.ToTable("sale_pledges"); pledge.HasKey(p => new { p.SaleId, p.FarmerId });
+            pledge.HasOne<GroupSale>().WithMany().HasForeignKey(p => p.SaleId).OnDelete(DeleteBehavior.Cascade);
+            pledge.HasOne<Farmer>().WithMany().HasForeignKey(p => p.FarmerId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<Meeting>(meeting =>
+        {
+            meeting.ToTable("meetings"); meeting.Property(m => m.Id).ValueGeneratedNever();
+            meeting.Property(m => m.Place).HasMaxLength(150); meeting.Property(m => m.Topic).HasMaxLength(200); meeting.Property(m => m.Bring).HasMaxLength(300);
+            meeting.HasOne<Cooperative>().WithMany().HasForeignKey(m => m.CooperativeId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<MeetingRsvp>(rsvp =>
+        {
+            rsvp.ToTable("meeting_rsvps"); rsvp.HasKey(r => new { r.MeetingId, r.FarmerId });
+            rsvp.HasOne<Meeting>().WithMany().HasForeignKey(r => r.MeetingId).OnDelete(DeleteBehavior.Cascade);
+            rsvp.HasOne<Farmer>().WithMany().HasForeignKey(r => r.FarmerId).OnDelete(DeleteBehavior.Restrict);
         });
 
         UseSnakeCaseNames(modelBuilder);
