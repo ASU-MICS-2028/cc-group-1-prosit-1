@@ -795,6 +795,39 @@
           }
         },
         {
+          "name": "Add a person (officer or admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/people",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "people"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"officer\",\n  \"fullName\": \"Amina Yakubu\",\n  \"phone\": \"024 555 0192\",\n  \"region\": \"Northern\",\n  \"district\": \"Tolon\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Makes the account in the admin's own area and texts the invite. \"invite\" in the answer says what happened to the SMS: sent, logged (no SMS key, or the number is not in Sms:OnlyTo) or failed. A number already used for that role is a 409."
+          }
+        },
+        {
           "name": "Send a test SMS",
           "request": {
             "method": "POST",

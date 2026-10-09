@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import {
   afterEach,
@@ -64,6 +64,18 @@ describe("admin pages on sample data", () => {
   })
 
   it("Agents turns off a lost phone's access and invites a person", async () => {
+    const sent: unknown[] = []
+    fakeServer({
+      "POST /api/admin/people": (body) => {
+        sent.push(body)
+        return (body as { phone: string }).phone === "024 000 0001"
+          ? json(409, {
+              title: "PHONE_TAKEN",
+              detail: "Someone already signs in with this number.",
+            })
+          : json(200, { id: "p1", invite: "sent" })
+      },
+    })
     renderRoute("/admin/agents", admin)
     expect(await screen.findByText("Phone reported")).toBeInTheDocument()
     expect(
@@ -85,7 +97,8 @@ describe("admin pages on sample data", () => {
     expect(within(panel).getAllByText("Fill this in.").length).toBeGreaterThan(
       0
     )
-    // one name only, and a number someone already uses
+    expect(sent).toEqual([])
+    // one name only
     await userEvent.type(within(panel).getByLabelText("Full name"), "Amina")
     await userEvent.type(
       within(panel).getByLabelText("Phone number"),
@@ -94,24 +107,104 @@ describe("admin pages on sample data", () => {
     expect(
       within(panel).getByText("Enter a first name and a surname, letters only.")
     ).toBeInTheDocument()
-    expect(
-      within(panel).getByText("Someone already signs in with this number.")
-    ).toBeInTheDocument()
     await userEvent.type(within(panel).getByLabelText("Full name"), " Yakubu")
+    await userEvent.click(
+      within(panel).getByRole("radio", { name: "MoFA admin" })
+    )
+    expect(within(panel).queryByLabelText("District")).not.toBeInTheDocument()
+    // the server says someone already uses the number: shown on the field until it changes
+    await userEvent.click(
+      within(panel).getByRole("button", { name: "Send invite" })
+    )
+    expect(
+      await within(panel).findByText(
+        "Someone already signs in with this number."
+      )
+    ).toBeInTheDocument()
     await userEvent.clear(within(panel).getByLabelText("Phone number"))
     await userEvent.type(
       within(panel).getByLabelText("Phone number"),
       "024 555 0192"
     )
-    await userEvent.click(
-      within(panel).getByRole("radio", { name: "MoFA admin" })
-    )
-    expect(within(panel).queryByLabelText("District")).not.toBeInTheDocument()
+    expect(
+      within(panel).queryByText("Someone already signs in with this number.")
+    ).not.toBeInTheDocument()
     await userEvent.click(
       within(panel).getByRole("button", { name: "Send invite" })
     )
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Invite sent to Amina Yakubu by SMS"
+    )
+    const amina = {
+      role: "admin",
+      fullName: "Amina Yakubu",
+      region: "Northern",
+      district: null,
+    }
+    expect(sent).toEqual([
+      { ...amina, phone: "024 000 0001" },
+      { ...amina, phone: "024 555 0192" },
+    ])
+    expect(
+      screen.queryByRole("dialog", { name: "Add a person" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("Agents says so when an invite SMS did not go, and shows the server's refusal", async () => {
+    const answers = [
+      json(403, {
+        title: "OUTSIDE_YOUR_AREA",
+        detail: "You can only add people in Northern.",
+      }),
+      json(200, { id: "p1", invite: "logged" }),
+      json(200, { id: "p2", invite: "failed" }),
+    ]
+    const sent: unknown[] = []
+    fakeServer({
+      "POST /api/admin/people": (body) => {
+        sent.push(body)
+        return answers.shift()!
+      },
+    })
+    renderRoute("/admin/agents", admin)
+    const addOfficer = async (name: string, phone: string) => {
+      await userEvent.click(
+        await screen.findByRole("button", { name: "Add an agent" })
+      )
+      const panel = await screen.findByRole("dialog", { name: "Add a person" })
+      expect(within(panel).getByLabelText("Full name")).toHaveValue("")
+      await userEvent.type(within(panel).getByLabelText("Full name"), name)
+      await userEvent.type(within(panel).getByLabelText("Phone number"), phone)
+      await userEvent.type(within(panel).getByLabelText("District"), "Tolon")
+      await userEvent.click(
+        within(panel).getByRole("button", { name: "Send invite" })
+      )
+      return panel
+    }
+
+    const panel = await addOfficer("Kofi Mensah", "024 555 0193")
+    expect(await within(panel).findByRole("alert")).toHaveTextContent(
+      "You can only add people in Northern."
+    )
+    await userEvent.click(
+      within(panel).getByRole("button", { name: "Send invite" })
+    )
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Kofi Mensah is added. SMS is switched off on this server, so no invite was texted."
+    )
+    expect(sent[1]).toEqual({
+      role: "officer",
+      fullName: "Kofi Mensah",
+      phone: "024 555 0193",
+      region: "Northern",
+      district: "Tolon",
+    })
+
+    await addOfficer("Ama Owusu", "024 555 0194")
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Ama Owusu is added, but the SMS invite did not go through."
+      )
     )
   })
 

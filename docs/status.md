@@ -97,6 +97,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 - registration and offline sync;
 - farmers, visits and the officer's Home;
 - the admin Overview numbers;
+- *Add a person* on the admin Agents page: makes the officer or admin account in the admin's area and texts the SMS invite (`POST /api/admin/people`); the page says when the SMS did not go;
 - the farmer's own record, officer and visits;
 - Paystack payments, once a key is set.
 
@@ -118,7 +119,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 **Frontend only, no backend yet** (labelled "Coming in a later phase"):
 - Money: seed loan, insurance, get paid, delivery tracking;
 - officer Money and farm health, loan review, officer Market;
-- admin Regions, Agents (invites, access, phone reports), Impact, System, and the Overview map, trend, channels and money tiles;
+- admin Regions, the Agents table (access, phone reports), Impact, System, and the Overview map, trend, channels and money tiles;
 - lost or stolen phone reports from Profile;
 - Nigeria and Kenya, Yorùbá and Kiswahili;
 - Download report (PDF), Call the driver.
@@ -153,7 +154,7 @@ The brief (`Prosit 1-v2.docx`, `Prosit Launch 1.pptx`) and the Lab 1/Lab 2 repor
 6. **USSD:** test in Arkesel's emulator once the callback URL is public (staging, or a tunnel); menu text in Twi, Ewe and Dagbani. SMS delivery reports and the officer's "Send advice by SMS" (Arkesel).
 7. **Infra (DevOps lead):** HTTPS (domain + ACM certificate on the load balancer), a staging host name. The private network, Auto Scaling, ECR, alarms and the photo buckets are live (`infrastructure.md`).
 8. **Write-up and slides:** from `phase-1-overview.md` and the ADRs.
-9. **Roles and devices (ADR 0024):** backend `admin` role, an endpoint for admins to add officers and admins (SMS invite), a first-admin script; frontend: *Who are you?* choices by screen width, admin sign-in, the admin-on-a-phone screen, the *Add a person* form.
+9. **Roles and devices (ADR 0024):** backend `admin` role, a first-admin script; frontend: *Who are you?* choices by screen width, admin sign-in, the admin-on-a-phone screen. (*Add a person* and its SMS invite are done.)
 10. **Picture credits:** a short credits section in Help for the CC BY-SA crop photos and the Storyset and Freepik drawings (required by their licences); the answer-tile pictures in `pictures/options/` still come from Figma exports and need their source files.
 
 ## Open questions

@@ -1365,6 +1365,8 @@
       "lostText": "Woŋlɔ agbledela siwo wodzra ɖo ɖe fon ma dzi gake womeɖo wo haɖe o ƒe ŋkɔ be dɔwɔla bubu nate ŋu agasrã wo kpɔ. Admin kpɔa xexlẽme blibowo ko; agbledela la ƒe dɔwɔla ŋutɔ ɖeka koe kpɔa eƒe nyatakakawo.",
       "turnOff": "Tu {{name}} ƒe mɔ",
       "invited": "Woɖo amekpekpe ɖe {{name}} to SMS dzi",
+      "invitedLogged": "Wotsɔ {{name}} kpee. SMS mele dɔ wɔm le server sia dzi o, eya ta womeɖo amekpekpe aɖeke o. Gblɔ nɛ be wòagena ɖe eme kple eƒe fon nɔmba.",
+      "invitedFailed": "Wotsɔ {{name}} kpee, gake SMS amekpekpe la meyi o. Gblɔ nɛ be wòagena ɖe eme kple eƒe fon nɔmba.",
       "colActions": "Nuwɔnawo",
       "report": "Ka nya ta fon ŋu",
       "reportFor": "Ka nya ta be {{name}} ƒe fon bu alo wofi fii",

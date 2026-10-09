@@ -1365,6 +1365,8 @@
       "lostText": "Wɔkyerɛw akuafoɔ a wɔakora wɔn wɔ saa fon no so nanso wɔnsomaa wɔn no din sɛdeɛ adwumayɛni foforɔ bɛtumi akɔsra wɔn bio. Admin hu nkontabuo nkutoo; okuafoɔ no ankasa adwumayɛni nkutoo na ɔhu ne ho nsɛm.",
       "turnOff": "Dum {{name}} kwan",
       "invited": "Wɔde frɛ asoma {{name}} wɔ SMS so",
+      "invitedLogged": "Wɔde {{name}} aka ho. SMS nnyɛ adwuma wɔ server yi so, enti wɔansoma frɛ biara. Ka kyerɛ no sɛ ɔmfa ne fon nɔma nkɔ mu.",
+      "invitedFailed": "Wɔde {{name}} aka ho, nanso SMS frɛ no ankɔ. Ka kyerɛ no sɛ ɔmfa ne fon nɔma nkɔ mu.",
       "colActions": "Nneyɛeɛ",
       "report": "Bɔ fon ho amanneɛ",
       "reportFor": "Bɔ amanneɛ sɛ {{name}} fon ayera anaa wɔawia",

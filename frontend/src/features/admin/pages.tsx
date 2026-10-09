@@ -41,6 +41,7 @@ import {
   type AdminCooperative,
 } from "@/api/cooperative"
 import { formatShortDate } from "@/lib/dates"
+import { addPerson, type InviteOutcome } from "@/api/admin"
 import { useServerData } from "@/features/farmer/useServerData"
 import {
   agents,
@@ -286,7 +287,10 @@ const accessTone: Record<Access, Tone> = {
 export function Agents() {
   const { t } = useTranslation()
   const [adding, setAdding] = useState(false)
-  const [invited, setInvited] = useState<string | null>(null)
+  const [added, setAdded] = useState<{
+    name: string
+    invite: InviteOutcome
+  } | null>(null)
   const [turnedOff, setTurnedOff] = useState<string[]>([])
   const [reports, setReports] = useState<PhoneReport[]>([...phoneReports])
   const [reporting, setReporting] = useState<Agent | null>(null)
@@ -308,13 +312,20 @@ export function Agents() {
           </Button>
         }
       />
-      {invited ? (
+      {added ? (
         <p
           role="status"
-          className="flex items-center gap-2 rounded-2xl bg-secondary px-4 py-3 text-sm font-medium text-primary"
+          className={cn(
+            "flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium",
+            toneClass[added.invite === "sent" ? "green" : "amber"]
+          )}
         >
-          <CheckCheck aria-hidden className="size-4" />
-          {t("adminPages.agents.invited", { name: invited })}
+          {added.invite === "sent" ? (
+            <CheckCheck aria-hidden className="size-4 shrink-0" />
+          ) : (
+            <AlertCircle aria-hidden className="size-4 shrink-0" />
+          )}
+          {t(inviteText[added.invite], { name: added.name })}
         </p>
       ) : null}
       <div className="overflow-x-auto rounded-[20px] border bg-card">
@@ -473,8 +484,8 @@ export function Agents() {
       <AddPerson
         open={adding}
         onClose={() => setAdding(false)}
-        onInvite={(name) => {
-          setInvited(name)
+        onAdded={(name, invite) => {
+          setAdded({ name, invite })
           setAdding(false)
         }}
       />
@@ -560,15 +571,25 @@ function ReportPhone({
   )
 }
 
-/** Figma P4 · D2b: the panel that slides in from the right. */
+/** What the Agents page says once a person is added, by what happened to their SMS invite. */
+const inviteText = {
+  sent: "adminPages.agents.invited",
+  logged: "adminPages.agents.invitedLogged",
+  failed: "adminPages.agents.invitedFailed",
+} as const satisfies Record<InviteOutcome, string>
+
+/**
+ * Figma P4 · D2b: the panel that slides in from the right. Sending makes the account (AdminService) and texts
+ * the invite; the server says whether the SMS went.
+ */
 function AddPerson({
   open,
   onClose,
-  onInvite,
+  onAdded,
 }: {
   open: boolean
   onClose: () => void
-  onInvite: (name: string) => void
+  onAdded: (name: string, invite: InviteOutcome) => void
 }) {
   const { t } = useTranslation()
   const [role, setRole] = useState<"officer" | "admin">("officer")
@@ -577,16 +598,49 @@ function AddPerson({
   const [region, setRegion] = useState("Northern")
   const [district, setDistrict] = useState("")
   const [tried, setTried] = useState(false)
-  // Each field's problem: a real name, a Ghana number not already an agent's, a region, and a district for officers.
+  const [sending, setSending] = useState(false)
+  const [failed, setFailed] = useState<string | null>(null)
+  // A number the server said is taken, until it is changed.
+  const [taken, setTaken] = useState<string | null>(null)
+  // Each field's problem: a real name, a Ghana number not already in use, a region, and a district for officers.
   const problems: Record<string, Problem | "validate.taken" | null> = {
     "person-name": fullName(name),
     "person-phone":
-      ghanaPhone(phone) ??
-      (agents.some((a) => a.phone === toE164(phone)) ? "validate.taken" : null),
+      ghanaPhone(phone) ?? (toE164(phone) === taken ? "validate.taken" : null),
     "person-region": required(region),
     "person-district": role === "officer" ? required(district) : null,
   }
   const missing = Object.values(problems).some(Boolean)
+
+  async function send() {
+    setTried(true)
+    setFailed(null)
+    if (missing) return
+    setSending(true)
+    try {
+      const result = await addPerson({
+        role,
+        fullName: name.trim(),
+        phone,
+        region: region.trim(),
+        district: role === "officer" ? district.trim() : null,
+      })
+      onAdded(name.trim(), result.invite)
+      setName("")
+      setPhone("")
+      setDistrict("")
+      setTried(false)
+    } catch (error) {
+      if (error instanceof ApiError && error.key === "PHONE_TAKEN")
+        setTaken(toE164(phone))
+      else
+        setFailed(
+          error instanceof ApiError ? error.message : t("errors.generic")
+        )
+    } finally {
+      setSending(false)
+    }
+  }
 
   const field = (
     id: string,
@@ -681,6 +735,7 @@ function AddPerson({
               {t("validate.fix")}
             </p>
           ) : null}
+          <FieldError id="person-error" message={failed ?? undefined} />
           <div className="mt-auto grid grid-cols-2 gap-3 pt-4">
             <Button
               size="xl"
@@ -690,13 +745,7 @@ function AddPerson({
             >
               {t("adminPages.person.cancel")}
             </Button>
-            <Button
-              size="xl"
-              onClick={() => {
-                setTried(true)
-                if (!missing) onInvite(name.trim())
-              }}
-            >
+            <Button size="xl" disabled={sending} onClick={() => void send()}>
               {t("adminPages.person.send")}
             </Button>
           </div>
