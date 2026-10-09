@@ -33,6 +33,26 @@ public sealed class AdminSignInTests(SeededApiFixture api)
     }
 
     [Fact]
+    public async Task An_officer_the_admin_adds_can_sign_in_but_cannot_add_people()
+    {
+        var (admin, _) = await api.SignInAsync(SeededApiFixture.AdminPhone, "admin");
+
+        var added = await admin.PostAsJsonAsync(
+            "/api/admin/people",
+            new { role = "officer", fullName = "Amina Yakubu", phone = "024 555 0192", region = "Northern", district = "Tolon" },
+            SeededApiFixture.Json);
+
+        added.EnsureSuccessStatusCode();
+        var body = await added.Content.ReadFromJsonAsync<JsonElement>(SeededApiFixture.Json);
+        Assert.Equal("logged", body.GetProperty("invite").GetString()); // no SMS key in tests
+        var (officer, user) = await api.SignInAsync("024 555 0192", "officer");
+        Assert.Equal(("Amina Yakubu", "Tolon"), (user.GetProperty("fullName").GetString(), user.GetProperty("district").GetString()));
+
+        var again = await officer.PostAsJsonAsync("/api/admin/people", new { role = "officer", fullName = "X Y", phone = "024 555 0193" });
+        Assert.Equal(HttpStatusCode.Forbidden, again.StatusCode);
+    }
+
+    [Fact]
     public async Task Every_seeded_officer_is_added_not_only_the_first()
     {
         var (_, user) = await api.SignInAsync("024 000 0002", "officer");

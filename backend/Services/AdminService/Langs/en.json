@@ -1,4 +1,13 @@
 [
   { "Lang": "en", "Key": "NOT_AN_ADMIN_ACCOUNT", "Text": "This account is not a MoFA admin account." },
-  { "Lang": "en", "Key": "INVALID_PHONE", "Text": "That is not a Ghana phone number. Check it and try again." }
+  { "Lang": "en", "Key": "INVALID_PHONE", "Text": "That is not a Ghana phone number. Check it and try again." },
+  { "Lang": "en", "Key": "ROLE_NOT_ALLOWED", "Text": "An admin can add extension officers and admins only. Officers register farmers." },
+  { "Lang": "en", "Key": "NAME_REQUIRED", "Text": "Enter their full name." },
+  { "Lang": "en", "Key": "REGION_REQUIRED", "Text": "Enter their region." },
+  { "Lang": "en", "Key": "DISTRICT_REQUIRED", "Text": "Enter the district the officer works in." },
+  { "Lang": "en", "Key": "TOO_LONG", "Text": "That is too long. Use at most {0} letters." },
+  { "Lang": "en", "Key": "OUTSIDE_YOUR_AREA", "Text": "You can only add people in {0}." },
+  { "Lang": "en", "Key": "PHONE_TAKEN", "Text": "Someone already signs in with this number." },
+  { "Lang": "en", "Key": "INVITE_OFFICER_SMS", "Text": "Hello {0}. {1} at MoFA added you to AgroConnect as an extension officer. Open AgroConnect and sign in with this phone number." },
+  { "Lang": "en", "Key": "INVITE_ADMIN_SMS", "Text": "Hello {0}. {1} at MoFA added you to AgroConnect as a MoFA admin. Open AgroConnect on a computer and sign in with this phone number." }
 ]

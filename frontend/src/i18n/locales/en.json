@@ -1365,6 +1365,8 @@
       "lostText": "Farmers saved on that phone but not yet synced are listed so another agent can re-visit them. Admins see totals; personal details are shown only to the farmer's own agent.",
       "turnOff": "Turn off {{name}}'s access",
       "invited": "Invite sent to {{name}} by SMS",
+      "invitedLogged": "{{name}} is added. SMS is switched off on this server, so no invite was texted. Tell them to sign in with their phone number.",
+      "invitedFailed": "{{name}} is added, but the SMS invite did not go through. Tell them to sign in with their phone number.",
       "colActions": "Actions",
       "report": "Report phone",
       "reportFor": "Report a lost or stolen phone for {{name}}",
